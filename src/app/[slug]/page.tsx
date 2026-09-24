@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ProductoCard } from "@/components/producto-card";
+import { MenuPedido } from "@/components/menu-pedido";
 import { getMenuBySlug } from "@/lib/menu";
 import { formatBs } from "@/lib/precios";
 
@@ -87,34 +87,16 @@ export default async function MenuPage({ params }: Props) {
         </nav>
       )}
 
-      <main className="px-4 pb-16">
-        {categoriasConProductos.length === 0 && sinCategoria.length === 0 && (
-          <p className="py-12 text-center text-zinc-600 dark:text-zinc-400">
-            Este menú todavía no tiene productos.
-          </p>
-        )}
-
-        {categoriasConProductos.map((c) => (
-          <section key={c.id} id={`cat-${c.id}`} className="scroll-mt-14 pt-6">
-            <h2 className="border-b-2 border-(--acento) pb-1 text-lg font-semibold">{c.nombre}</h2>
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
-              {c.productos.map((p) => (
-                <ProductoCard key={p.id} producto={p} tasaBs={negocio.tasa_bs} />
-              ))}
-            </ul>
-          </section>
-        ))}
-
-        {sinCategoria.length > 0 && (
-          <section className="pt-6">
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
-              {sinCategoria.map((p) => (
-                <ProductoCard key={p.id} producto={p} tasaBs={negocio.tasa_bs} />
-              ))}
-            </ul>
-          </section>
-        )}
-      </main>
+      <MenuPedido
+        negocio={{
+          slug: negocio.slug,
+          nombre: negocio.nombre,
+          telefono_whatsapp: negocio.telefono_whatsapp,
+          tasa_bs: negocio.tasa_bs,
+        }}
+        categorias={categorias}
+        sinCategoria={sinCategoria}
+      />
     </div>
   );
 }
