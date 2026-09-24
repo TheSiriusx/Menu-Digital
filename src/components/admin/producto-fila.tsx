@@ -1,11 +1,13 @@
 import { actualizarPrecio, actualizarProducto, alternarDisponible, borrarProducto, moverProducto } from "@/app/admin/actions";
+import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { Boton, estiloCampo, FormAccion } from "@/components/admin/ui";
 import { formatBs, usdToBs } from "@/lib/precios";
 import type { Categoria, Producto } from "@/types/menu";
 
-function Flecha({ id, direccion, deshabilitada }: { id: string; direccion: "arriba" | "abajo"; deshabilitada: boolean }) {
+function Flecha({ id, negocioId, direccion, deshabilitada }: { id: string; negocioId: string; direccion: "arriba" | "abajo"; deshabilitada: boolean }) {
   return (
     <form action={moverProducto}>
+      <CampoNegocio id={negocioId} />
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="direccion" value={direccion} />
       <button
@@ -22,12 +24,14 @@ function Flecha({ id, direccion, deshabilitada }: { id: string; direccion: "arri
 
 export function ProductoFila({
   producto,
+  negocioId,
   categorias,
   tasaBs,
   primero,
   ultimo,
 }: {
   producto: Producto;
+  negocioId: string;
   categorias: Categoria[];
   tasaBs: number;
   primero: boolean;
@@ -45,13 +49,14 @@ export function ProductoFila({
           )}
         </div>
         <div className="flex shrink-0 gap-1">
-          <Flecha id={producto.id} direccion="arriba" deshabilitada={primero} />
-          <Flecha id={producto.id} direccion="abajo" deshabilitada={ultimo} />
+          <Flecha id={producto.id} negocioId={negocioId} direccion="arriba" deshabilitada={primero} />
+          <Flecha id={producto.id} negocioId={negocioId} direccion="abajo" deshabilitada={ultimo} />
         </div>
       </div>
 
       <div className="mt-2 flex flex-wrap items-start gap-2">
         <FormAccion accion={actualizarPrecio} className="flex flex-wrap items-center gap-2">
+          <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
           <label className="flex items-center gap-1 text-sm">
             <span aria-hidden="true">$</span>
@@ -67,6 +72,7 @@ export function ProductoFila({
         </FormAccion>
 
         <form action={alternarDisponible}>
+          <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
           <input type="hidden" name="disponible" value={String(!producto.disponible)} />
           <button
@@ -86,6 +92,7 @@ export function ProductoFila({
       <details className="mt-2">
         <summary className="cursor-pointer text-sm text-zinc-600 dark:text-zinc-400">Editar o borrar</summary>
         <FormAccion accion={actualizarProducto} className="mt-2 space-y-2">
+          <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
           <label className="block text-sm">
             Nombre
@@ -110,6 +117,7 @@ export function ProductoFila({
         <details className="mt-3">
           <summary className="cursor-pointer text-sm text-red-700 dark:text-red-400">Borrar producto</summary>
           <form action={borrarProducto} className="mt-2">
+            <CampoNegocio id={negocioId} />
             <input type="hidden" name="id" value={producto.id} />
             <p className="mb-2 text-sm">¿Seguro? No se puede deshacer.</p>
             <Boton variante="peligro">Sí, borrar</Boton>

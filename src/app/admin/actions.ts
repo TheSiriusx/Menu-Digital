@@ -2,7 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { requerirDueno } from "@/lib/admin";
+import { requerirNegocio, requerirUsuario } from "@/lib/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
   conValidacion,
@@ -22,13 +22,14 @@ import {
 function publicar() {
   updateTag("menu");
   revalidatePath("/admin", "layout");
+  revalidatePath("/superadmin", "layout");
 }
 
 function fallo(mensaje: string, error: { message: string }): never {
   throw new Error(`${mensaje}: ${error.message}`);
 }
 
-type Cliente = Awaited<ReturnType<typeof requerirDueno>>["supabase"];
+type Cliente = Awaited<ReturnType<typeof requerirNegocio>>["supabase"];
 type FilaOrden = { id: string; orden: number };
 
 // Intercambia la posición de una fila con su vecina dentro de su grupo. Las posiciones son
@@ -64,7 +65,7 @@ export async function cerrarSesion() {
 
 export async function cambiarClave(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase } = await requerirDueno();
+    const supabase = await requerirUsuario();
     const clave = String(datos.get("clave") ?? "");
     const repetir = String(datos.get("repetir") ?? "");
     if (clave.length < 10) throw new ErrorValidacion("La contraseña debe tener al menos 10 caracteres.");
@@ -85,7 +86,7 @@ export async function cambiarClave(_previo: Estado, datos: FormData): Promise<Es
 
 export async function actualizarTasa(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const tasa = leerTasaBs(datos, "tasa");
     const { data, error } = await supabase.from("negocios").update({ tasa_bs: tasa }).eq("id", negocioId).select("id");
     if (error) fallo("No se pudo guardar la tasa", error);
@@ -97,7 +98,7 @@ export async function actualizarTasa(_previo: Estado, datos: FormData): Promise<
 
 export async function actualizarAjustes(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const cambios = {
       nombre: leerTexto(datos, "nombre", "El nombre", 80, { requerido: true }),
       telefono_whatsapp: leerTelefono(datos, "telefono"),
@@ -116,7 +117,7 @@ export async function actualizarAjustes(_previo: Estado, datos: FormData): Promi
 
 export async function crearCategoria(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const nombre = leerTexto(datos, "nombre", "El nombre", 60, { requerido: true });
 
     const { data: ultima } = await supabase
@@ -136,7 +137,7 @@ export async function crearCategoria(_previo: Estado, datos: FormData): Promise<
 
 export async function renombrarCategoria(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const id = leerId(datos, "id");
     const nombre = leerTexto(datos, "nombre", "El nombre", 60, { requerido: true });
     const { data, error } = await supabase
@@ -153,7 +154,7 @@ export async function renombrarCategoria(_previo: Estado, datos: FormData): Prom
 }
 
 export async function moverCategoria(datos: FormData) {
-  const { supabase, negocioId } = await requerirDueno();
+  const { supabase, negocioId } = await requerirNegocio(datos);
   const id = leerId(datos, "id");
   const { data, error } = await supabase
     .from("categorias")
@@ -167,7 +168,7 @@ export async function moverCategoria(datos: FormData) {
 }
 
 export async function borrarCategoria(datos: FormData) {
-  const { supabase, negocioId } = await requerirDueno();
+  const { supabase, negocioId } = await requerirNegocio(datos);
   const id = leerId(datos, "id");
   // Los productos de la categoría se conservan, sin categoría (lo hace la clave foránea).
   const { error } = await supabase.from("categorias").delete().eq("id", id).eq("negocio_id", negocioId);
@@ -179,7 +180,7 @@ export async function borrarCategoria(datos: FormData) {
 
 export async function crearProducto(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const nombre = leerTexto(datos, "nombre", "El nombre", 120, { requerido: true });
     const descripcion = leerTexto(datos, "descripcion", "La descripción", 500) || null;
     const precio = leerPrecioUsd(datos, "precio");
@@ -215,7 +216,7 @@ export async function crearProducto(_previo: Estado, datos: FormData): Promise<E
 
 export async function actualizarProducto(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const id = leerId(datos, "id");
     const cambios = {
       nombre: leerTexto(datos, "nombre", "El nombre", 120, { requerido: true }),
@@ -240,7 +241,7 @@ export async function actualizarProducto(_previo: Estado, datos: FormData): Prom
 
 export async function actualizarPrecio(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const { supabase, negocioId } = await requerirDueno();
+    const { supabase, negocioId } = await requerirNegocio(datos);
     const id = leerId(datos, "id");
     const precio = leerPrecioUsd(datos, "precio");
     const { data, error } = await supabase
@@ -257,7 +258,7 @@ export async function actualizarPrecio(_previo: Estado, datos: FormData): Promis
 }
 
 export async function alternarDisponible(datos: FormData) {
-  const { supabase, negocioId } = await requerirDueno();
+  const { supabase, negocioId } = await requerirNegocio(datos);
   const id = leerId(datos, "id");
   const disponible = String(datos.get("disponible")) === "true";
   const { error } = await supabase
@@ -270,7 +271,7 @@ export async function alternarDisponible(datos: FormData) {
 }
 
 export async function moverProducto(datos: FormData) {
-  const { supabase, negocioId } = await requerirDueno();
+  const { supabase, negocioId } = await requerirNegocio(datos);
   const id = leerId(datos, "id");
 
   const { data: producto, error: e1 } = await supabase
@@ -295,7 +296,7 @@ export async function moverProducto(datos: FormData) {
 }
 
 export async function borrarProducto(datos: FormData) {
-  const { supabase, negocioId } = await requerirDueno();
+  const { supabase, negocioId } = await requerirNegocio(datos);
   const id = leerId(datos, "id");
   const { error } = await supabase.from("productos").delete().eq("id", id).eq("negocio_id", negocioId);
   if (error) fallo("No se pudo borrar el producto", error);

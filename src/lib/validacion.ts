@@ -1,4 +1,5 @@
 import { normalizarTelefono } from "@/lib/pedido";
+import { PLANES, TIPOS } from "@/lib/tipos";
 
 // Estado que devuelven las acciones de formulario del panel.
 export type Estado = { error?: string; ok?: string };
@@ -84,4 +85,47 @@ export function leerTelefono(datos: FormData, campo: string): string | null {
     throw new ErrorValidacion("Escribe el WhatsApp con código de país, por ejemplo 584121234567 o 0412-1234567.");
   }
   return numero;
+}
+
+// Enlace (slug) a partir de un nombre: "Panadería La Espiga" -> "panaderia-la-espiga".
+export function slugDesde(nombre: string): string {
+  return nombre
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60)
+    .replace(/-+$/g, "");
+}
+
+// Si el campo viene vacío se genera desde el nombre. El formato y los slugs reservados
+// también los exige la base de datos; aquí solo se da un mensaje claro antes.
+export function leerSlug(datos: FormData, campo: string, nombre: string): string {
+  const escrito = bruto(datos, campo).trim().toLowerCase();
+  const slug = escrito || slugDesde(nombre);
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length < 3 || slug.length > 60) {
+    throw new ErrorValidacion("El enlace debe tener de 3 a 60 caracteres: solo minúsculas, números y guiones (ej. la-espiga).");
+  }
+  return slug;
+}
+
+export function leerTipo(datos: FormData, campo: string): string {
+  const valor = bruto(datos, campo);
+  if (!TIPOS.some((t) => t.valor === valor)) throw new ErrorValidacion("Elige un tipo de negocio.");
+  return valor;
+}
+
+export function leerPlan(datos: FormData, campo: string): string {
+  const valor = bruto(datos, campo);
+  if (!PLANES.some((p) => p.valor === valor)) throw new ErrorValidacion("Elige un plan.");
+  return valor;
+}
+
+export function leerCorreo(datos: FormData, campo: string): string {
+  const valor = bruto(datos, campo).trim().toLowerCase();
+  if (valor.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor)) {
+    throw new ErrorValidacion("Escribe un correo válido.");
+  }
+  return valor;
 }
