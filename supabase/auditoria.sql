@@ -53,6 +53,44 @@ from storage.buckets
 where public and (file_size_limit is null or allowed_mime_types is null or 'image/svg+xml' = any(allowed_mime_types))
 
 union all
+-- 9b) Columnas sensibles legibles por la clave pública (stock, instancia de WhatsApp, pedidos, clientes).
+select 'PROBLEMA: anon puede LEER una columna sensible', format('%s.%s', c.table_name, c.column_name)
+from information_schema.columns c
+where c.table_schema = 'public'
+  and ((c.table_name = 'productos' and c.column_name = 'stock')
+    or (c.table_name = 'negocios' and c.column_name = 'evolution_instance_name')
+    or c.table_name in ('pedidos', 'pedido_items', 'clientes'))
+  and has_column_privilege('anon', format('public.%I', c.table_name), c.column_name, 'select')
+
+union all
+-- 9c) La instancia de WhatsApp tampoco debe leerse con la sesión de un dueño (la política de negocios es abierta).
+select 'PROBLEMA: authenticated puede LEER negocios.evolution_instance_name', 'negocios.evolution_instance_name'
+where has_column_privilege('authenticated', 'public.negocios', 'evolution_instance_name', 'select')
+
+union all
+-- 9d) Políticas de LECTURA para authenticated que no acotan por local (filtrarían datos de otros locales).
+select 'PROBLEMA: política de lectura sin filtro de local para authenticated', format('%s.%s', tablename, policyname)
+from pg_policies
+where schemaname = 'public' and cmd = 'SELECT' and 'authenticated' = any(roles)
+  and tablename in ('productos', 'pedidos', 'pedido_items', 'clientes')
+  and qual not like '%mi_negocio_id%' and qual not like '%es_superadmin%'
+
+union all
+-- 9e) Funciones del agente: solo service_role. Las internas, de nadie.
+select 'PROBLEMA: función del agente ejecutable con clave pública o sesión de dueño', p.oid::regprocedure::text
+from pg_proc p
+where p.pronamespace = 'public'::regnamespace
+  and p.proname in ('crear_pedido', 'agente_cambiar_estado_pedido', '_cambiar_estado_pedido')
+  and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))
+
+union all
+-- 9f) Tablas nuevas con permisos de escritura para anon o authenticated (todo pasa por funciones).
+select 'PROBLEMA: escritura directa permitida en tabla del agente', format('%s: %s (%s)', grantee, table_name, privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name in ('pedidos', 'pedido_items', 'clientes')
+  and grantee in ('anon', 'authenticated') and privilege_type in ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'TRIGGER', 'REFERENCES')
+
+union all
 -- 9) Super admins sin segundo factor verificado (deberían ser 0 una vez activada la migración 0006).
 select 'AVISO: super admin sin segundo factor verificado', u.email
 from public.perfiles p join auth.users u on u.id = p.id

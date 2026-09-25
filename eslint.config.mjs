@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Código generado para pegar en n8n: sus funciones las usa n8n desde fuera.
+    "docs/**",
   ]),
 ]);
 

@@ -15,6 +15,7 @@ import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { CampoColor } from "@/components/admin/campo-color";
 import { ProductoFila } from "@/components/admin/producto-fila";
 import { SubirImagen } from "@/components/admin/subir-imagen";
+import { WhatsAppVinculo } from "@/components/admin/whatsapp-vinculo";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
 import type { Panel } from "@/lib/admin";
@@ -335,6 +336,17 @@ export function VistaAjustes({ panel, contexto }: { panel: Panel; contexto: Cont
             </FormAccion>
           </section>
         </Editable>
+
+        {/* Vincular WhatsApp no depende del estado del local: se puede reescanear aunque esté pausado. */}
+        <section aria-labelledby="whatsapp" className={tarjeta}>
+          <h2 id="whatsapp" className="text-lg font-semibold">WhatsApp de pedidos</h2>
+          <p className="mt-1 text-sm text-muted">
+            El número de WhatsApp que atiende los pedidos de este local. Si se desvincula, puedes volver a escanearlo desde aquí.
+          </p>
+          <div className="mt-4">
+            <WhatsAppVinculo negocioId={negocio.id} />
+          </div>
+        </section>
 
         {/* La contraseña es de la cuenta, no del local: el dueño puede cambiarla aunque esté pausado. */}
         {!contexto.superadmin && <FormularioClave />}

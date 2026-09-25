@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cambiarEstado, cambiarPlan, crearLocal, quitarDueno, vincularDueno } from "@/app/superadmin/actions";
+import { cambiarEstado, cambiarPlan, crearLocal, quitarDueno, reintentarWhatsApp, vincularDueno } from "@/app/superadmin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
@@ -15,6 +15,7 @@ type Local = {
   activo: boolean;
   productos: number;
   duenos: string[];
+  instancia: string | null;
   created_at: string;
 };
 
@@ -91,6 +92,10 @@ export default async function Locales() {
                 <span className="text-muted">Dueño: </span>
                 {l.duenos.length > 0 ? l.duenos.join(", ") : <em>sin vincular</em>}
               </p>
+              <p className="mt-0.5 text-sm" data-whatsapp={l.instancia ? "listo" : "pendiente"}>
+                <span className="text-muted">WhatsApp: </span>
+                {l.instancia ? <span>✓ {l.instancia}</span> : <em>pendiente</em>}
+              </p>
 
               <div className="mt-2">
                 <Link
@@ -104,6 +109,12 @@ export default async function Locales() {
               <details className="mt-3">
                 <summary className="cursor-pointer text-sm text-muted">Estado, plan y dueño</summary>
                 <div className="mt-3 space-y-5">
+                  {!l.instancia && (
+                    <FormAccion accion={reintentarWhatsApp} className="flex flex-wrap items-center gap-2">
+                      <CampoNegocio id={l.id} />
+                      <Boton variante="suave">Crear cuenta de WhatsApp</Boton>
+                    </FormAccion>
+                  )}
                   {l.activo ? (
                     <details>
                       <summary className="cursor-pointer text-sm text-amber-800 dark:text-amber-300">Pausar local (impago)</summary>

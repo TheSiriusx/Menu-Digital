@@ -1,3 +1,4 @@
+import { codigoProducto, construirBloque } from "@/lib/pedido-agente";
 import { formatBs, formatUsd, usdToBs } from "@/lib/precios";
 import type { Producto } from "@/types/menu";
 
@@ -64,8 +65,9 @@ function limpiar(texto: string, max: number): string {
   return texto.replace(/\s+/g, " ").trim().slice(0, max);
 }
 
+// Mensaje legible para el cliente + una línea final estructurada para el agente (ver pedido-agente.ts).
 export function construirMensaje(
-  negocio: { nombre: string; tasa_bs: number },
+  negocio: { nombre: string; slug: string; tasa_bs: number },
   lineas: Linea[],
   datos: DatosPedido,
 ): string {
@@ -92,6 +94,17 @@ export function construirMensaje(
   );
   const notas = limpiar(datos.notas, 300);
   if (notas) partes.push(`Notas: ${notas}`);
+
+  partes.push(
+    "",
+    construirBloque({
+      slug: negocio.slug,
+      items: lineas.map((l) => ({ codigo: codigoProducto(l.producto.id), cantidad: l.cantidad })),
+      totalUsd: total,
+      tasaBs: tasa,
+      entrega: datos.entrega,
+    }),
+  );
 
   return partes.join("\n");
 }
