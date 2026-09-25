@@ -20,6 +20,7 @@ export default async function SuperadminLayout({ children }: { children: React.R
             pestanas={[
               { href: "/superadmin", texto: "Locales", exacto: true },
               { href: "/superadmin/cuenta", texto: "Mi cuenta" },
+              { href: "/superadmin/mfa", texto: "Seguridad" },
             ]}
           />
         )}

@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { crearClienteServidor } from "@/lib/supabase/server";
+import { estadoMfa } from "@/lib/mfa";
 import { leerId } from "@/lib/validacion";
 import type { Categoria, Negocio, Producto } from "@/types/menu";
 
@@ -45,12 +46,22 @@ export async function requerirDueno() {
   return { supabase, user, negocioId };
 }
 
-// Páginas y acciones del super admin (/superadmin).
-export async function requerirSuperadmin() {
+// Super admin con sesión iniciada, SIN exigir el segundo factor. Solo para las pantallas de MFA
+// (inscribirse), que si no se cerrarían la puerta a sí mismas.
+export async function requerirSuperadminSinMfa() {
   const { supabase, user, rol } = await obtenerSesion();
   if (!user) redirect("/login");
   if (rol !== "superadmin") redirect("/admin");
   return { supabase, user };
+}
+
+// Páginas y acciones del super admin (/superadmin): además de ser super admin, la sesión debe haber
+// verificado el segundo factor (aal2). Sin factor inscrito lo lleva a inscribirse; con factor, a verificar.
+export async function requerirSuperadmin() {
+  const sesion = await requerirSuperadminSinMfa();
+  const mfa = await estadoMfa();
+  if (mfa.nivel !== "aal2") redirect(mfa.tieneFactor ? "/login/verificar" : "/superadmin/mfa");
+  return sesion;
 }
 
 // Acciones de edición del panel. El local sale SIEMPRE del perfil del dueño (se ignora lo que
@@ -59,7 +70,11 @@ export async function requerirSuperadmin() {
 export async function requerirNegocio(datos: FormData) {
   const { supabase, user, negocioId, rol } = await obtenerSesion();
   if (!user) redirect("/login");
-  if (rol === "superadmin") return { supabase, negocioId: leerId(datos, "negocio") };
+  if (rol === "superadmin") {
+    const mfa = await estadoMfa();
+    if (mfa.nivel !== "aal2") redirect(mfa.tieneFactor ? "/login/verificar" : "/superadmin/mfa");
+    return { supabase, negocioId: leerId(datos, "negocio") };
+  }
   if (!negocioId) redirect("/admin/sin-cuenta");
   return { supabase, negocioId };
 }

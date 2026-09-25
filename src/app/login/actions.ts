@@ -15,5 +15,9 @@ export async function iniciarSesion(_previo: Estado, datos: FormData): Promise<E
   // Mensaje único: no revela si el correo existe. Supabase ya limita los intentos repetidos.
   if (error) return { error: "Correo o contraseña incorrectos." };
 
+  // Con segundo factor inscrito, la sesión aún no es "aal2": se pide el código antes de entrar.
+  const { data: nivel } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (nivel?.nextLevel === "aal2" && nivel.currentLevel !== "aal2") redirect("/login/verificar");
+
   redirect("/admin");
 }

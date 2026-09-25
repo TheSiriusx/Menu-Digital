@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
 import { iniciarSesion } from "@/app/login/actions";
 
 export const metadata: Metadata = { title: "Entrar — Panel", robots: { index: false } };
 
-export default function Login() {
+export default async function Login() {
+  // La CSP lleva un nonce distinto por petición: la página debe generarse en cada visita, no en el build.
+  await connection();
   return (
     <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-12">
       <h1 className="text-2xl font-semibold tracking-tight">Panel del local</h1>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
   description: "Menús digitales con pedido por WhatsApp",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Toda ruta se genera en cada petición: la CSP lleva un nonce distinto por visita (src/proxy.ts) y
+  // una página fabricada en el build, como el "no encontrado" genérico, no podría llevarlo.
+  await connection();
   return (
     <html
       lang="es"
