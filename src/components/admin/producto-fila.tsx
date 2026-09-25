@@ -24,7 +24,7 @@ function Flecha({ id, negocioId, direccion, deshabilitada }: { id: string; negoc
         type="submit"
         disabled={deshabilitada}
         aria-label={direccion === "arriba" ? "Subir" : "Bajar"}
-        className="h-9 w-9 rounded-full border border-line disabled:opacity-30"
+        className="h-8 w-8 rounded-full border border-line text-sm disabled:opacity-30"
       >
         {direccion === "arriba" ? "↑" : "↓"}
       </button>
@@ -48,25 +48,20 @@ export function ProductoFila({
   ultimo: boolean;
 }) {
   return (
-    <li className="py-3" data-producto={producto.nombre}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          {producto.foto_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={producto.foto_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
-          ) : (
-            <div aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-surface text-lg font-semibold text-muted">
-              {producto.nombre.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div className="min-w-0">
-          <p className="font-medium leading-tight">{producto.nombre}</p>
-          {tasaBs > 0 && (
-            <p className="text-xs text-muted">
-              {formatBs(usdToBs(producto.precio_usd, tasaBs))}
-            </p>
-          )}
+    <li className="py-2.5" data-producto={producto.nombre}>
+      {/* Línea 1: foto, nombre y orden */}
+      <div className="flex items-center gap-3">
+        {producto.foto_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={producto.foto_url} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+        ) : (
+          <div aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-surface font-semibold text-muted">
+            {producto.nombre.charAt(0).toUpperCase()}
           </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium leading-tight">{producto.nombre}</p>
+          {tasaBs > 0 && <p className="text-xs text-muted">{formatBs(usdToBs(producto.precio_usd, tasaBs))}</p>}
         </div>
         <div className="flex shrink-0 gap-1">
           <Flecha id={producto.id} negocioId={negocioId} direccion="arriba" deshabilitada={primero} />
@@ -74,21 +69,20 @@ export function ProductoFila({
         </div>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-start gap-2">
-        <FormAccion accion={actualizarPrecio} className="flex flex-wrap items-center gap-2">
+      {/* Línea 2: precio y disponibilidad, lo que se toca a diario */}
+      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <FormAccion accion={actualizarPrecio} className="flex items-center gap-1.5">
           <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
-          <label className="flex items-center gap-1 text-sm">
-            <span aria-hidden="true">$</span>
-            <input
-              name="precio"
-              aria-label={`Precio en dólares de ${producto.nombre}`}
-              inputMode="decimal"
-              defaultValue={producto.precio_usd.toFixed(2).replace(".", ",")}
-              className={`${estiloCampo} w-24! py-1.5`}
-            />
-          </label>
-          <Boton variante="suave">Guardar</Boton>
+          <span aria-hidden="true" className="text-sm text-muted">$</span>
+          <input
+            name="precio"
+            aria-label={`Precio en dólares de ${producto.nombre}`}
+            inputMode="decimal"
+            defaultValue={producto.precio_usd.toFixed(2).replace(".", ",")}
+            className={`${estiloCampo} w-20! px-2.5! py-1.5!`}
+          />
+          <Boton variante="suave" tamano="compacto">Guardar</Boton>
         </FormAccion>
 
         <form action={alternarDisponible}>
@@ -98,7 +92,7 @@ export function ProductoFila({
           <button
             type="submit"
             aria-pressed={producto.disponible}
-            className={`rounded-full px-4 py-2 text-sm font-medium ${
+            className={`rounded-full px-3 py-1.5 text-sm font-medium ${
               producto.disponible
                 ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
                 : "bg-surface text-muted"
@@ -109,25 +103,27 @@ export function ProductoFila({
         </form>
       </div>
 
-      <div className="mt-2 flex flex-wrap items-start gap-2">
-        <SubirImagen
-          accion={subirFotoProducto}
-          campos={{ negocio: negocioId, id: producto.id }}
-          lado={480}
-          texto={producto.foto_url ? "Cambiar foto" : "Agregar foto"}
-        />
-        {producto.foto_url && (
-          <form action={quitarFotoProducto}>
-            <CampoNegocio id={negocioId} />
-            <input type="hidden" name="id" value={producto.id} />
-            <Boton variante="suave">Quitar foto</Boton>
-          </form>
-        )}
-      </div>
+      {/* Lo demás, plegado */}
+      <details className="mt-1.5">
+        <summary className="cursor-pointer text-sm text-muted">Más opciones</summary>
 
-      <details className="mt-2">
-        <summary className="cursor-pointer text-sm text-muted">Editar o borrar</summary>
-        <FormAccion accion={actualizarProducto} className="mt-2 space-y-2">
+        <div className="mt-2 flex flex-wrap items-start gap-2">
+          <SubirImagen
+            accion={subirFotoProducto}
+            campos={{ negocio: negocioId, id: producto.id }}
+            lado={480}
+            texto={producto.foto_url ? "Cambiar foto" : "Agregar foto"}
+          />
+          {producto.foto_url && (
+            <form action={quitarFotoProducto}>
+              <CampoNegocio id={negocioId} />
+              <input type="hidden" name="id" value={producto.id} />
+              <Boton variante="suave">Quitar foto</Boton>
+            </form>
+          )}
+        </div>
+
+        <FormAccion accion={actualizarProducto} className="mt-3 space-y-2">
           <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
           <label className="block text-sm">

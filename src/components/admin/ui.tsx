@@ -8,10 +8,12 @@ import type { Estado } from "@/lib/validacion";
 export function Boton({
   children,
   variante = "primario",
+  tamano = "normal",
   className = "",
 }: {
   children: ReactNode;
   variante?: "primario" | "suave" | "peligro";
+  tamano?: "normal" | "compacto";
   className?: string;
 }) {
   const { pending } = useFormStatus();
@@ -24,7 +26,7 @@ export function Boton({
     <button
       type="submit"
       disabled={pending}
-      className={`rounded-full px-4 py-2.5 text-sm font-medium disabled:opacity-50 ${estilos} ${className}`}
+      className={`rounded-full text-sm font-medium disabled:opacity-50 ${tamano === "compacto" ? "px-3 py-1.5" : "px-4 py-2.5"} ${estilos} ${className}`}
     >
       {pending ? "Guardando…" : children}
     </button>
