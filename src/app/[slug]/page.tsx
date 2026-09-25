@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MenuPedido } from "@/components/menu-pedido";
+import { acentoDe } from "@/lib/color";
 import { getMenuBySlug } from "@/lib/menu";
 import { formatBs } from "@/lib/precios";
 
@@ -9,9 +10,6 @@ import { formatBs } from "@/lib/precios";
 export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
-
-const ACENTO_POR_DEFECTO = "#18181b";
-const COLOR_HEX = /^#[0-9a-fA-F]{6}$/;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -27,22 +25,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title, description, openGraph: { title, description, type: "website" } };
 }
 
+function Inicial({ nombre, className }: { nombre: string; className: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`flex shrink-0 items-center justify-center bg-[color-mix(in_oklab,var(--acento)_14%,var(--surface))] font-semibold text-[color-mix(in_oklab,var(--acento)_60%,var(--muted))] ${className}`}
+    >
+      {nombre.charAt(0).toUpperCase()}
+    </div>
+  );
+}
+
 export default async function MenuPage({ params }: Props) {
   const { slug } = await params;
   const menu = await getMenuBySlug(slug);
   if (!menu) notFound();
 
   const { negocio, categorias, sinCategoria } = menu;
-  const acento = negocio.color && COLOR_HEX.test(negocio.color) ? negocio.color : ACENTO_POR_DEFECTO;
-  const estilo = { "--acento": acento } as CSSProperties;
+  const { acento, sobre } = acentoDe(negocio.color);
+  const estilo = { "--acento": acento, "--sobre-acento": sobre } as CSSProperties;
 
   if (!negocio.activo) {
     return (
-      <main style={estilo} className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
-        <h1 className="text-2xl font-semibold">{negocio.nombre}</h1>
-        <p className="max-w-sm text-zinc-600 dark:text-zinc-400">
-          Menú temporalmente no disponible. Vuelve a intentarlo más tarde.
-        </p>
+      <main style={estilo} className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+        <Inicial nombre={negocio.nombre} className="h-16 w-16 rounded-2xl text-2xl" />
+        <h1 className="text-2xl font-semibold tracking-tight">{negocio.nombre}</h1>
+        <p className="max-w-xs text-muted">Menú temporalmente no disponible. Vuelve a intentarlo más tarde.</p>
       </main>
     );
   }
@@ -50,21 +58,23 @@ export default async function MenuPage({ params }: Props) {
   const categoriasConProductos = categorias.filter((c) => c.productos.length > 0);
 
   return (
-    <div style={estilo} className="mx-auto w-full max-w-2xl flex-1">
-      <header className="border-t-4 border-(--acento) px-4 pt-6 pb-4">
-        <div className="flex items-center gap-3">
-          {negocio.logo_url && (
-            // Los logos llegan en la Fase 5 (Supabase Storage).
+    <div style={estilo} className="mx-auto w-full max-w-3xl flex-1">
+      <header className="bg-[color-mix(in_oklab,var(--acento)_7%,var(--background))] px-4 pt-10 pb-6 sm:rounded-b-3xl">
+        <div className="flex items-center gap-4">
+          {negocio.logo_url ? (
+            // Los logos se reducen a 256 px al subirlos (ver subir-imagen.tsx).
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={negocio.logo_url} alt="" className="h-14 w-14 rounded-full object-cover" />
+            <img src={negocio.logo_url} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
+          ) : (
+            <Inicial nombre={negocio.nombre} className="h-16 w-16 rounded-2xl text-2xl" />
           )}
-          <h1 className="text-2xl font-semibold tracking-tight">{negocio.nombre}</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold leading-tight tracking-tight">{negocio.nombre}</h1>
+            {negocio.horario && <p className="mt-1 text-sm text-muted">{negocio.horario}</p>}
+          </div>
         </div>
-        {negocio.horario && (
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{negocio.horario}</p>
-        )}
         {negocio.tasa_bs > 0 && (
-          <p className="mt-2 inline-block rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+          <p className="mt-4 inline-block rounded-full border border-line bg-background px-3 py-1 text-xs font-medium text-muted tabular-nums">
             Tasa del día: {formatBs(negocio.tasa_bs)} por $1
           </p>
         )}
@@ -73,13 +83,13 @@ export default async function MenuPage({ params }: Props) {
       {categoriasConProductos.length > 1 && (
         <nav
           aria-label="Categorías"
-          className="sticky top-0 z-10 flex gap-2 overflow-x-auto border-b border-zinc-200 bg-white/95 px-4 py-2 backdrop-blur dark:border-zinc-800 dark:bg-black/95"
+          className="sticky top-0 z-10 flex gap-2 overflow-x-auto border-b border-line bg-background/90 px-4 py-3 backdrop-blur [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {categoriasConProductos.map((c) => (
             <a
               key={c.id}
               href={`#cat-${c.id}`}
-              className="shrink-0 rounded-full border border-zinc-300 px-3 py-1 text-sm dark:border-zinc-700"
+              className="shrink-0 rounded-full bg-surface px-4 py-1.5 text-sm font-medium"
             >
               {c.nombre}
             </a>

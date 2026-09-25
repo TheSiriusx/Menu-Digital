@@ -9,7 +9,8 @@ import {
 } from "@/app/admin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { SubirImagen } from "@/components/admin/subir-imagen";
-import { Boton, estiloCampo, FormAccion } from "@/components/admin/ui";
+import { Boton, FormAccion } from "@/components/admin/ui";
+import { estiloCampo } from "@/components/admin/estilos";
 import { formatBs, usdToBs } from "@/lib/precios";
 import type { Categoria, Producto } from "@/types/menu";
 
@@ -23,7 +24,7 @@ function Flecha({ id, negocioId, direccion, deshabilitada }: { id: string; negoc
         type="submit"
         disabled={deshabilitada}
         aria-label={direccion === "arriba" ? "Subir" : "Bajar"}
-        className="h-9 w-9 rounded-full border border-zinc-300 disabled:opacity-30 dark:border-zinc-700"
+        className="h-9 w-9 rounded-full border border-line disabled:opacity-30"
       >
         {direccion === "arriba" ? "↑" : "↓"}
       </button>
@@ -54,14 +55,14 @@ export function ProductoFila({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={producto.foto_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
           ) : (
-            <div aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg font-semibold text-zinc-400 dark:bg-zinc-800">
+            <div aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-surface text-lg font-semibold text-muted">
               {producto.nombre.charAt(0).toUpperCase()}
             </div>
           )}
           <div className="min-w-0">
           <p className="font-medium leading-tight">{producto.nombre}</p>
           {tasaBs > 0 && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted">
               {formatBs(usdToBs(producto.precio_usd, tasaBs))}
             </p>
           )}
@@ -84,7 +85,7 @@ export function ProductoFila({
               aria-label={`Precio en dólares de ${producto.nombre}`}
               inputMode="decimal"
               defaultValue={producto.precio_usd.toFixed(2).replace(".", ",")}
-              className={`${estiloCampo} w-24 py-1.5`}
+              className={`${estiloCampo} w-24! py-1.5`}
             />
           </label>
           <Boton variante="suave">Guardar</Boton>
@@ -100,7 +101,7 @@ export function ProductoFila({
             className={`rounded-full px-4 py-2 text-sm font-medium ${
               producto.disponible
                 ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-                : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                : "bg-surface text-muted"
             }`}
           >
             {producto.disponible ? "Disponible" : "Agotado"}
@@ -125,7 +126,7 @@ export function ProductoFila({
       </div>
 
       <details className="mt-2">
-        <summary className="cursor-pointer text-sm text-zinc-600 dark:text-zinc-400">Editar o borrar</summary>
+        <summary className="cursor-pointer text-sm text-muted">Editar o borrar</summary>
         <FormAccion accion={actualizarProducto} className="mt-2 space-y-2">
           <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />

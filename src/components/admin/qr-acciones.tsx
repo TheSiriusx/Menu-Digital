@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const boton = "rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700";
+const boton = "rounded-full border border-line px-4 py-2 text-sm font-medium";
 
 export function BotonCopiar({ texto }: { texto: string }) {
   const [copiado, setCopiado] = useState(false);

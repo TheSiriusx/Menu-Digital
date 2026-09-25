@@ -22,7 +22,7 @@ type Props = {
 };
 
 const campo =
-  "mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900";
+  "mt-1.5 w-full rounded-xl border border-field bg-surface px-3.5 py-2.5 text-base outline-offset-0 focus-visible:outline-2";
 
 export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
   const { carrito, cambiar, vaciar } = useCarrito(negocio.slug);
@@ -46,6 +46,12 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
     if (lineas.length === 0) dialogo.current?.close();
   }, [lineas.length]);
 
+  // El foco va al propio diálogo (no al primer botón), para que "Cerrar" no aparezca con aro.
+  function abrirPedido() {
+    dialogo.current?.showModal();
+    dialogo.current?.focus();
+  }
+
   function enviar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const url = urlWhatsApp(negocio.telefono_whatsapp, construirMensaje(negocio, lineas, datos));
@@ -59,8 +65,8 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
     dialogo.current?.close();
   }
 
-  const seccion = (productos: Producto[]) => (
-    <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
+  const lista = (productos: Producto[]) => (
+    <ul className="mt-4 grid gap-x-3 gap-y-5 sm:grid-cols-2">
       {productos.map((p) => (
         <ProductoCard
           key={p.id}
@@ -75,32 +81,35 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
 
   return (
     <>
-      <main className={`px-4 ${lineas.length > 0 ? "pb-28" : "pb-16"}`}>
+      <main className={`px-4 ${lineas.length > 0 ? "pb-32" : "pb-16"}`}>
         {todos.length === 0 && (
-          <p className="py-12 text-center text-zinc-600 dark:text-zinc-400">
-            Este menú todavía no tiene productos.
-          </p>
+          <p className="py-16 text-center text-muted">Este menú todavía no tiene productos.</p>
         )}
 
         {categoriasConProductos.map((c) => (
-          <section key={c.id} id={`cat-${c.id}`} className="scroll-mt-14 pt-6">
-            <h2 className="border-b-2 border-(--acento) pb-1 text-lg font-semibold">{c.nombre}</h2>
-            {seccion(c.productos)}
+          <section key={c.id} id={`cat-${c.id}`} className="scroll-mt-16 pt-8">
+            <h2 className="text-xl font-semibold tracking-tight">{c.nombre}</h2>
+            {lista(c.productos)}
           </section>
         ))}
 
-        {sinCategoria.length > 0 && <section className="pt-6">{seccion(sinCategoria)}</section>}
+        {sinCategoria.length > 0 && <section className="pt-8">{lista(sinCategoria)}</section>}
       </main>
 
       {lineas.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-black/95">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
-            onClick={() => dialogo.current?.showModal()}
-            className="mx-auto flex w-full max-w-2xl items-center justify-between rounded-full bg-(--acento) px-5 py-3 font-medium text-white"
+            onClick={abrirPedido}
+            className="pointer-events-auto mx-auto flex w-full max-w-md items-center justify-between rounded-full bg-(--acento) px-5 py-3.5 font-medium text-(--sobre-acento) shadow-xl"
           >
-            <span>Ver pedido ({cantidadTotal(lineas)})</span>
-            <span>
+            <span className="flex items-center gap-2">
+              <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-(--sobre-acento) px-1.5 text-xs font-semibold text-(--acento)">
+                {cantidadTotal(lineas)}
+              </span>
+              Ver pedido
+            </span>
+            <span className="tabular-nums">
               {formatUsd(total)}
               {tasa > 0 && ` · ${formatBs(usdToBs(total, tasa))}`}
             </span>
@@ -110,28 +119,29 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
 
       <dialog
         ref={dialogo}
+        tabIndex={-1}
         aria-label="Tu pedido"
         onClick={(e) => e.target === dialogo.current && dialogo.current?.close()}
-        className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-2xl bg-white p-0 text-zinc-900 backdrop:bg-black/50 sm:m-auto sm:max-w-lg sm:rounded-2xl dark:bg-zinc-950 dark:text-zinc-50"
+        className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-3xl bg-background p-0 text-foreground outline-none backdrop:bg-black/50 sm:m-auto sm:max-w-lg sm:rounded-3xl"
       >
-        <form onSubmit={enviar} className="p-4">
+        <form onSubmit={enviar} className="p-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Tu pedido</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Tu pedido</h2>
             <button
               type="button"
               onClick={() => dialogo.current?.close()}
-              className="rounded-full px-3 py-1 text-sm text-zinc-600 dark:text-zinc-400"
+              className="rounded-full px-3 py-1.5 text-sm text-muted"
             >
               Cerrar
             </button>
           </div>
 
-          <ul className="mt-2 divide-y divide-zinc-100 dark:divide-zinc-900">
+          <ul className="mt-3 divide-y divide-line">
             {lineas.map((l) => (
               <li key={l.producto.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
                   <p className="font-medium leading-tight">{l.producto.nombre}</p>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-muted tabular-nums">
                     {formatUsd(l.subtotalUsd)}
                     {tasa > 0 && ` · ${formatBs(usdToBs(l.subtotalUsd, tasa))}`}
                   </p>
@@ -145,15 +155,15 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
             ))}
           </ul>
 
-          <p className="mt-2 flex justify-between border-t border-zinc-200 pt-3 font-semibold dark:border-zinc-800">
-            <span>Total</span>
-            <span>
+          <div className="mt-2 flex items-baseline justify-between border-t border-line pt-4">
+            <span className="text-muted">Total</span>
+            <span className="text-xl font-semibold tabular-nums">
               {formatUsd(total)}
-              {tasa > 0 && ` · ${formatBs(usdToBs(total, tasa))}`}
+              {tasa > 0 && <span className="ml-2 text-sm font-normal text-muted">{formatBs(usdToBs(total, tasa))}</span>}
             </span>
-          </p>
+          </div>
 
-          <div className="mt-4 space-y-3">
+          <div className="mt-5 space-y-4">
             <label className="block text-sm font-medium">
               Tu nombre
               <input
@@ -168,19 +178,25 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
 
             <fieldset>
               <legend className="text-sm font-medium">¿Cómo lo recibes?</legend>
-              <div className="mt-1 flex gap-4">
+              <div className="mt-1.5 grid grid-cols-2 gap-2">
                 {(
                   [
                     ["retiro", "Retiro en el local"],
                     ["domicilio", "Entrega a domicilio"],
                   ] as const
                 ).map(([valor, etiqueta]) => (
-                  <label key={valor} className="flex items-center gap-2 text-sm">
+                  <label
+                    key={valor}
+                    className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm ${
+                      datos.entrega === valor ? "border-(--acento) bg-surface font-medium" : "border-line"
+                    }`}
+                  >
                     <input
                       type="radio"
                       name="entrega"
                       checked={datos.entrega === valor}
                       onChange={() => setDatos({ ...datos, entrega: valor })}
+                      className="accent-(--acento)"
                     />
                     {etiqueta}
                   </label>
@@ -217,12 +233,12 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
           {puedePedir ? (
             <button
               type="submit"
-              className="mt-4 w-full rounded-full bg-(--acento) px-5 py-3 font-medium text-white"
+              className="mt-6 w-full rounded-full bg-(--acento) px-5 py-3.5 font-medium text-(--sobre-acento) shadow-md"
             >
               Pedir por WhatsApp
             </button>
           ) : (
-            <p className="mt-4 rounded-lg bg-zinc-100 p-3 text-sm text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+            <p className="mt-6 rounded-xl bg-surface p-3 text-sm text-muted">
               Este local todavía no tiene WhatsApp configurado para recibir pedidos.
             </p>
           )}

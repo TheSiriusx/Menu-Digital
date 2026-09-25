@@ -1,7 +1,6 @@
-import Link from "next/link";
+import { NavTabs } from "@/components/admin/nav-tabs";
 import { cargarLocalPorSlug } from "@/lib/admin";
 
-const enlace = "rounded-full border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700";
 
 export default async function LayoutLocal({
   children,
@@ -16,17 +15,22 @@ export default async function LayoutLocal({
 
   return (
     <>
-      <div className="mb-4 rounded-lg bg-zinc-100 p-3 text-sm print:hidden dark:bg-zinc-900">
+      <div className="mb-4 rounded-lg bg-surface p-3 text-sm print:hidden">
         Administrando: <strong>{local.nombre}</strong>{" "}
-        <span className="text-zinc-500">({local.activo ? "activo" : "pausado"})</span>
+        <span className="text-muted">({local.activo ? "activo" : "pausado"})</span>
       </div>
-      <nav aria-label="Local" className="mb-6 flex flex-wrap gap-2 print:hidden">
-        <Link href={base} className={enlace}>Productos</Link>
-        <Link href={`${base}/categorias`} className={enlace}>Categorías</Link>
-        <Link href={`${base}/ajustes`} className={enlace}>Ajustes</Link>
-        <Link href={`${base}/qr`} className={enlace}>QR</Link>
-        <Link href={`/${local.slug}`} target="_blank" className={enlace}>Ver menú ↗</Link>
-      </nav>
+      <div className="mb-6 print:hidden">
+        <NavTabs
+          etiqueta="Local"
+          pestanas={[
+            { href: base, texto: "Productos", exacto: true },
+            { href: `${base}/categorias`, texto: "Categorías" },
+            { href: `${base}/ajustes`, texto: "Ajustes" },
+            { href: `${base}/qr`, texto: "QR" },
+            { href: `/${local.slug}`, texto: "Ver menú ↗", nuevaPestana: true },
+          ]}
+        />
+      </div>
       {children}
     </>
   );

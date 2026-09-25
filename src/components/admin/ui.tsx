@@ -4,9 +4,6 @@ import { useActionState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import type { Estado } from "@/lib/validacion";
 
-export const estiloCampo =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900";
-
 // Botón de envío: se desactiva mientras la acción está en curso.
 export function Boton({
   children,
@@ -19,15 +16,15 @@ export function Boton({
 }) {
   const { pending } = useFormStatus();
   const estilos = {
-    primario: "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900",
-    suave: "border border-zinc-300 dark:border-zinc-700",
+    primario: "bg-foreground text-background",
+    suave: "border border-line hover:bg-surface",
     peligro: "bg-red-600 text-white",
   }[variante];
   return (
     <button
       type="submit"
       disabled={pending}
-      className={`rounded-full px-4 py-2 text-sm font-medium disabled:opacity-50 ${estilos} ${className}`}
+      className={`rounded-full px-4 py-2.5 text-sm font-medium disabled:opacity-50 ${estilos} ${className}`}
     >
       {pending ? "Guardando…" : children}
     </button>

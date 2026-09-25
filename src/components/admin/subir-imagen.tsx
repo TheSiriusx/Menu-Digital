@@ -66,7 +66,7 @@ export function SubirImagen({
   return (
     <div>
       <label
-        className={`inline-block cursor-pointer rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700 ${
+        className={`inline-block cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-medium ${
           ocupado ? "opacity-50" : ""
         }`}
       >

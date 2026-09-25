@@ -12,15 +12,20 @@ import {
   subirLogo,
 } from "@/app/admin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
+import { CampoColor } from "@/components/admin/campo-color";
 import { ProductoFila } from "@/components/admin/producto-fila";
 import { SubirImagen } from "@/components/admin/subir-imagen";
-import { Boton, estiloCampo, FormAccion } from "@/components/admin/ui";
+import { Boton, FormAccion } from "@/components/admin/ui";
+import { estiloCampo } from "@/components/admin/estilos";
 import type { Panel } from "@/lib/admin";
+import { ACENTO_POR_DEFECTO } from "@/lib/color";
 import type { Producto } from "@/types/menu";
 
 // Las tres pantallas del panel las usan el dueño (/admin) y el super admin
 // (/superadmin/locales/[slug]). `superadmin` solo cambia los avisos.
 export type Contexto = { superadmin: boolean };
+
+const tarjeta = "rounded-2xl border border-line p-4";
 
 function AvisoPausa({ panel, contexto }: { panel: Panel; contexto: Contexto }) {
   if (panel.negocio.activo) return null;
@@ -68,9 +73,9 @@ export function VistaProductos({ panel, contexto }: { panel: Panel; contexto: Co
       <AvisoPausa panel={panel} contexto={contexto} />
       <Editable panel={panel} contexto={contexto}>
         <div className="space-y-8">
-          <section aria-labelledby="tasa">
+          <section aria-labelledby="tasa" className={tarjeta}>
             <h2 id="tasa" className="text-lg font-semibold">Tasa del día</h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">Bolívares por cada dólar. Actualízala cuando cambie.</p>
+            <p className="text-sm text-muted">Bolívares por cada dólar. Actualízala cuando cambie.</p>
             <FormAccion accion={actualizarTasa} className="mt-2 flex flex-wrap items-center gap-2">
               <CampoNegocio id={negocio.id} />
               <label className="flex items-center gap-2 text-sm">
@@ -80,14 +85,14 @@ export function VistaProductos({ panel, contexto }: { panel: Panel; contexto: Co
                   inputMode="decimal"
                   required
                   defaultValue={negocio.tasa_bs > 0 ? String(negocio.tasa_bs).replace(".", ",") : ""}
-                  className={`${estiloCampo} w-32`}
+                  className={`${estiloCampo} w-32!`}
                 />
               </label>
               <Boton>Guardar tasa</Boton>
             </FormAccion>
           </section>
 
-          <section aria-labelledby="nuevo">
+          <section aria-labelledby="nuevo" className={tarjeta}>
             <details>
               <summary id="nuevo" className="cursor-pointer text-lg font-semibold">Agregar producto</summary>
               <FormAccion accion={crearProducto} className="mt-3 space-y-2">
@@ -120,11 +125,11 @@ export function VistaProductos({ panel, contexto }: { panel: Panel; contexto: Co
 
           <section aria-labelledby="lista" className="space-y-6">
             <h2 id="lista" className="text-lg font-semibold">Productos</h2>
-            {grupos.length === 0 && <p className="text-zinc-600 dark:text-zinc-400">Todavía no hay productos.</p>}
+            {grupos.length === 0 && <p className="text-muted">Todavía no hay productos.</p>}
             {grupos.map((g) => (
-              <div key={g.clave}>
-                <h3 className="border-b-2 border-zinc-900 pb-1 font-semibold dark:border-zinc-100">{g.titulo}</h3>
-                <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
+              <div key={g.clave} className={tarjeta}>
+                <h3 className="pb-1 text-base font-semibold">{g.titulo}</h3>
+                <ul className="divide-y divide-line">
                   {g.productos.map((p, i) => (
                     <ProductoFila
                       key={p.id}
@@ -168,7 +173,7 @@ function FlechaCategoria({
         type="submit"
         disabled={deshabilitada}
         aria-label={direccion === "arriba" ? "Subir" : "Bajar"}
-        className="h-9 w-9 rounded-full border border-zinc-300 disabled:opacity-30 dark:border-zinc-700"
+        className="h-9 w-9 rounded-full border border-line disabled:opacity-30"
       >
         {direccion === "arriba" ? "↑" : "↓"}
       </button>
@@ -184,26 +189,26 @@ export function VistaCategorias({ panel, contexto }: { panel: Panel; contexto: C
       <AvisoPausa panel={panel} contexto={contexto} />
       <Editable panel={panel} contexto={contexto}>
         <div className="space-y-8">
-          <section aria-labelledby="nueva">
+          <section aria-labelledby="nueva" className={tarjeta}>
             <h2 id="nueva" className="text-lg font-semibold">Nueva categoría</h2>
             <FormAccion accion={crearCategoria} className="mt-2 flex flex-wrap items-center gap-2">
               <CampoNegocio id={negocio.id} />
-              <input name="nombre" required maxLength={60} aria-label="Nombre de la categoría" placeholder="Ej. Bebidas" className={`${estiloCampo} w-56`} />
+              <input name="nombre" required maxLength={60} aria-label="Nombre de la categoría" placeholder="Ej. Bebidas" className={`${estiloCampo} w-56!`} />
               <Boton>Agregar</Boton>
             </FormAccion>
           </section>
 
-          <section aria-labelledby="lista">
+          <section aria-labelledby="lista" className={tarjeta}>
             <h2 id="lista" className="text-lg font-semibold">Categorías</h2>
-            {categorias.length === 0 && <p className="mt-2 text-zinc-600 dark:text-zinc-400">Todavía no hay categorías.</p>}
-            <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
+            {categorias.length === 0 && <p className="mt-2 text-muted">Todavía no hay categorías.</p>}
+            <ul className="divide-y divide-line">
               {categorias.map((c, i) => {
                 const cantidad = productos.filter((p) => p.categoria_id === c.id).length;
                 return (
                   <li key={c.id} className="py-3" data-categoria={c.nombre}>
                     <div className="flex items-start justify-between gap-3">
                       <p className="font-medium">
-                        {c.nombre} <span className="text-sm font-normal text-zinc-500">({cantidad})</span>
+                        {c.nombre} <span className="text-sm font-normal text-muted">({cantidad})</span>
                       </p>
                       <div className="flex gap-1">
                         <FlechaCategoria id={c.id} negocioId={negocio.id} direccion="arriba" deshabilitada={i === 0} />
@@ -211,11 +216,11 @@ export function VistaCategorias({ panel, contexto }: { panel: Panel; contexto: C
                       </div>
                     </div>
                     <details className="mt-1">
-                      <summary className="cursor-pointer text-sm text-zinc-600 dark:text-zinc-400">Renombrar o borrar</summary>
+                      <summary className="cursor-pointer text-sm text-muted">Renombrar o borrar</summary>
                       <FormAccion accion={renombrarCategoria} className="mt-2 flex flex-wrap items-center gap-2">
                         <CampoNegocio id={negocio.id} />
                         <input type="hidden" name="id" value={c.id} />
-                        <input name="nombre" required maxLength={60} aria-label="Nuevo nombre" defaultValue={c.nombre} className={`${estiloCampo} w-56`} />
+                        <input name="nombre" required maxLength={60} aria-label="Nuevo nombre" defaultValue={c.nombre} className={`${estiloCampo} w-56!`} />
                         <Boton>Guardar</Boton>
                       </FormAccion>
                       <details className="mt-3">
@@ -245,7 +250,7 @@ export function VistaCategorias({ panel, contexto }: { panel: Panel; contexto: C
 
 export function FormularioClave() {
   return (
-    <section aria-labelledby="clave">
+    <section aria-labelledby="clave" className={tarjeta}>
       <h2 id="clave" className="text-lg font-semibold">Cambiar contraseña</h2>
       <FormAccion accion={cambiarClave} className="mt-3 space-y-3">
         <label className="block text-sm">
@@ -268,16 +273,16 @@ export function VistaAjustes({ panel, contexto }: { panel: Panel; contexto: Cont
   return (
     <main>
       <AvisoPausa panel={panel} contexto={contexto} />
-      <div className="space-y-10">
+      <div className="flex flex-col gap-6">
         <Editable panel={panel} contexto={contexto}>
-          <section aria-labelledby="logo" className="mb-10">
+          <section aria-labelledby="logo" className={`${tarjeta} mb-6`}>
             <h2 id="logo" className="text-lg font-semibold">Logo</h2>
             <div className="mt-3 flex flex-wrap items-center gap-4">
               {negocio.logo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={negocio.logo_url} alt="Logo del local" className="h-20 w-20 rounded-full object-cover" />
               ) : (
-                <div aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 text-2xl font-semibold text-zinc-400 dark:bg-zinc-800">
+                <div aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-surface text-2xl font-semibold text-muted">
                   {negocio.nombre.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -298,7 +303,7 @@ export function VistaAjustes({ panel, contexto }: { panel: Panel; contexto: Cont
             </div>
           </section>
 
-          <section aria-labelledby="local">
+          <section aria-labelledby="local" className={tarjeta}>
             <h2 id="local" className="text-lg font-semibold">Datos del local</h2>
             <FormAccion accion={actualizarAjustes} className="mt-3 space-y-3">
               <CampoNegocio id={negocio.id} />
@@ -315,23 +320,17 @@ export function VistaAjustes({ panel, contexto }: { panel: Panel; contexto: Cont
                   placeholder="584121234567"
                   className={estiloCampo}
                 />
-                <span className="text-xs text-zinc-500">Con código de país. Ej: 584121234567 o 0412-1234567.</span>
+                <span className="text-xs text-muted">Con código de país. Ej: 584121234567 o 0412-1234567.</span>
               </label>
               <label className="block text-sm">
                 Horario
                 <input name="horario" maxLength={200} defaultValue={negocio.horario ?? ""} className={estiloCampo} />
               </label>
-              <label className="block text-sm">
+              <div className="block text-sm">
                 Color del menú
-                <input
-                  name="color"
-                  defaultValue={negocio.color ?? ""}
-                  placeholder="#B45309"
-                  maxLength={7}
-                  className={estiloCampo}
-                />
-                <span className="text-xs text-zinc-500">Formato #RRGGBB. Déjalo vacío para el color por defecto.</span>
-              </label>
+                <CampoColor inicial={negocio.color} defecto={ACENTO_POR_DEFECTO} />
+                <span className="text-xs text-muted">El texto sobre este color se elige solo para que siempre se lea.</span>
+              </div>
               <Boton>Guardar ajustes</Boton>
             </FormAccion>
           </section>

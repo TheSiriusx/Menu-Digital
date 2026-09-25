@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { cambiarEstado, cambiarPlan, crearLocal, quitarDueno, vincularDueno } from "@/app/superadmin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
-import { Boton, estiloCampo, FormAccion } from "@/components/admin/ui";
+import { Boton, FormAccion } from "@/components/admin/ui";
+import { estiloCampo } from "@/components/admin/estilos";
 import { requerirSuperadmin } from "@/lib/admin";
 import { etiquetaPlan, etiquetaTipo, PLANES, TIPOS } from "@/lib/tipos";
 
@@ -36,7 +37,7 @@ export default async function Locales() {
             <label className="block text-sm">
               Enlace (opcional)
               <input name="slug" maxLength={60} placeholder="la-espiga" className={estiloCampo} />
-              <span className="text-xs text-zinc-500">Vacío = se genera del nombre. No se puede cambiar después.</span>
+              <span className="text-xs text-muted">Vacío = se genera del nombre. No se puede cambiar después.</span>
             </label>
             <label className="block text-sm">
               Tipo
@@ -57,16 +58,16 @@ export default async function Locales() {
 
       <section aria-labelledby="lista">
         <h2 id="lista" className="text-lg font-semibold">
-          Locales <span className="text-sm font-normal text-zinc-500">({locales.length})</span>
+          Locales <span className="text-sm font-normal text-muted">({locales.length})</span>
         </h2>
-        {locales.length === 0 && <p className="mt-2 text-zinc-600 dark:text-zinc-400">Todavía no hay locales.</p>}
-        <ul className="divide-y divide-zinc-100 dark:divide-zinc-900">
+        {locales.length === 0 && <p className="mt-2 text-muted">Todavía no hay locales.</p>}
+        <ul className="divide-y divide-line">
           {locales.map((l) => (
             <li key={l.id} data-local={l.slug} className="py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-medium leading-tight">{l.nombre}</p>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm text-muted">
                     <Link href={`/${l.slug}`} target="_blank" className="underline">/{l.slug} ↗</Link>
                     {" · "}{etiquetaTipo(l.tipo)} · {l.productos} productos
                   </p>
@@ -82,26 +83,26 @@ export default async function Locales() {
                   >
                     {l.activo ? "Activo" : "Pausado"}
                   </span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800">{etiquetaPlan(l.plan)}</span>
+                  <span className="rounded-full bg-surface px-2 py-0.5">{etiquetaPlan(l.plan)}</span>
                 </div>
               </div>
 
               <p className="mt-1 text-sm">
-                <span className="text-zinc-500">Dueño: </span>
+                <span className="text-muted">Dueño: </span>
                 {l.duenos.length > 0 ? l.duenos.join(", ") : <em>sin vincular</em>}
               </p>
 
               <div className="mt-2">
                 <Link
                   href={`/superadmin/locales/${l.slug}`}
-                  className="inline-block rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+                  className="inline-block rounded-full border border-line px-4 py-2 text-sm font-medium"
                 >
                   Administrar menú →
                 </Link>
               </div>
 
               <details className="mt-3">
-                <summary className="cursor-pointer text-sm text-zinc-600 dark:text-zinc-400">Estado, plan y dueño</summary>
+                <summary className="cursor-pointer text-sm text-muted">Estado, plan y dueño</summary>
                 <div className="mt-3 space-y-5">
                   {l.activo ? (
                     <details>
@@ -125,7 +126,7 @@ export default async function Locales() {
 
                   <FormAccion accion={cambiarPlan} className="flex flex-wrap items-center gap-2">
                     <CampoNegocio id={l.id} />
-                    <select name="plan" defaultValue={l.plan} aria-label="Plan" className={`${estiloCampo} w-40`}>
+                    <select name="plan" defaultValue={l.plan} aria-label="Plan" className={`${estiloCampo} w-40!`}>
                       {PLANES.map((p) => <option key={p.valor} value={p.valor}>{p.etiqueta}</option>)}
                     </select>
                     <Boton variante="suave">Guardar plan</Boton>
@@ -140,11 +141,11 @@ export default async function Locales() {
                         required
                         aria-label="Correo del dueño"
                         placeholder="correo del dueño"
-                        className={`${estiloCampo} w-64`}
+                        className={`${estiloCampo} w-64!`}
                       />
                       <Boton variante="suave">Vincular dueño</Boton>
                     </FormAccion>
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-muted">
                       La cuenta debe existir ya en Supabase (Authentication → Users).
                     </p>
                     {l.duenos.map((correo) => (
