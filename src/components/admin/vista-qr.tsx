@@ -1,15 +1,15 @@
 import { BotonCopiar, BotonImprimir } from "@/components/admin/qr-acciones";
 import { generarQR, urlDelMenu } from "@/lib/qr";
 
-// Pantalla del QR del menú. La usan el dueño (/admin/qr) y el super admin (por local).
+// Sección del QR del menú, dentro de Configuración (dueño y super admin).
 export async function VistaQR({ nombre, slug }: { nombre: string; slug: string }) {
   const url = await urlDelMenu(slug);
   const qr = await generarQR(url);
 
   return (
-    <main className="space-y-6">
+    <section id="qr" aria-labelledby="qr-titulo" className="space-y-6 rounded-2xl border border-line p-4 print:border-0 print:p-0">
       <div className="print:hidden">
-        <h2 className="text-lg font-semibold">QR del menú</h2>
+        <h2 id="qr-titulo" className="text-lg font-semibold">QR del menú</h2>
         <p className="text-sm text-muted">
           Imprímelo y pégalo en el local: el cliente lo escanea con la cámara y ve tu menú.
         </p>
@@ -41,6 +41,6 @@ export async function VistaQR({ nombre, slug }: { nombre: string; slug: string }
         Este QR apunta a <strong>{url}</strong>. Si algún día el enlace cambia (por ejemplo, al pasar a un dominio
         propio), el papel ya impreso seguirá apuntando al anterior.
       </p>
-    </main>
+    </section>
   );
 }

@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { estadoMfa } from "@/lib/mfa";
 import { leerId } from "@/lib/validacion";
-import type { Categoria, Negocio, Producto } from "@/types/menu";
+import type { Negocio } from "@/types/menu";
+import type { CategoriaPanel, ProductoPanel } from "@/types/panel";
 
 export type Rol = "dueno" | "superadmin";
 
@@ -94,7 +95,7 @@ export const cargarLocalPorSlug = cache(async (slug: string) => {
 const COLUMNAS_NEGOCIO =
   "id, slug, nombre, tipo, logo_url, color, telefono_whatsapp, horario, tasa_bs, activo";
 
-export type Panel = { negocio: Negocio; categorias: Categoria[]; productos: Producto[] };
+export type Panel = { negocio: Negocio; categorias: CategoriaPanel[]; productos: ProductoPanel[] };
 
 // Lee el panel de UN local. Quien llama ya comprobó la sesión y eligió el local.
 export async function cargarPanel(negocioId: string): Promise<Panel> {
@@ -106,13 +107,13 @@ export async function cargarPanel(negocioId: string): Promise<Panel> {
     supabase.from("negocios").select(COLUMNAS_NEGOCIO).eq("id", negocioId).single(),
     supabase
       .from("categorias")
-      .select("id, nombre, orden")
+      .select("id, nombre, orden, activa")
       .eq("negocio_id", negocioId)
       .order("orden")
       .order("id"),
     supabase
       .from("productos")
-      .select("id, categoria_id, nombre, descripcion, precio_usd, disponible, foto_url, orden")
+      .select("id, categoria_id, nombre, descripcion, precio_usd, disponible, foto_url, orden, stock")
       .eq("negocio_id", negocioId)
       .order("orden")
       .order("id"),
@@ -124,8 +125,8 @@ export async function cargarPanel(negocioId: string): Promise<Panel> {
 
   return {
     negocio: { ...(negocio.data as Negocio), tasa_bs: Number(negocio.data.tasa_bs) },
-    categorias: categorias.data as Categoria[],
-    productos: (productos.data as Producto[]).map((p) => ({ ...p, precio_usd: Number(p.precio_usd) })),
+    categorias: categorias.data as CategoriaPanel[],
+    productos: (productos.data as ProductoPanel[]).map((p) => ({ ...p, precio_usd: Number(p.precio_usd), stock: p.stock === null ? null : Number(p.stock) })),
   };
 }
 

@@ -14,7 +14,7 @@ export default async function Seguridad() {
   if (mfa.tieneFactor && mfa.nivel !== "aal2") redirect("/login/verificar");
 
   return (
-    <main className="space-y-6">
+    <main className="max-w-2xl space-y-6">
       <div>
         <h2 className="text-lg font-semibold">Verificación en dos pasos</h2>
         <p className="text-sm text-muted">

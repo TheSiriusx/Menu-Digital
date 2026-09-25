@@ -41,6 +41,8 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
         setEscaneando(false);
         setQr(null);
       }
+    } catch {
+      // Sin red o la página se está cerrando: se reintenta en el próximo ciclo, sin dejar un error suelto.
     } finally {
       consultando.current = false;
     }
@@ -59,6 +61,8 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
       } else {
         setQr({ imagen: r.qr ?? null, codigo: r.codigo ?? null });
       }
+    } catch {
+      // Igual: el QR se vuelve a pedir en el próximo ciclo.
     } finally {
       renovando.current = false;
       setCargando(false);
@@ -67,9 +71,12 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
 
   // Estado al abrir y cada pocos segundos mientras la pantalla está a la vista.
   useEffect(() => {
-    void consultar();
+    const primera = setTimeout(() => void consultar(), 0);
     const t = setInterval(() => void consultar(), escaneando ? CADA_CONSULTA_QR_MS : CADA_CONSULTA_MS);
-    return () => clearInterval(t);
+    return () => {
+      clearTimeout(primera);
+      clearInterval(t);
+    };
   }, [consultar, escaneando]);
 
   // Mientras se escanea, el QR se renueva solo.

@@ -40,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# pruebas de navegador y de base de datos (credenciales y capturas locales)
+/pruebas/*.env
+/pruebas/shots/
+/pruebas/__pycache__/
+/pruebas/e2e/node_modules/
+/pruebas/*.log
+/pruebas/*.pid
+/pruebas/logs/

@@ -1,6 +1,7 @@
 import {
   actualizarPrecio,
   actualizarProducto,
+  actualizarStock,
   alternarDisponible,
   borrarProducto,
   moverProducto,
@@ -12,7 +13,7 @@ import { SubirImagen } from "@/components/admin/subir-imagen";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
 import { formatBs, usdToBs } from "@/lib/precios";
-import type { Categoria, Producto } from "@/types/menu";
+import type { CategoriaPanel, ProductoPanel } from "@/types/panel";
 
 function Flecha({ id, negocioId, direccion, deshabilitada }: { id: string; negocioId: string; direccion: "arriba" | "abajo"; deshabilitada: boolean }) {
   return (
@@ -40,9 +41,9 @@ export function ProductoFila({
   primero,
   ultimo,
 }: {
-  producto: Producto;
+  producto: ProductoPanel;
   negocioId: string;
-  categorias: Categoria[];
+  categorias: CategoriaPanel[];
   tasaBs: number;
   primero: boolean;
   ultimo: boolean;
@@ -70,7 +71,7 @@ export function ProductoFila({
       </div>
 
       {/* Línea 2: precio y disponibilidad, lo que se toca a diario */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <FormAccion accion={actualizarPrecio} className="flex items-center gap-1.5">
           <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
@@ -83,6 +84,24 @@ export function ProductoFila({
             className={`${estiloCampo} w-20! px-2.5! py-1.5!`}
           />
           <Boton variante="suave" tamano="compacto">Guardar</Boton>
+        </FormAccion>
+
+        <FormAccion accion={actualizarStock} className="flex items-center gap-1.5">
+          <CampoNegocio id={negocioId} />
+          <input type="hidden" name="id" value={producto.id} />
+          <input
+            name="stock"
+            type="number"
+            min={0}
+            max={1000000}
+            step={1}
+            inputMode="numeric"
+            aria-label={`Stock de ${producto.nombre} (vacío = sin control)`}
+            placeholder="Sin control"
+            defaultValue={producto.stock ?? ""}
+            className={`${estiloCampo} w-32! px-2.5! py-1.5!`}
+          />
+          <Boton variante="suave" tamano="compacto">Stock</Boton>
         </FormAccion>
 
         <form action={alternarDisponible}>

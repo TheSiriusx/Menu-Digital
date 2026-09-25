@@ -129,3 +129,13 @@ export function leerCorreo(datos: FormData, campo: string): string {
   }
   return valor;
 }
+
+// Stock: vacío = sin control (null); si no, un entero entre 0 y 1.000.000.
+export function leerStock(datos: FormData, campo: string): number | null {
+  const texto = bruto(datos, campo).trim();
+  if (texto === "") return null;
+  if (!/^\d{1,7}$/.test(texto) || Number(texto) > 1_000_000) {
+    throw new ErrorValidacion("El stock debe ser un número entero de 0 en adelante, o vacío si no llevas control.");
+  }
+  return Number(texto);
+}

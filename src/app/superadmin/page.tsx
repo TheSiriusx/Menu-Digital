@@ -26,7 +26,7 @@ export default async function Locales() {
   const locales = (data ?? []) as Local[];
 
   return (
-    <main className="space-y-8">
+    <main className="max-w-2xl space-y-8">
       <section aria-labelledby="nuevo">
         <details>
           <summary id="nuevo" className="cursor-pointer text-lg font-semibold">Nuevo local</summary>

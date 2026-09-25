@@ -12,7 +12,7 @@ export default async function SuperadminLayout({ children }: { children: React.R
   const { rol } = await obtenerSesion();
 
   return (
-    <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16">
       <header className="flex flex-wrap items-center gap-2 py-4 print:hidden">
         {rol === "superadmin" && (
           <NavTabs
@@ -28,7 +28,7 @@ export default async function SuperadminLayout({ children }: { children: React.R
           <Boton variante="suave">Salir</Boton>
         </form>
       </header>
-      {children}
+      <div className="max-w-full">{children}</div>
     </div>
   );
 }

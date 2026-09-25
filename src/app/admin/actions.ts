@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requerirNegocio, requerirUsuario } from "@/lib/admin";
+import { esEstado, ETIQUETA_ESTADO } from "@/lib/pedidos-estados";
 import { BUCKET, detectarFormato, MAX_BYTES_IMAGEN, MIME, rutaDesdeUrl, urlPublica } from "@/lib/imagenes";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
@@ -13,6 +14,7 @@ import {
   leerId,
   leerIdOpcional,
   leerPrecioUsd,
+  leerStock,
   leerTasaBs,
   leerTelefono,
   leerTexto,
@@ -417,4 +419,57 @@ export async function borrarProducto(datos: FormData) {
   if (error) fallo("No se pudo borrar el producto", error);
   if (data?.length) await borrarArchivo(supabase, rutaDesdeUrl(previo?.foto_url as string | null, negocioId));
   publicar();
+}
+
+// ---------------------------------------------------------------- stock, categorías visibles y pedidos
+
+export async function actualizarStock(_previo: Estado, datos: FormData): Promise<Estado> {
+  return conValidacion(async () => {
+    const { supabase, negocioId } = await requerirNegocio(datos);
+    const id = leerId(datos, "id");
+    const stock = leerStock(datos, "stock");
+    const { data, error } = await supabase
+      .from("productos")
+      .update({ stock })
+      .eq("id", id)
+      .eq("negocio_id", negocioId)
+      .select("id");
+    if (error) fallo("No se pudo guardar el stock", error);
+    if (!data?.length) throw new ErrorValidacion("No se encontró el producto.");
+    publicar();
+    return { ok: stock === null ? "Sin control de stock." : `Stock guardado: ${stock}.` };
+  });
+}
+
+export async function alternarCategoria(datos: FormData) {
+  const { supabase, negocioId } = await requerirNegocio(datos);
+  const id = leerId(datos, "id");
+  const activa = String(datos.get("activa")) === "true";
+  const { error } = await supabase.from("categorias").update({ activa }).eq("id", id).eq("negocio_id", negocioId);
+  if (error) fallo("No se pudo cambiar la visibilidad de la categoría", error);
+  publicar();
+}
+
+// Cambia el estado de un pedido con la función de la base de datos (la misma máquina de estados que usa el
+// agente). Cancelar devuelve el stock. La base de datos decide quién puede: un dueño con el local pausado no.
+export async function cambiarEstadoPedido(_previo: Estado, datos: FormData): Promise<Estado> {
+  return conValidacion(async () => {
+    const { supabase, negocioId } = await requerirNegocio(datos);
+    const id = leerId(datos, "id");
+    const nuevo = String(datos.get("estado"));
+    if (!esEstado(nuevo)) throw new ErrorValidacion("Estado no válido.");
+
+    const { data: pedido } = await supabase.from("pedidos").select("id").eq("id", id).eq("negocio_id", negocioId).maybeSingle();
+    if (!pedido) throw new ErrorValidacion("No se encontró el pedido.");
+
+    const { error } = await supabase.rpc("cambiar_estado_pedido", { p_pedido: id, p_estado: nuevo });
+    if (error) {
+      if (error.code === "42501") throw new ErrorValidacion("Tu local está pausado: no puedes cambiar pedidos hasta ponerte al día.");
+      if (error.code === "22023") throw new ErrorValidacion("Ese cambio de estado no está permitido.");
+      if (error.code === "P0002") throw new ErrorValidacion("No se encontró el pedido.");
+      fallo("No se pudo cambiar el estado del pedido", error);
+    }
+    publicar();
+    return { ok: `Pedido ${ETIQUETA_ESTADO[nuevo].toLowerCase()}.` };
+  });
 }

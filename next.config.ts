@@ -4,6 +4,18 @@ const nextConfig: NextConfig = {
   // No anunciar la tecnología en cada respuesta.
   poweredByHeader: false,
 
+  // Rutas del panel anterior (marcadores y QR ya compartidos): llevan a su pestaña nueva.
+  async redirects() {
+    return [
+      { source: "/admin/categorias", destination: "/admin/menu", permanent: false },
+      { source: "/admin/ajustes", destination: "/admin/configuracion", permanent: false },
+      { source: "/admin/qr", destination: "/admin/configuracion", permanent: false },
+      { source: "/superadmin/locales/:slug/categorias", destination: "/superadmin/locales/:slug/menu", permanent: false },
+      { source: "/superadmin/locales/:slug/ajustes", destination: "/superadmin/locales/:slug/configuracion", permanent: false },
+      { source: "/superadmin/locales/:slug/qr", destination: "/superadmin/locales/:slug/configuracion", permanent: false },
+    ];
+  },
+
   // Cabeceras de seguridad estáticas. La CSP (que lleva un nonce distinto por petición) la pone
   // src/proxy.ts. HSTS lo añade Vercel.
   async headers() {

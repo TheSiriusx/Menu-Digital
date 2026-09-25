@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cerrarSesion } from "@/app/admin/actions";
-import { NavTabs } from "@/components/admin/nav-tabs";
+import { MarcoPanel, pestanasDe } from "@/components/admin/marco-panel";
 import { Boton } from "@/components/admin/ui";
 import { obtenerSesion } from "@/lib/admin";
 
@@ -12,32 +12,27 @@ export const metadata: Metadata = { title: "Panel", robots: { index: false, foll
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { supabase, negocioId } = await obtenerSesion();
 
-  let slug: string | null = null;
+  let negocio: { slug: string; nombre: string } | null = null;
   if (negocioId) {
-    const { data } = await supabase.from("negocios").select("slug").eq("id", negocioId).single();
-    slug = (data?.slug as string | undefined) ?? null;
+    const { data } = await supabase.from("negocios").select("slug, nombre").eq("id", negocioId).single();
+    negocio = (data as { slug: string; nombre: string } | null) ?? null;
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-      <header className="flex flex-wrap items-center gap-2 py-4 print:hidden">
-        {negocioId && (
-          <NavTabs
-            etiqueta="Panel"
-            pestanas={[
-              { href: "/admin", texto: "Productos", exacto: true },
-              { href: "/admin/categorias", texto: "Categorías" },
-              { href: "/admin/ajustes", texto: "Ajustes" },
-              { href: "/admin/qr", texto: "QR" },
-              ...(slug ? [{ href: `/${slug}`, texto: "Ver mi menú ↗", nuevaPestana: true }] : []),
-            ]}
-          />
-        )}
+    <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16">
+      <header className="flex items-center gap-3 py-4 print:hidden">
+        {negocio && <p className="min-w-0 truncate text-lg font-semibold tracking-tight">{negocio.nombre}</p>}
         <form action={cerrarSesion} className="ml-auto">
           <Boton variante="suave">Salir</Boton>
         </form>
       </header>
-      {children}
+      {negocioId ? (
+        <MarcoPanel etiqueta="Panel" pestanas={pestanasDe("/admin", negocio?.slug ?? null)}>
+          {children}
+        </MarcoPanel>
+      ) : (
+        children
+      )}
     </div>
   );
 }

@@ -1,9 +1,9 @@
-import { VistaProductos } from "@/components/admin/vistas";
+import { PaginaDashboard, type Params } from "@/components/admin/paginas";
 import { cargarLocalPorSlug, cargarPanel } from "@/lib/admin";
 
-export default async function ProductosDelLocal({ params }: { params: Promise<{ slug: string }> }) {
+export default async function Local({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Params> }) {
   const { slug } = await params;
   const local = await cargarLocalPorSlug(slug);
   const panel = await cargarPanel(local.id);
-  return <VistaProductos panel={panel} contexto={{ superadmin: true }} />;
+  return <PaginaDashboard panel={panel} contexto={{ superadmin: true, base: `/superadmin/locales/${local.slug}` }} params={await searchParams} />;
 }

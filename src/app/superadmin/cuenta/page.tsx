@@ -6,7 +6,7 @@ export const metadata = { title: "Super admin — Mi cuenta" };
 export default async function Cuenta() {
   await requerirSuperadmin();
   return (
-    <main>
+    <main className="max-w-2xl">
       <FormularioClave />
     </main>
   );
