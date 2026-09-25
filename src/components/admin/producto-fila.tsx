@@ -1,5 +1,14 @@
-import { actualizarPrecio, actualizarProducto, alternarDisponible, borrarProducto, moverProducto } from "@/app/admin/actions";
+import {
+  actualizarPrecio,
+  actualizarProducto,
+  alternarDisponible,
+  borrarProducto,
+  moverProducto,
+  quitarFotoProducto,
+  subirFotoProducto,
+} from "@/app/admin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
+import { SubirImagen } from "@/components/admin/subir-imagen";
 import { Boton, estiloCampo, FormAccion } from "@/components/admin/ui";
 import { formatBs, usdToBs } from "@/lib/precios";
 import type { Categoria, Producto } from "@/types/menu";
@@ -40,13 +49,23 @@ export function ProductoFila({
   return (
     <li className="py-3" data-producto={producto.nombre}>
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
+          {producto.foto_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={producto.foto_url} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+          ) : (
+            <div aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg font-semibold text-zinc-400 dark:bg-zinc-800">
+              {producto.nombre.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0">
           <p className="font-medium leading-tight">{producto.nombre}</p>
           {tasaBs > 0 && (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {formatBs(usdToBs(producto.precio_usd, tasaBs))}
             </p>
           )}
+          </div>
         </div>
         <div className="flex shrink-0 gap-1">
           <Flecha id={producto.id} negocioId={negocioId} direccion="arriba" deshabilitada={primero} />
@@ -87,6 +106,22 @@ export function ProductoFila({
             {producto.disponible ? "Disponible" : "Agotado"}
           </button>
         </form>
+      </div>
+
+      <div className="mt-2 flex flex-wrap items-start gap-2">
+        <SubirImagen
+          accion={subirFotoProducto}
+          campos={{ negocio: negocioId, id: producto.id }}
+          lado={480}
+          texto={producto.foto_url ? "Cambiar foto" : "Agregar foto"}
+        />
+        {producto.foto_url && (
+          <form action={quitarFotoProducto}>
+            <CampoNegocio id={negocioId} />
+            <input type="hidden" name="id" value={producto.id} />
+            <Boton variante="suave">Quitar foto</Boton>
+          </form>
+        )}
       </div>
 
       <details className="mt-2">

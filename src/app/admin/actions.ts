@@ -1,8 +1,10 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requerirNegocio, requerirUsuario } from "@/lib/admin";
+import { BUCKET, detectarFormato, MAX_BYTES_IMAGEN, MIME, rutaDesdeUrl, urlPublica } from "@/lib/imagenes";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
   conValidacion,
@@ -30,6 +32,113 @@ function fallo(mensaje: string, error: { message: string }): never {
 }
 
 type Cliente = Awaited<ReturnType<typeof requerirNegocio>>["supabase"];
+
+// ---------------------------------------------------------------- imágenes (Storage)
+
+// Borrar el archivo viejo nunca debe hacer fallar la operación: como mucho queda un archivo suelto.
+async function borrarArchivo(supabase: Cliente, ruta: string | null) {
+  if (!ruta) return;
+  const { error } = await supabase.storage.from(BUCKET).remove([ruta]);
+  if (error) console.error("No se pudo borrar el archivo", ruta, error.message);
+}
+
+// Revisa el archivo de verdad (tamaño y formato por los primeros bytes) y lo sube a la carpeta del
+// local con un nombre único. Devuelve la ruta y la URL pública.
+async function subirImagen(supabase: Cliente, negocioId: string, datos: FormData) {
+  const archivo = datos.get("archivo");
+  if (!(archivo instanceof File) || archivo.size === 0) throw new ErrorValidacion("Elige una imagen.");
+  if (archivo.size > MAX_BYTES_IMAGEN) {
+    throw new ErrorValidacion("La imagen es demasiado pesada. Prueba con otra foto.");
+  }
+  const bytes = new Uint8Array(await archivo.arrayBuffer());
+  const formato = detectarFormato(bytes);
+  if (!formato) throw new ErrorValidacion("Ese archivo no es una imagen válida (usa JPG, PNG o WebP).");
+
+  const ruta = `${negocioId}/${randomUUID()}.${formato === "jpeg" ? "jpg" : formato}`;
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(ruta, bytes, { contentType: MIME[formato], cacheControl: "31536000", upsert: false });
+  if (error) fallo("No se pudo subir la imagen", error);
+  return { ruta, url: urlPublica(ruta) };
+}
+
+export async function subirFotoProducto(datos: FormData): Promise<Estado> {
+  return conValidacion(async () => {
+    const { supabase, negocioId } = await requerirNegocio(datos);
+    const id = leerId(datos, "id");
+
+    const { data: previo } = await supabase
+      .from("productos")
+      .select("foto_url")
+      .eq("id", id)
+      .eq("negocio_id", negocioId)
+      .maybeSingle();
+    if (!previo) throw new ErrorValidacion("No se encontró el producto.");
+
+    const { ruta, url } = await subirImagen(supabase, negocioId, datos);
+    const { data, error } = await supabase
+      .from("productos")
+      .update({ foto_url: url })
+      .eq("id", id)
+      .eq("negocio_id", negocioId)
+      .select("id");
+    if (error || !data?.length) {
+      await borrarArchivo(supabase, ruta); // no dejar la imagen nueva huérfana
+      if (error) fallo("No se pudo guardar la foto", error);
+      throw new ErrorValidacion("No se pudo guardar la foto.");
+    }
+    await borrarArchivo(supabase, rutaDesdeUrl(previo.foto_url as string | null, negocioId));
+    publicar();
+    return { ok: "Foto guardada." };
+  });
+}
+
+export async function quitarFotoProducto(datos: FormData) {
+  const { supabase, negocioId } = await requerirNegocio(datos);
+  const id = leerId(datos, "id");
+  const { data: previo } = await supabase
+    .from("productos")
+    .select("foto_url")
+    .eq("id", id)
+    .eq("negocio_id", negocioId)
+    .maybeSingle();
+  const { data, error } = await supabase
+    .from("productos")
+    .update({ foto_url: null })
+    .eq("id", id)
+    .eq("negocio_id", negocioId)
+    .select("id");
+  if (error) fallo("No se pudo quitar la foto", error);
+  if (data?.length) await borrarArchivo(supabase, rutaDesdeUrl(previo?.foto_url as string | null, negocioId));
+  publicar();
+}
+
+export async function subirLogo(datos: FormData): Promise<Estado> {
+  return conValidacion(async () => {
+    const { supabase, negocioId } = await requerirNegocio(datos);
+    const { data: previo } = await supabase.from("negocios").select("logo_url").eq("id", negocioId).maybeSingle();
+
+    const { ruta, url } = await subirImagen(supabase, negocioId, datos);
+    const { data, error } = await supabase.from("negocios").update({ logo_url: url }).eq("id", negocioId).select("id");
+    if (error || !data?.length) {
+      await borrarArchivo(supabase, ruta);
+      if (error) fallo("No se pudo guardar el logo", error);
+      throw new ErrorValidacion("No se pudo guardar el logo.");
+    }
+    await borrarArchivo(supabase, rutaDesdeUrl(previo?.logo_url as string | null, negocioId));
+    publicar();
+    return { ok: "Logo guardado." };
+  });
+}
+
+export async function quitarLogo(datos: FormData) {
+  const { supabase, negocioId } = await requerirNegocio(datos);
+  const { data: previo } = await supabase.from("negocios").select("logo_url").eq("id", negocioId).maybeSingle();
+  const { data, error } = await supabase.from("negocios").update({ logo_url: null }).eq("id", negocioId).select("id");
+  if (error) fallo("No se pudo quitar el logo", error);
+  if (data?.length) await borrarArchivo(supabase, rutaDesdeUrl(previo?.logo_url as string | null, negocioId));
+  publicar();
+}
 type FilaOrden = { id: string; orden: number };
 
 // Intercambia la posición de una fila con su vecina dentro de su grupo. Las posiciones son
@@ -298,7 +407,14 @@ export async function moverProducto(datos: FormData) {
 export async function borrarProducto(datos: FormData) {
   const { supabase, negocioId } = await requerirNegocio(datos);
   const id = leerId(datos, "id");
-  const { error } = await supabase.from("productos").delete().eq("id", id).eq("negocio_id", negocioId);
+  const { data: previo } = await supabase
+    .from("productos")
+    .select("foto_url")
+    .eq("id", id)
+    .eq("negocio_id", negocioId)
+    .maybeSingle();
+  const { data, error } = await supabase.from("productos").delete().eq("id", id).eq("negocio_id", negocioId).select("id");
   if (error) fallo("No se pudo borrar el producto", error);
+  if (data?.length) await borrarArchivo(supabase, rutaDesdeUrl(previo?.foto_url as string | null, negocioId));
   publicar();
 }

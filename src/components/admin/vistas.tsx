@@ -7,10 +7,13 @@ import {
   crearCategoria,
   crearProducto,
   moverCategoria,
+  quitarLogo,
   renombrarCategoria,
+  subirLogo,
 } from "@/app/admin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { ProductoFila } from "@/components/admin/producto-fila";
+import { SubirImagen } from "@/components/admin/subir-imagen";
 import { Boton, estiloCampo, FormAccion } from "@/components/admin/ui";
 import type { Panel } from "@/lib/admin";
 import type { Producto } from "@/types/menu";
@@ -267,6 +270,34 @@ export function VistaAjustes({ panel, contexto }: { panel: Panel; contexto: Cont
       <AvisoPausa panel={panel} contexto={contexto} />
       <div className="space-y-10">
         <Editable panel={panel} contexto={contexto}>
+          <section aria-labelledby="logo" className="mb-10">
+            <h2 id="logo" className="text-lg font-semibold">Logo</h2>
+            <div className="mt-3 flex flex-wrap items-center gap-4">
+              {negocio.logo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={negocio.logo_url} alt="Logo del local" className="h-20 w-20 rounded-full object-cover" />
+              ) : (
+                <div aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-100 text-2xl font-semibold text-zinc-400 dark:bg-zinc-800">
+                  {negocio.nombre.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="flex flex-wrap items-start gap-2">
+                <SubirImagen
+                  accion={subirLogo}
+                  campos={{ negocio: negocio.id }}
+                  lado={256}
+                  texto={negocio.logo_url ? "Cambiar logo" : "Subir logo"}
+                />
+                {negocio.logo_url && (
+                  <form action={quitarLogo}>
+                    <CampoNegocio id={negocio.id} />
+                    <Boton variante="suave">Quitar logo</Boton>
+                  </form>
+                )}
+              </div>
+            </div>
+          </section>
+
           <section aria-labelledby="local">
             <h2 id="local" className="text-lg font-semibold">Datos del local</h2>
             <FormAccion accion={actualizarAjustes} className="mt-3 space-y-3">

@@ -14,7 +14,7 @@ export default async function SuperadminLayout({ children }: { children: React.R
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16">
-      <header className="flex flex-wrap items-center gap-2 py-4">
+      <header className="flex flex-wrap items-center gap-2 py-4 print:hidden">
         {rol === "superadmin" && (
           <nav aria-label="Super admin" className="flex flex-1 flex-wrap gap-2">
             <Link href="/superadmin" className={enlace}>Locales</Link>
