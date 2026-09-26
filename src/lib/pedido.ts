@@ -95,15 +95,19 @@ export function construirMensaje(
   const notas = limpiar(datos.notas, 300);
   if (notas) partes.push(`Notas: ${notas}`);
 
+  // El bloque va en monoespaciado (```): WhatsApp lo muestra como un recuadro de «código», claramente aparte.
   partes.push(
     "",
+    "Código de tu pedido (no lo borres) 👇",
+    "```" +
     construirBloque({
       slug: negocio.slug,
       items: lineas.map((l) => ({ codigo: codigoProducto(l.producto.id), cantidad: l.cantidad })),
       totalUsd: total,
       tasaBs: tasa,
       entrega: datos.entrega,
-    }),
+    }) +
+    "```",
   );
 
   return partes.join("\n");

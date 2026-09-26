@@ -1,6 +1,13 @@
 import puppeteer from "puppeteer-core";
 
+import { execFileSync } from "node:child_process";
 const BASE = "http://localhost:3100";
+// Los datos reales del local (tasa y WhatsApp los cambia el dueño): la prueba los lee en vez de suponerlos.
+const S = decodeURIComponent(new URL("..", import.meta.url).pathname);
+const real = JSON.parse(execFileSync("python3", ["-c", "import sys,json;sys.path.insert(0,sys.argv[1]);from db import sql;print(json.dumps(sql(sys.argv[2])[0]))", S,
+  "select tasa_bs::float8 as tasa, telefono_whatsapp as tel from public.negocios where slug = 'nueva-victoria'"]).toString());
+const bs = (usd) => "Bs " + new Intl.NumberFormat("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.round(Math.round(usd * 100) * real.tasa) / 100);
+const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const resultados = [];
 const ok = (cond, msg) => { resultados.push(cond); console.log((cond ? "OK   " : "FALLA ") + msg); };
 
@@ -39,10 +46,10 @@ ok(agregar === 14, `14 botones "Agregar" (16 productos - 2 agotados) -> ${agrega
 
 await clic("Agregar Pan canilla"); // la primera vez el botón es «Agregar <producto>»; después pasa a «Agregar uno de …»
 await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent.includes("Ver pedido")));
-ok(/^1\s*Ver pedido.*\$0,50.*Bs 25,00/.test(await barra()), `barra tras agregar Pan canilla: "${await barra()}"`);
+ok(new RegExp(`^1\\s*Ver pedido.*\\$0,50.*${esc(bs(0.5))}`).test(await barra()), `barra tras agregar Pan canilla: "${await barra()}"`);
 
 await clic("Agregar uno de Pan canilla");
-ok(/^2\s*Ver pedido.*\$1,00.*Bs 50,00/.test(await barra()), `subir a 2 -> "${await barra()}"`);
+ok(new RegExp(`^2\\s*Ver pedido.*\\$1,00.*${esc(bs(1))}`).test(await barra()), `subir a 2 -> "${await barra()}"`);
 
 await page.reload({ waitUntil: "networkidle0" });
 await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent.includes("Ver pedido")));
@@ -57,7 +64,7 @@ await page.evaluate(() => {
 await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver pedido")).click());
 await page.waitForSelector("dialog[open]");
 ok(true, "el pedido se abre como diálogo");
-ok((await texto("dialog")).includes("$19,00") && (await texto("dialog")).includes("Bs 950,00"), "total del diálogo: 2 x 0,50 + 18 = $19,00 / Bs 950,00");
+ok((await texto("dialog")).includes("$19,00") && (await texto("dialog")).includes(bs(19)), `total del diálogo: 2 x 0,50 + 18 = $19,00 / ${bs(19)}`);
 
 // Con "Entrega a domicilio" aparece la dirección.
 ok((await page.$('dialog input[autocomplete="street-address"]')) === null, "retiro: no se pide dirección");
@@ -73,12 +80,12 @@ await page.type('dialog input[autocomplete="street-address"]', "Calle 1, Casa 2"
 await page.type("dialog textarea", "Sin azúcar");
 await page.evaluate(() => document.querySelector("dialog form").requestSubmit());
 const url = await page.evaluate(() => window.__wa);
-ok(!!url && url.startsWith("https://wa.me/584120000000?text="), "se abre wa.me con el número del local");
+ok(!!url && url.startsWith(`https://wa.me/${real.tel}?text=`), "se abre wa.me con el número del local");
 const msg = url ? decodeURIComponent(url.split("text=")[1]) : "";
 console.log("---------- mensaje que recibiría el local ----------\n" + msg + "\n----------------------------------------------------");
-ok(msg.includes("2 x Pan canilla — $1,00 (Bs 50,00)") && msg.includes("1 x Torta de cumpleaños — $18,00 (Bs 900,00)"), "líneas con USD y Bs");
-ok(/\[\[PEDIDO v1\|negocio=nueva-victoria\|items=[0-9a-f]{8}x2,[0-9a-f]{8}x1\|total=19\.00\|tasa=50\|entrega=domicilio\]\]$/.test(msg.trim()), "el mensaje termina con el bloque estructurado [[PEDIDO v1|…]] (códigos de producto, total, tasa, entrega)");
-ok(msg.includes("*Total: $19,00 (Bs 950,00)*") && msg.includes("Entrega a domicilio: Calle 1, Casa 2") && msg.includes("Notas: Sin azúcar"), "total, entrega y notas");
+ok(msg.includes(`2 x Pan canilla — $1,00 (${bs(1)})`) && msg.includes(`1 x Torta de cumpleaños — $18,00 (${bs(18)})`), "líneas con USD y Bs");
+ok(new RegExp(`Código de tu pedido \\(no lo borres\\) 👇\\n\`\`\`\\[\\[PEDIDO v1\\|negocio=nueva-victoria\\|items=[0-9a-f]{8}x2,[0-9a-f]{8}x1\\|total=19\\.00\\|tasa=${Number(real.tasa.toFixed(4))}\\|entrega=domicilio\\]\\]\`\`\`$`).test(msg.trim()), "el mensaje termina con el código del pedido explicado y en monoespaciado");
+ok(msg.includes(`*Total: $19,00 (${bs(19)})*`) && msg.includes("Entrega a domicilio: Calle 1, Casa 2") && msg.includes("Notas: Sin azúcar"), "total, entrega y notas");
 
 await new Promise((r) => setTimeout(r, 300));
 ok((await barra()) === null, "tras pedir, el carrito queda vacío");

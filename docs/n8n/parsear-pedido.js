@@ -46,7 +46,8 @@ function limpiar(texto, max) {
 function parsearPedido(texto) {
     if (typeof texto !== "string" || texto.length === 0 || texto.length > 4000)
         return fallo("mensaje_invalido");
-    const lineas = texto.replace(/\r\n?/g, "\n").split("\n").map((l) => l.trim());
+    // El menú manda el bloque en monoespaciado de WhatsApp (```…```): esas comillas no forman parte del bloque.
+    const lineas = texto.replace(/\r\n?/g, "\n").split("\n").map((l) => l.trim().replace(/^`{3}/, "").replace(/`{3}$/, "").trim());
     const indices = lineas.flatMap((l, i) => (l.startsWith("[[PEDIDO") ? [i] : []));
     if (indices.length === 0)
         return fallo("sin_bloque");

@@ -31,8 +31,10 @@ const msg = P.construirMensaje(negocio, lineas, { nombre: "Juan Pérez", entrega
 console.log(msg.split("\n").map((l) => "   | " + l).join("\n"));
 ok(msg.includes("2 x Pan canilla — $1,00") && msg.includes("*Total: $19,00"), "sigue siendo legible para el cliente");
 const ultima = msg.split("\n").at(-1);
-ok(ultima === "[[PEDIDO v1|negocio=nueva-victoria|items=a1b2c3d4x2,e5f6a7b8x1|total=19.00|tasa=52.35|entrega=retiro]]", "termina con UNA línea estructurada exacta");
-ok(msg.split("\n").filter((l) => l.startsWith("[[PEDIDO")).length === 1, "un solo bloque");
+ok(ultima === "```[[PEDIDO v1|negocio=nueva-victoria|items=a1b2c3d4x2,e5f6a7b8x1|total=19.00|tasa=52.35|entrega=retiro]]```", "termina con UNA línea estructurada exacta, en monoespaciado");
+ok(msg.split("\n").at(-2) === "Código de tu pedido (no lo borres) 👇", "con una línea que le explica al cliente qué es");
+ok(msg.split("\n").filter((l) => l.includes("[[PEDIDO")).length === 1, "un solo bloque");
+ok(A.parsearPedido("hola\n[[PEDIDO v1|negocio=nueva-victoria|items=a1b2c3d4x2|total=1.00|tasa=50|entrega=retiro]]").ok, "también se lee sin las comillas del monoespaciado (mensajes viejos)");
 
 console.log("--- el lector recupera lo que armó la web ---");
 const r = A.parsearPedido(msg);

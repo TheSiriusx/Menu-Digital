@@ -32,6 +32,15 @@ test("pedido del menú: se registra sin IA, con el total de la base de datos, y 
   assert.match(d, /Juan Pérez \(999000000001\)/);
 });
 
+test("pedido del menú tal como lo manda la web (código explicado y en monoespaciado)", async () => {
+  const m = montar();
+  await llega(m, evento(`Hola, quiero hacer un pedido:\n\nNombre: Bueno\nRetiro en el local\n\nCódigo de tu pedido (no lo borres) 👇\n\`\`\`${BLOQUE()}\`\`\``));
+  const [c] = m.supabase.de("crearPedido");
+  assert.equal(c?.nombre, "Bueno");
+  assert.deepEqual(c?.items, [{ codigo: "aaaa0001", cantidad: 2 }, { codigo: "aaaa0004", cantidad: 1 }]);
+  assert.match(m.evolution.a(CLIENTE), /Recibí tu pedido/);
+});
+
 test("el mismo mensaje dos veces (webhook repetido) se atiende una sola vez", async () => {
   const m = montar();
   await llega(m, evento(BLOQUE(), { id: "REP" }), evento(BLOQUE(), { id: "REP" }));
