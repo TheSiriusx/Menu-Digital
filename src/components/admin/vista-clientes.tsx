@@ -30,7 +30,7 @@ export function VistaClientes({
   return (
     <main>
       <AvisoPausa panel={panel} contexto={contexto} />
-      <Titulo descripcion="Quienes te han hecho pedidos por WhatsApp. Se cuentan los pedidos no cancelados; el total gastado solo suma los confirmados, pagados y entregados.">Clientes</Titulo>
+      <Titulo descripcion="Quienes te han hecho pedidos por WhatsApp. Se cuentan los pedidos no cancelados; el total gastado solo suma los confirmados, pagados, listos y entregados.">Clientes</Titulo>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <nav aria-label="Filtro de clientes" className="flex gap-1.5">

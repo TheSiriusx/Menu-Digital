@@ -33,6 +33,9 @@ if not SOLO_STORAGE:
         ('Café marrón',1.00,true,1),('Café con leche',1.50,true,2),('Jugo natural',1.80,false,3),('Refresco',1.00,true,4),
         ('Pan de jamón',3.50,true,1),('Tequeños x10',6.00,true,2),('Torta de cumpleaños',18.00,true,3)) as v(nombre,precio,disp,orden)
       where p.negocio_id='{NV}' and p.nombre = v.nombre;
+    -- La configuración del asistente vuelve a los valores por defecto (y la cola de avisos se vacía con los pedidos).
+    delete from public.agente_config where negocio_id='{NV}';
+    insert into public.agente_config (negocio_id) values ('{NV}');
     -- Datos de ejemplo de Nueva Victoria (seed.sql; el color es el que tenía el local).
     update public.negocios set nombre='Panadería Nueva Victoria', color='#BDAB64', tasa_bs=50, telefono_whatsapp='584120000000',
       horario='Lunes a sábado 6:00 am – 7:00 pm · Domingos 6:00 am – 1:00 pm', activo=true, logo_url=null, evolution_instance_name=null where id='{NV}';

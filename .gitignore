@@ -49,3 +49,6 @@ next-env.d.ts
 /pruebas/*.log
 /pruebas/*.pid
 /pruebas/logs/
+/agente/_rescate/
+/agente/.env
+/agente/datos/

@@ -139,3 +139,64 @@ export function leerStock(datos: FormData, campo: string): number | null {
   }
   return Number(texto);
 }
+
+// Texto de varias líneas (datos de pago, condiciones): conserva los saltos de línea, recorta espacios.
+export function leerTextoLargo(datos: FormData, campo: string, etiqueta: string, max: number): string {
+  const valor = bruto(datos, campo)
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((l) => l.replace(/[ \t]+/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  if (valor.length > max) throw new ErrorValidacion(`${etiqueta} no puede pasar de ${max} caracteres.`);
+  return valor;
+}
+
+// Entero dentro de un rango. Con `opcional`, vacío = null (p. ej. «sin recordatorio»).
+export function leerEntero(datos: FormData, campo: string, etiqueta: string, min: number, max: number): number;
+export function leerEntero(datos: FormData, campo: string, etiqueta: string, min: number, max: number, opcional: true): number | null;
+export function leerEntero(datos: FormData, campo: string, etiqueta: string, min: number, max: number, opcional = false): number | null {
+  const texto = bruto(datos, campo).trim();
+  if (texto === "" && opcional) return null;
+  if (!/^\d{1,7}$/.test(texto) || Number(texto) < min || Number(texto) > max) {
+    throw new ErrorValidacion(`${etiqueta} debe ser un número entero entre ${min} y ${max}.`);
+  }
+  return Number(texto);
+}
+
+// Importe en dólares opcional (vacío = null).
+export function leerUsdOpcional(datos: FormData, campo: string): number | null {
+  return bruto(datos, campo).trim() === "" ? null : leerPrecioUsd(datos, campo);
+}
+
+// Enlace https (reseñas). Vacío = null.
+export function leerUrlHttps(datos: FormData, campo: string, etiqueta: string): string | null {
+  const valor = bruto(datos, campo).trim();
+  if (valor === "") return null;
+  let url: URL;
+  try {
+    url = new URL(valor);
+  } catch {
+    throw new ErrorValidacion(`${etiqueta}: escribe un enlace completo, que empiece por https://`);
+  }
+  if (url.protocol !== "https:" || valor.length > 300 || /[\s<>"]/.test(valor)) {
+    throw new ErrorValidacion(`${etiqueta}: escribe un enlace completo, que empiece por https://`);
+  }
+  return valor;
+}
+
+// Hora «HH:MM» (24 h, como la entrega un <input type="time">).
+export function leerHora(datos: FormData, campo: string, etiqueta: string): string {
+  const valor = bruto(datos, campo).trim();
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(valor)) throw new ErrorValidacion(`${etiqueta}: hora no válida.`);
+  return valor;
+}
+
+export function leerOpcion<T extends string>(datos: FormData, campo: string, opciones: readonly T[], etiqueta: string): T {
+  const valor = bruto(datos, campo);
+  if (!(opciones as readonly string[]).includes(valor)) throw new ErrorValidacion(`Elige ${etiqueta}.`);
+  return valor as T;
+}
+
+export const marcado = (datos: FormData, campo: string) => bruto(datos, campo) === "on" || bruto(datos, campo) === "true";

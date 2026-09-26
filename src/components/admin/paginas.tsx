@@ -5,7 +5,7 @@ import { VistaConfiguracion, VistaMenu } from "@/components/admin/vistas";
 import type { Contexto } from "@/components/admin/panel-base";
 import type { Panel } from "@/lib/admin";
 import { hoyCaracas } from "@/lib/fechas";
-import { cargarClientes, cargarDashboard, cargarPedidos, leerFiltrosDashboard, leerFiltrosPedidos } from "@/lib/panel-datos";
+import { cargarAsistente, cargarClientes, cargarDashboard, cargarPedidos, leerFiltrosDashboard, leerFiltrosPedidos } from "@/lib/panel-datos";
 
 // Las cinco pantallas con sus datos. Las rutas del dueño (/admin/*) y las del super admin
 // (/superadmin/locales/[slug]/*) son envoltorios de una línea sobre estas.
@@ -35,6 +35,7 @@ export async function PaginaClientes({ panel, contexto, params }: Props & { para
   return <VistaClientes panel={panel} clientes={clientes} soloRecurrentes={soloRecurrentes} anioActual={hoyCaracas().slice(0, 4)} contexto={contexto} />;
 }
 
-export function PaginaConfiguracion({ panel, contexto }: Props) {
-  return <VistaConfiguracion panel={panel} contexto={contexto} />;
+export async function PaginaConfiguracion({ panel, contexto }: Props) {
+  const asistente = await cargarAsistente(panel.negocio.id);
+  return <VistaConfiguracion panel={panel} asistente={asistente} contexto={contexto} />;
 }

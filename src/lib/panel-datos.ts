@@ -1,4 +1,5 @@
 import { crearClienteServidor } from "@/lib/supabase/server";
+import { COLUMNAS_ASISTENTE, normalizarAsistente, type ConfigAsistente } from "@/lib/asistente";
 import {
   esFecha,
   finDiaISO,
@@ -168,4 +169,13 @@ export function leerFiltrosDashboard(params: Params): { vista: VistaVentas; topD
     vista: vista === "semanas" || vista === "meses" ? vista : "dias",
     topDias: (DIAS_TOP as readonly number[]).includes(top) ? top : 30,
   };
+}
+
+// ---------------------------------------------------------------- asistente de WhatsApp
+
+export async function cargarAsistente(negocioId: string): Promise<ConfigAsistente | null> {
+  const supabase = await crearClienteServidor();
+  const { data, error } = await supabase.from("agente_config").select(COLUMNAS_ASISTENTE).eq("negocio_id", negocioId).maybeSingle();
+  if (error) throw new Error(`No se pudo leer la configuración del asistente: ${error.message}`);
+  return data ? normalizarAsistente(data as unknown as Record<string, unknown>) : null;
 }

@@ -1,8 +1,11 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { createContext, startTransition, useActionState, useContext, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import type { Estado } from "@/lib/validacion";
+
+// Envío en curso de un FormAccion con `conservar` (ahí useFormStatus no se entera).
+const EnCurso = createContext(false);
 
 // Botón de envío: se desactiva mientras la acción está en curso.
 export function Boton({
@@ -16,7 +19,9 @@ export function Boton({
   tamano?: "normal" | "compacto";
   className?: string;
 }) {
-  const { pending } = useFormStatus();
+  const { pending: enviando } = useFormStatus();
+  const enCurso = useContext(EnCurso);
+  const pending = enviando || enCurso;
   const estilos = {
     primario: "bg-foreground text-background",
     suave: "border border-line hover:bg-surface",
@@ -34,19 +39,30 @@ export function Boton({
 }
 
 // Formulario con validación en el servidor: muestra el error o la confirmación que devuelva la acción.
+// Con `conservar`, el formulario NO se vacía después de enviarlo (React lo hace por defecto): en formularios de
+// configuración, un error de validación no debe borrar lo que el dueño acaba de escribir.
 export function FormAccion({
   accion,
   children,
   className = "",
+  conservar = false,
 }: {
   accion: (previo: Estado, datos: FormData) => Promise<Estado>;
   children: ReactNode;
   className?: string;
+  conservar?: boolean;
 }) {
-  const [estado, ejecutar] = useActionState(accion, {} as Estado);
+  const [estado, ejecutar, pendiente] = useActionState(accion, {} as Estado);
+  const alEnviar = conservar
+    ? (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const datos = new FormData(e.currentTarget);
+        startTransition(() => ejecutar(datos));
+      }
+    : undefined;
   return (
-    <form action={ejecutar} className={className}>
-      {children}
+    <form action={conservar ? undefined : ejecutar} onSubmit={alEnviar} aria-busy={pendiente || undefined} className={className}>
+      <EnCurso.Provider value={pendiente}>{children}</EnCurso.Provider>
       {estado.error && (
         <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400">
           {estado.error}

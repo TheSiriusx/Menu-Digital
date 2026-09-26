@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { requerirNegocio, requerirUsuario } from "@/lib/admin";
+import { DIAS, NOMBRE_DIA, type Horario } from "@/lib/asistente";
 import { esEstado, ETIQUETA_ESTADO } from "@/lib/pedidos-estados";
 import { BUCKET, detectarFormato, MAX_BYTES_IMAGEN, MIME, rutaDesdeUrl, urlPublica } from "@/lib/imagenes";
 import { crearClienteServidor } from "@/lib/supabase/server";
@@ -11,6 +12,8 @@ import {
   conValidacion,
   ErrorValidacion,
   leerColor,
+  leerEntero,
+  leerHora,
   leerId,
   leerIdOpcional,
   leerPrecioUsd,
@@ -18,6 +21,11 @@ import {
   leerTasaBs,
   leerTelefono,
   leerTexto,
+  leerTextoLargo,
+  leerOpcion,
+  leerUrlHttps,
+  leerUsdOpcional,
+  marcado,
   type Estado,
 } from "@/lib/validacion";
 
@@ -472,4 +480,110 @@ export async function cambiarEstadoPedido(_previo: Estado, datos: FormData): Pro
     publicar();
     return { ok: `Pedido ${ETIQUETA_ESTADO[nuevo].toLowerCase()}.` };
   });
+}
+
+// ---------------------------------------------------------------- asistente de WhatsApp (agente_config, 0011)
+
+const texto = (datos: FormData, campo: string) => String(datos.get(campo) ?? "").trim();
+
+function leerHorario(datos: FormData): Horario {
+  const horario: Horario = {};
+  for (const d of DIAS) {
+    const dia = NOMBRE_DIA[d];
+    if (marcado(datos, `cerrado_${d}`)) {
+      horario[d] = [];
+      continue;
+    }
+    const t1 = { desde: leerHora(datos, `desde_${d}`, dia), hasta: leerHora(datos, `hasta_${d}`, dia) };
+    if (t1.desde >= t1.hasta) throw new ErrorValidacion(`${dia}: la hora de cierre debe ser después de la de apertura.`);
+    const tramos = [t1];
+    if (texto(datos, `desde2_${d}`) || texto(datos, `hasta2_${d}`)) {
+      const t2 = { desde: leerHora(datos, `desde2_${d}`, dia), hasta: leerHora(datos, `hasta2_${d}`, dia) };
+      if (t2.desde >= t2.hasta || t2.desde < t1.hasta) {
+        throw new ErrorValidacion(`${dia}: el segundo horario debe empezar después de que termine el primero.`);
+      }
+      tramos.push(t2);
+    }
+    horario[d] = tramos;
+  }
+  return horario;
+}
+
+function refrescarPanel() {
+  revalidatePath("/admin", "layout");
+  revalidatePath("/superadmin", "layout");
+}
+
+// Guarda una sección de la configuración del asistente. Cada tarjeta del panel manda solo sus campos.
+export async function actualizarAsistente(_previo: Estado, datos: FormData): Promise<Estado> {
+  return conValidacion(async () => {
+    const { supabase, negocioId } = await requerirNegocio(datos);
+    let cambios: Record<string, unknown>;
+    switch (texto(datos, "seccion")) {
+      case "horario":
+        cambios = { horario: leerHorario(datos), acepta_fuera_horario: marcado(datos, "acepta_fuera_horario") };
+        break;
+      case "pagos":
+        cambios = {
+          datos_pago: leerTextoLargo(datos, "datos_pago", "Los datos de pago", 600),
+          pago_momento: leerOpcion(datos, "pago_momento", ["al_registrar", "al_confirmar"] as const, "cuándo enviar los datos de pago"),
+        };
+        break;
+      case "entregas": {
+        const modo = leerOpcion(datos, "delivery_modo", ["retiro", "cotizado", "tarifa"] as const, "cómo entregas los pedidos");
+        const tarifa = leerUsdOpcional(datos, "delivery_tarifa_usd");
+        if (modo === "tarifa" && tarifa === null) throw new ErrorValidacion("Escribe la tarifa del delivery en dólares.");
+        if (tarifa !== null && tarifa > 1000) throw new ErrorValidacion("La tarifa del delivery es demasiado alta.");
+        cambios = {
+          delivery_modo: modo,
+          delivery_tarifa_usd: modo === "tarifa" ? tarifa : null,
+          delivery_texto: leerTextoLargo(datos, "delivery_texto", "Las condiciones de entrega", 300),
+        };
+        break;
+      }
+      case "avisos": {
+        const r1 = leerEntero(datos, "recordatorio_1_min", "El primer recordatorio", 1, 240, true);
+        const r2 = leerEntero(datos, "recordatorio_2_min", "El segundo recordatorio", 1, 240, true);
+        if (r1 !== null && r2 !== null && r2 <= r1) throw new ErrorValidacion("El segundo recordatorio debe ser después del primero.");
+        cambios = {
+          telefono_dueno: leerTelefono(datos, "telefono_dueno"),
+          recordatorio_1_min: r1,
+          recordatorio_2_min: r2,
+          resena_url: leerUrlHttps(datos, "resena_url", "El enlace de reseñas"),
+          resena_espera_min: leerEntero(datos, "resena_espera_min", "La espera antes de pedir la reseña", 10, 2880),
+        };
+        break;
+      }
+      case "avanzado": {
+        const grande = leerUsdOpcional(datos, "pedido_grande_usd");
+        if (grande === null || grande < 1) throw new ErrorValidacion("El monto de pedido grande debe ser de al menos $1.");
+        cambios = {
+          stock_aviso_umbral: leerEntero(datos, "stock_aviso_umbral", "El aviso de pocas unidades", 0, 100),
+          encargo_aviso_horas: leerEntero(datos, "encargo_aviso_horas", "La anticipación de los encargos", 0, 720),
+          pedido_grande_usd: grande,
+          pedido_grande_unidades: leerEntero(datos, "pedido_grande_unidades", "Las unidades de pedido grande", 1, 999),
+        };
+        break;
+      }
+      default:
+        throw new ErrorValidacion("Solicitud no válida. Recarga la página e inténtalo de nuevo.");
+    }
+    const { data, error } = await supabase.from("agente_config").update(cambios).eq("negocio_id", negocioId).select("negocio_id");
+    if (error) fallo("No se pudo guardar la configuración del asistente", error);
+    if (!data?.length) throw new ErrorValidacion("No se pudo guardar la configuración del asistente.");
+    refrescarPanel();
+    return { ok: "Guardado." };
+  });
+}
+
+// Encender o apagar el asistente (también quita una pausa por horas puesta desde WhatsApp).
+export async function alternarAsistente(datos: FormData) {
+  const { supabase, negocioId } = await requerirNegocio(datos);
+  const encender = texto(datos, "encender") === "true";
+  const { error } = await supabase
+    .from("agente_config")
+    .update({ agente_activo: encender, pausado_hasta: null })
+    .eq("negocio_id", negocioId);
+  if (error) fallo("No se pudo cambiar el estado del asistente", error);
+  refrescarPanel();
 }

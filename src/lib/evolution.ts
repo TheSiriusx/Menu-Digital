@@ -6,8 +6,8 @@ import "server-only";
 // Variables de entorno (Vercel, nunca NEXT_PUBLIC_):
 //   EVOLUTION_API_URL      https://evolution.tudominio.com   (https obligatorio; http solo en localhost)
 //   EVOLUTION_API_KEY      clave global de Evolution
-//   N8N_WEBHOOK_URL        webhook de n8n al que Evolution enviará los mensajes (opcional aquí)
-//   N8N_WEBHOOK_SECRET     valor de la cabecera x-webhook-secret que n8n comprobará (opcional)
+//   AGENTE_WEBHOOK_URL     webhook del agente al que Evolution enviará los mensajes (antes N8N_WEBHOOK_URL)
+//   AGENTE_WEBHOOK_SECRET  valor de la cabecera x-webhook-secret que el agente exige (antes N8N_WEBHOOK_SECRET)
 //
 // Los endpoints siguen la documentación de Evolution API v2. Se verifican contra la instancia real.
 // Ningún error devuelve ni registra la clave ni el cuerpo de la respuesta de Evolution.
@@ -72,8 +72,9 @@ function configuracion() {
   return {
     base: url.origin + url.pathname.replace(/\/+$/, ""),
     clave,
-    webhookUrl: process.env.N8N_WEBHOOK_URL?.trim() || null,
-    webhookSecreto: process.env.N8N_WEBHOOK_SECRET?.trim() || null,
+    // El agente de panaderías (carpeta agente/). Se aceptan también los nombres anteriores (N8N_*).
+    webhookUrl: (process.env.AGENTE_WEBHOOK_URL ?? process.env.N8N_WEBHOOK_URL)?.trim() || null,
+    webhookSecreto: (process.env.AGENTE_WEBHOOK_SECRET ?? process.env.N8N_WEBHOOK_SECRET)?.trim() || null,
   };
 }
 
@@ -190,7 +191,7 @@ export async function crearInstancia(nombre: string): Promise<Resultado<null>> {
           webhook: {
             url: cfg.webhookUrl,
             byEvents: false,
-            // El agente (chatbot-multinicho) transcribe audios y mira fotos: necesita el archivo en el propio evento.
+            // El agente transcribe audios y mira fotos: necesita el archivo en el propio evento.
             // Solo mensajes: el estado de la conexión lo consulta esta web directamente.
             base64: true,
             headers: cfg.webhookSecreto ? { "x-webhook-secret": cfg.webhookSecreto } : {},

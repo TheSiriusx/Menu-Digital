@@ -35,7 +35,7 @@ export function VistaDashboard({ panel, datos, contexto }: { panel: Panel; datos
   return (
     <main>
       <AvisoPausa panel={panel} contexto={contexto} />
-      <Titulo descripcion="Cuentan como venta los pedidos confirmados, pagados y entregados. Los días son de hora de Venezuela.">Dashboard</Titulo>
+      <Titulo descripcion="Cuentan como venta los pedidos confirmados, pagados, listos y entregados. Los días son de hora de Venezuela.">Dashboard</Titulo>
 
       {pedidosNuevos > 0 && (
         <Link

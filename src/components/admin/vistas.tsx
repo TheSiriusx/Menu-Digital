@@ -20,6 +20,8 @@ import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
 import { AvisoPausa, Editable, tarjeta, Titulo, type Contexto } from "@/components/admin/panel-base";
 import { VistaQR } from "@/components/admin/vista-qr";
+import { VistaAsistente } from "@/components/admin/vista-asistente";
+import type { ConfigAsistente } from "@/lib/asistente";
 import type { Panel } from "@/lib/admin";
 import { ACENTO_POR_DEFECTO } from "@/lib/color";
 import type { ProductoPanel } from "@/types/panel";
@@ -235,13 +237,13 @@ export function FormularioClave() {
   );
 }
 
-export function VistaConfiguracion({ panel, contexto }: { panel: Panel; contexto: Contexto }) {
+export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Panel; asistente: ConfigAsistente | null; contexto: Contexto }) {
   const { negocio } = panel;
 
   return (
     <main>
       <AvisoPausa panel={panel} contexto={contexto} />
-      <Titulo descripcion="Datos del local, la tasa del día, tu WhatsApp de pedidos y el QR del menú.">Configuración</Titulo>
+      <Titulo descripcion="Datos del local, la tasa del día, tu WhatsApp de pedidos, el QR del menú y el asistente de WhatsApp.">Configuración</Titulo>
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <div className="flex flex-col gap-6 print:hidden">
           <Editable panel={panel} contexto={contexto}>
@@ -345,6 +347,9 @@ export function VistaConfiguracion({ panel, contexto }: { panel: Panel; contexto
 
           <VistaQR nombre={negocio.nombre} slug={negocio.slug} />
         </div>
+      </div>
+      <div className="mt-8 print:hidden">
+        <VistaAsistente panel={panel} config={asistente} contexto={contexto} />
       </div>
     </main>
   );

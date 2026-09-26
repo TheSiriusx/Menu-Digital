@@ -91,6 +91,24 @@ where table_schema = 'public' and table_name in ('pedidos', 'pedido_items', 'cli
   and grantee in ('anon', 'authenticated') and privilege_type in ('INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'TRIGGER', 'REFERENCES')
 
 union all
+-- 9g) Agente de panaderías (0011): sus funciones solo para service_role; la cola de avisos, de nadie más.
+select 'PROBLEMA: función agente_* ejecutable con clave pública o sesión de dueño', p.oid::regprocedure::text
+from pg_proc p
+where p.pronamespace = 'public'::regnamespace
+  and (p.proname like 'agente\_%' or p.proname in ('_pedidos_avisos', '_negocio_crea_agente_config'))
+  and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))
+
+union all
+select 'PROBLEMA: agente_avisos accesible fuera del agente', format('%s (%s)', grantee, privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name = 'agente_avisos' and grantee in ('anon', 'authenticated')
+
+union all
+select 'PROBLEMA: anon con permisos sobre agente_config', format('%s (%s)', grantee, privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name = 'agente_config' and grantee = 'anon'
+
+union all
 -- 9) Super admins sin segundo factor verificado (deberían ser 0 una vez activada la migración 0006).
 select 'AVISO: super admin sin segundo factor verificado', u.email
 from public.perfiles p join auth.users u on u.id = p.id
