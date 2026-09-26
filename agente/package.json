@@ -5,8 +5,8 @@
   "description": "Asistente de WhatsApp para panaderías (Evolution API + OpenRouter + menú digital en Supabase)",
   "engines": { "node": ">=24" },
   "scripts": {
-    "start": "node --disable-warning=ExperimentalWarning src/main.ts",
-    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.ts",
+    "start": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/main.ts",
+    "test": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test test/*.test.ts",
     "check": "tsc -p ."
   }
 }

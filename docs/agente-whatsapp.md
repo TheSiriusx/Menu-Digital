@@ -1,10 +1,9 @@
 # Integración del agente de WhatsApp (n8n + Evolution API)
 
-> **Agente real:** el agente que usa este proyecto es `chatbot-multinicho` (n8n + Evolution + Postgres + Redis, un solo
-> workflow para todos los negocios). Su nicho `panaderia` ya implementa lo de esta guía: lee el mensaje `[[PEDIDO v1|…]]`,
-> llama a `crear_pedido`, avisa al dueño y consulta el menú real. Cómo se conecta y se da de alta cada panadería:
-> `docs/panaderia.md` de ese repositorio (rama `panaderia`). Con esa integración, `N8N_WEBHOOK_URL` es la dirección
-> INTERNA de n8n que ve Evolution dentro de Docker (`http://n8n:5678/webhook/whatsapp`), no una dirección pública.
+> **Agente:** el agente de este proyecto está en [`agente/`](../agente/LEEME.md) (Node + TypeScript, stack Docker propio).
+> Ya implementa todo lo de esta guía (lee `[[PEDIDO v1|…]]`, llama a `crear_pedido`, consulta el menú real, avisa al dueño)
+> y además usa las funciones `agente_*` de la migración 0011 (configuración por local, cola de avisos, cancelar, comandos).
+> Esta guía queda como referencia del contrato con la base de datos, por si otro integrador (p. ej. n8n) lo necesitara.
 
 Cómo se conectan la web, la base de datos (Supabase) y el agente. Todo lo de aquí está cubierto por pruebas
 (`scripts/probar-pedido-agente.mjs` y las de permisos y concurrencia de las migraciones 0007–0009).
