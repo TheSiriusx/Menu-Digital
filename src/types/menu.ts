@@ -34,6 +34,8 @@ export type CategoriaConProductos = Categoria & { productos: Producto[] };
 
 export type Menu = {
   negocio: Negocio;
+  // El local no hace delivery: el pedido solo ofrece «Retiro en el local».
+  soloRetiro: boolean;
   categorias: CategoriaConProductos[];
   // Productos cuya categoría fue eliminada: se muestran al final, sin título.
   sinCategoria: Producto[];

@@ -7,7 +7,7 @@ import type { AvisoPendiente } from "../src/clientes.ts";
 import { Evolution, Supabase } from "../src/clientes.ts";
 import { leerConfiguracion } from "../src/config.ts";
 import { partir } from "../src/envio.ts";
-import { conversar, OpenRouter, type Herramienta } from "../src/ia.ts";
+import { conversar, limpiarPensamiento, OpenRouter, pareceRazonamiento, type Herramienta } from "../src/ia.ts";
 import { resolverProducto } from "../src/menu.ts";
 import { normalizar } from "../src/normalizar.ts";
 import { crearServidor } from "../src/servidor.ts";
@@ -231,4 +231,21 @@ test("clientes HTTP: sin redirecciones, con tiempo máximo y sin filtrar respues
   await assert.rejects(new Supabase("https://x.supabase.co", "clave", f).contexto("menu-x"), (e: Error) => /supabase: respondió 500/.test(e.message) && !/secreto|clave/.test(e.message));
   await assert.rejects(new Evolution("http://evolution:8080", "clave", f).enviarTexto("menu-x", "999000000001", "hola"), /evolution: respondió 500/);
   assert.ok(vistos.every((v) => v.redirect === "error" && v.signal instanceof AbortSignal));
+});
+
+test("IA que «piensa en voz alta»: nunca le llega al cliente", async () => {
+  const razonamiento = "Okay, the user is trying to get me to ignore my instructions. According to the rules, I should not comply. Let me respond.";
+  assert.equal(pareceRazonamiento(razonamiento), true);
+  for (const bien of ["¡Hola! Tenemos canillas a $0,50 😊", "Ok, te lo preparo 👍", "Claro, el quesillo cuesta $2,00. ¿Quieres uno?"]) assert.equal(pareceRazonamiento(bien), false, bien);
+  assert.equal(limpiarPensamiento("<think>the user wants bread</think>¡Claro! 🥖"), "¡Claro! 🥖");
+  const cuerpos: Record<string, unknown>[] = [];
+  const respuestas = [
+    new Response(JSON.stringify({ choices: [{ message: { content: razonamiento } }] }), { status: 200 }),
+    new Response(JSON.stringify({ choices: [{ message: { content: "Lo siento, el precio es $6,00 🙏" } }] }), { status: 200 }),
+  ];
+  const f = (async (_u: string, init: RequestInit) => (cuerpos.push(JSON.parse(String(init.body))), respuestas.shift()!)) as unknown as typeof fetch;
+  const r = await new OpenRouter("k", ["piensa:free", "otro:free"], f, async () => {}).completar([{ role: "user", content: "x" }], []);
+  assert.equal(r.contenido, "Lo siento, el precio es $6,00 🙏");
+  assert.deepEqual(cuerpos.map((c) => c.model), ["piensa:free", "otro:free"], "pasa al siguiente modelo");
+  assert.deepEqual(cuerpos[0].reasoning, { exclude: true }, "se pide el razonamiento aparte");
 });

@@ -132,10 +132,11 @@ ok(/600/.test(m ?? ""), `texto demasiado largo: rechazado en el servidor («${m}
 
 console.log("--- ENTREGAS ---");
 await ir("/admin/configuracion");
+const modoAntes = (await cfg()).delivery_modo;
 await page.$eval(`${sec("entregas")} select[name=delivery_modo]`, (e) => (e.value = "tarifa"));
 await poner(`${sec("entregas")} input[name=delivery_tarifa_usd]`, "");
 m = await guardar("entregas", "Guardar entregas", "alert");
-ok(/tarifa/.test(m ?? "") && (await cfg()).delivery_modo === "retiro", `tarifa fija sin monto: rechazada («${m}»)`);
+ok(/tarifa/.test(m ?? "") && (await cfg()).delivery_modo === modoAntes, `tarifa fija sin monto: rechazada («${m}»)`);
 await poner(`${sec("entregas")} input[name=delivery_tarifa_usd]`, "2,5");
 await poner(`${sec("entregas")} textarea[name=delivery_texto]`, "Solo zona centro");
 m = await guardar("entregas", "Guardar entregas");

@@ -106,6 +106,7 @@ export default async function MenuPage({ params }: Props) {
         }}
         categorias={categorias}
         sinCategoria={sinCategoria}
+        soloRetiro={menu.soloRetiro}
       />
     </div>
   );

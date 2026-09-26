@@ -23,6 +23,17 @@ export interface Modelo {
 
 export class ErrorIA extends Error {}
 
+// Algunos modelos «que piensan» devuelven su razonamiento dentro de la respuesta (en inglés): eso nunca debe
+// llegarle a un cliente. Se quitan los bloques <think> y, si lo que queda parece razonamiento, se descarta.
+export function limpiarPensamiento(texto: string): string {
+  return texto.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/^[\s\S]*<\/think>/i, "").trim();
+}
+
+const INGLES = /\b(the|user|users|should|need|needs|according|rules?|wait|let me|i'll|i will|they|their|maybe|however|so i|first|then)\b/gi;
+export function pareceRazonamiento(texto: string): boolean {
+  return (texto.match(INGLES) ?? []).length >= 4;
+}
+
 type Fetch = typeof fetch;
 
 export class OpenRouter implements Modelo {
@@ -51,7 +62,7 @@ export class OpenRouter implements Modelo {
               "HTTP-Referer": "https://starcklabs.com",
               "X-Title": "Asistente de panaderias",
             },
-            body: JSON.stringify({ model: modelo, messages: mensajes, tools, tool_choice: "auto", temperature: 0.3, max_tokens: 600 }),
+            body: JSON.stringify({ model: modelo, messages: mensajes, tools, tool_choice: "auto", temperature: 0.3, max_tokens: 800, reasoning: { exclude: true } }),
             redirect: "error",
             signal: AbortSignal.timeout(45000),
           });
@@ -70,7 +81,11 @@ export class OpenRouter implements Modelo {
         } | null;
         const m = d?.choices?.[0]?.message;
         const llamadas = (m?.tool_calls ?? []).filter((c) => c?.function?.name);
-        const contenido = typeof m?.content === "string" ? m.content.trim() : "";
+        let contenido = typeof m?.content === "string" ? limpiarPensamiento(m.content) : "";
+        if (contenido && pareceRazonamiento(contenido)) {
+          contenido = "";
+          if (!llamadas.length) break; // este modelo «piensa en voz alta»: se pasa al siguiente
+        }
         if (llamadas.length || contenido) return { contenido: contenido || null, llamadas };
         await this.esperar(1000); // respuesta vacía: reintento
       }

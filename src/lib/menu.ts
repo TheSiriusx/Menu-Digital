@@ -31,9 +31,9 @@ export const getMenuBySlug = cache(async (slug: string): Promise<Menu | null> =>
 
   const tasa_bs = Number(negocio.tasa_bs);
   const base: Negocio = { ...negocio, tasa_bs };
-  if (!negocio.activo) return { negocio: base, categorias: [], sinCategoria: [] };
+  if (!negocio.activo) return { negocio: base, soloRetiro: false, categorias: [], sinCategoria: [] };
 
-  const [cats, prods] = await Promise.all([
+  const [cats, prods, entrega] = await Promise.all([
     supabase
       .from("categorias")
       .select(COLUMNAS_CATEGORIA)
@@ -46,6 +46,8 @@ export const getMenuBySlug = cache(async (slug: string): Promise<Menu | null> =>
       .eq("negocio_id", negocio.id)
       .order("orden")
       .returns<Producto[]>(),
+    // Solo esta columna de la configuración del asistente es pública (0012).
+    supabase.from("agente_config").select("delivery_modo").eq("negocio_id", negocio.id).maybeSingle<{ delivery_modo: string }>(),
   ]);
 
   if (cats.error) throw new Error(`No se pudieron leer las categorías: ${cats.error.message}`);
@@ -56,6 +58,8 @@ export const getMenuBySlug = cache(async (slug: string): Promise<Menu | null> =>
 
   return {
     negocio: base,
+    // Si no se pudo leer, se ofrece domicilio (como siempre): el agente igual valida al recibir el pedido.
+    soloRetiro: entrega.data?.delivery_modo === "retiro",
     categorias: cats.data.map((c) => ({
       ...c,
       productos: productos.filter((p) => p.categoria_id === c.id),

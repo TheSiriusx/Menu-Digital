@@ -19,12 +19,13 @@ type Props = {
   negocio: { slug: string; nombre: string; telefono_whatsapp: string | null; tasa_bs: number };
   categorias: CategoriaConProductos[];
   sinCategoria: Producto[];
+  soloRetiro?: boolean;
 };
 
 const campo =
   "mt-1.5 w-full rounded-xl border border-field bg-surface px-3.5 py-2.5 text-base outline-offset-0 focus-visible:outline-2";
 
-export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
+export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = false }: Props) {
   const { carrito, cambiar, vaciar } = useCarrito(negocio.slug);
   const dialogo = useRef<HTMLDialogElement>(null);
   const [datos, setDatos] = useState<DatosPedido>({
@@ -178,13 +179,13 @@ export function MenuPedido({ negocio, categorias, sinCategoria }: Props) {
 
             <fieldset>
               <legend className="text-sm font-medium">¿Cómo lo recibes?</legend>
-              <div className="mt-1.5 grid grid-cols-2 gap-2">
+              <div className={`mt-1.5 grid gap-2 ${soloRetiro ? "grid-cols-1" : "grid-cols-2"}`}>
                 {(
                   [
                     ["retiro", "Retiro en el local"],
                     ["domicilio", "Entrega a domicilio"],
                   ] as const
-                ).map(([valor, etiqueta]) => (
+                ).filter(([valor]) => !soloRetiro || valor === "retiro").map(([valor, etiqueta]) => (
                   <label
                     key={valor}
                     className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-sm ${

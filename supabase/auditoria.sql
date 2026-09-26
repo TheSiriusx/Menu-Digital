@@ -109,6 +109,12 @@ from information_schema.role_table_grants
 where table_schema = 'public' and table_name = 'agente_config' and grantee = 'anon'
 
 union all
+select 'PROBLEMA: anon puede leer una columna privada de agente_config', column_name
+from information_schema.column_privileges
+where table_schema = 'public' and table_name = 'agente_config' and grantee = 'anon'
+  and (privilege_type <> 'SELECT' or column_name not in ('negocio_id', 'delivery_modo'))
+
+union all
 -- 9) Super admins sin segundo factor verificado (deberían ser 0 una vez activada la migración 0006).
 select 'AVISO: super admin sin segundo factor verificado', u.email
 from public.perfiles p join auth.users u on u.id = p.id

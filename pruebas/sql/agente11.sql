@@ -1,6 +1,6 @@
 -- Pruebas de las migraciones 0010 (estado «listo») y 0011 (agente de panaderías).
 -- Todo corre en UNA transacción que termina con un error a propósito: no queda nada guardado.
--- Uso: python3 pruebas/probar_sql.py pruebas/sql/agente11.sql   (con --con-migraciones si aún no se aplicaron)
+-- Uso: python3 pruebas/probar_sql.py pruebas/sql/agente11.sql   (con --con-migraciones 0012 mientras la 0012 no esté aplicada)
 do $$
 declare
   own uuid := gen_random_uuid(); own2 uuid := gen_random_uuid(); sa uuid := gen_random_uuid();
@@ -36,8 +36,12 @@ begin
 
   for t in select * from (values
     -- ==================== 1) nadie de afuera ve nada del agente
-    ('anon', 'anon: leer agente_config',                       'select * from public.agente_config', 'error'),
+    ('anon', 'anon: leer TODA la agente_config',               'select * from public.agente_config', 'error'),
     ('anon', 'anon: leer agente_avisos',                       'select * from public.agente_avisos', 'error'),
+    ('anon', 'anon: SÍ ve si el local hace delivery (0012)',  'select delivery_modo from public.agente_config where negocio_id = '':nid''', 'val=cotizado'),
+    ('anon', 'anon: NO ve los datos de pago',                  'select datos_pago from public.agente_config', 'error'),
+    ('anon', 'anon: NO ve el teléfono del dueño',              'select telefono_dueno from public.agente_config', 'error'),
+    ('anon', 'anon: no puede cambiar el delivery',             'update public.agente_config set delivery_modo = ''retiro''', 'error'),
     ('anon', 'anon: agente_contexto',                          'select public.agente_contexto(''menu-nueva-victoria'')', 'error'),
     ('anon', 'anon: agente_menu',                              'select public.agente_menu(''menu-nueva-victoria'')', 'error'),
     ('own',  'dueño: leer agente_avisos',                      'select * from public.agente_avisos', 'error'),
