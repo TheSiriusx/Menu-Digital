@@ -190,9 +190,11 @@ export async function crearInstancia(nombre: string): Promise<Resultado<null>> {
           webhook: {
             url: cfg.webhookUrl,
             byEvents: false,
-            base64: false,
+            // El agente (chatbot-multinicho) transcribe audios y mira fotos: necesita el archivo en el propio evento.
+            // Solo mensajes: el estado de la conexión lo consulta esta web directamente.
+            base64: true,
             headers: cfg.webhookSecreto ? { "x-webhook-secret": cfg.webhookSecreto } : {},
-            events: ["MESSAGES_UPSERT", "CONNECTION_UPDATE"],
+            events: ["MESSAGES_UPSERT"],
           },
         }
       : {};

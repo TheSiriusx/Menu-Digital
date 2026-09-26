@@ -65,6 +65,7 @@ const creacion = reg.find((x) => x.ruta === "/instance/create");
 ok(creacion && creacion.apikey === CLAVE_SIMULADA, "la clave viaja en la cabecera apikey");
 ok(creacion.cuerpo.instanceName === "menu-nueva-victoria" && creacion.cuerpo.integration === "WHATSAPP-BAILEYS", "cuerpo de creación: nombre e integración");
 ok(creacion.cuerpo.webhook?.url === "https://n8n.ejemplo.com/webhook/pedidos" && creacion.cuerpo.webhook.headers["x-webhook-secret"] === "secreto-webhook" && creacion.cuerpo.webhook.events.includes("MESSAGES_UPSERT"), "el webhook hacia n8n lleva la URL, el secreto y el evento de mensajes");
+ok(JSON.stringify(creacion.cuerpo.webhook.events) === '["MESSAGES_UPSERT"]' && creacion.cuerpo.webhook.base64 === true && creacion.cuerpo.webhook.byEvents === false, "solo mensajes (sin ruido de conexión), con el archivo de audios y fotos incluido (base64) y una sola URL");
 r = await E.asegurarInstancia("menu-nueva-victoria");
 ok(r.ok && r.valor.creada === false, "asegurar otra vez: la reutiliza, no crea otra");
 ok((await registro()).filter((x) => x.ruta === "/instance/create").length === 1, "solo hubo UNA llamada de creación");
