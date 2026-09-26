@@ -52,3 +52,4 @@ next-env.d.ts
 /agente/_rescate/
 /agente/.env
 /agente/datos/
+/pruebas/foto-real.json

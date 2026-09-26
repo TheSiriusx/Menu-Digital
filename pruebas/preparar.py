@@ -6,6 +6,9 @@ import os, secrets, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from db import sql
 from comun import inscribir_totp
+from foto import tomar
+
+tomar()   # los datos reales de Nueva Victoria, antes de tocar nada
 
 S = os.path.dirname(os.path.abspath(__file__))
 
