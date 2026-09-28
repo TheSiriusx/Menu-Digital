@@ -5,6 +5,7 @@ import { estiloCampo } from "@/components/admin/estilos";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { obtenerSesion } from "@/lib/admin";
 import { estadoMfa } from "@/lib/mfa";
+import { MarcoAcceso } from "@/app/login/marco";
 
 export const metadata: Metadata = { title: "Verificación — Panel", robots: { index: false } };
 
@@ -15,11 +16,8 @@ export default async function Verificar() {
   if (mfa.nivel === "aal2" || !mfa.tieneFactor) redirect("/admin");
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Verificación en dos pasos</h1>
-      <p className="mt-1 text-sm text-muted">Escribe el código de 6 dígitos de tu app autenticadora.</p>
-
-      <FormAccion accion={verificarCodigo} className="mt-6 space-y-4">
+    <MarcoAcceso titulo="Verificación en dos pasos" descripcion="Escribe el código de 6 dígitos de tu app autenticadora.">
+      <FormAccion accion={verificarCodigo} className="space-y-4">
         <label className="block text-sm font-medium">
           Código
           <input
@@ -35,6 +33,6 @@ export default async function Verificar() {
         </label>
         <Boton className="w-full py-3">Verificar</Boton>
       </FormAccion>
-    </main>
+    </MarcoAcceso>
   );
 }

@@ -1,37 +1,53 @@
 @import "tailwindcss";
 
-/* Diseño "limpio y moderno": mucho aire, neutros y un solo color de acento por local (--acento,
-   con su color de texto --sobre-acento calculado para que siempre se lea). */
-:root {
-  color-scheme: light dark;
-  --background: #ffffff;
-  --foreground: #0a0a0b;
-  --surface: #f6f6f7;
-  --muted: #62626b;
-  --line: #e6e6ea;
-  --field: #b9b9c1;
-}
+/* Sistema de diseño «panadería»: paleta cálida clara, Fraunces para títulos y Work Sans para el texto, y un
+   solo color de acento por local (--acento, que elige el dueño). Sobre el acento se escribe con --sobre-acento
+   (blanco o negro, el que más contraste dé) y como texto sobre fondo claro se usa --acento-texto (el acento,
+   oscurecido si hace falta para que se lea). El verde de «disponible» es fijo: es un estado, no la marca. */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0b;
-    --foreground: #f5f5f6;
-    --surface: #151517;
-    --muted: #a0a0a9;
-    --line: #27272b;
-    --field: #4a4a52;
-  }
+/* Solo modo claro (decisión de diseño): las clases dark: de Tailwind no se activan nunca. */
+@custom-variant dark (&:where(.tema-oscuro, .tema-oscuro *));
+
+:root {
+  color-scheme: light;
+  --background: #faf7f2;   /* fondo del menú público */
+  --panel: #f5f1ea;        /* fondo del panel */
+  --card: #ffffff;         /* tarjetas */
+  --surface: #f2ece2;      /* rellenos suaves: chips, campos, miniaturas */
+  --foreground: #24201b;
+  --muted: #776e61;        /* un poco más oscuro que #8A8172 para que el texto pequeño se lea (≥ 4,5:1) */
+  --line: #ece4d8;
+  --field: #e0d6c7;
+  --exito: #4c8b58;
+  --exito-suave: #e2eee0;
+  --peligro: #b3432e;
+  --peligro-suave: #fbeae5;
+  --aviso: #8a6a1e;
+  --aviso-suave: #f2e4c6;
+  /* Acento por defecto (Starck Labs); cada local lo cambia en su menú y su panel. */
+  --acento: #c96a3b;
+  --sobre-acento: #ffffff;
+  --acento-texto: #b35a2e;
+  --acento-suave: color-mix(in srgb, var(--acento) 12%, transparent);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-panel: var(--panel);
+  --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-field: var(--field);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-exito: var(--exito);
+  --color-exito-suave: var(--exito-suave);
+  --color-peligro: var(--peligro);
+  --color-peligro-suave: var(--peligro-suave);
+  --color-aviso: var(--aviso);
+  --color-aviso-suave: var(--aviso-suave);
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-titulo: var(--font-fraunces), Georgia, "Times New Roman", serif;
 }
 
 html {
@@ -53,7 +69,15 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-:focus-visible {
-  outline: 2px solid var(--acento, var(--foreground));
-  outline-offset: 2px;
+/* En la capa base para que las utilidades (outline-none, font-sans…) puedan pisarlas. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--acento, var(--foreground));
+    outline-offset: 2px;
+  }
+
+  h1 {
+    font-family: var(--font-titulo);
+    font-weight: 600;
+  }
 }

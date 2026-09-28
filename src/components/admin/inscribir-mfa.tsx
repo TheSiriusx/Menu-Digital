@@ -18,12 +18,12 @@ export function InscribirMfa() {
           type="button"
           disabled={ocupado}
           onClick={() => empezar(() => iniciar())}
-          className="rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background disabled:opacity-50"
+          className="rounded-[10px] bg-(--acento) px-5 py-3 text-[13px] font-semibold text-(--sobre-acento) disabled:opacity-50"
         >
           {ocupado ? "Preparando…" : "Activar verificación en dos pasos"}
         </button>
         {inscripcion.error && (
-          <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400">
+          <p role="alert" className="mt-2 text-sm text-peligro">
             {inscripcion.error}
           </p>
         )}

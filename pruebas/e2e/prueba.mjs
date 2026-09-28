@@ -7,7 +7,6 @@ const S = decodeURIComponent(new URL("..", import.meta.url).pathname);
 const real = JSON.parse(execFileSync("python3", ["-c", "import sys,json;sys.path.insert(0,sys.argv[1]);from db import sql;print(json.dumps(sql(sys.argv[2])[0]))", S,
   "select tasa_bs::float8 as tasa, telefono_whatsapp as tel from public.negocios where slug = 'nueva-victoria'"]).toString());
 const bs = (usd) => "Bs " + new Intl.NumberFormat("es-VE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.round(Math.round(usd * 100) * real.tasa) / 100);
-const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const resultados = [];
 const ok = (cond, msg) => { resultados.push(cond); console.log((cond ? "OK   " : "FALLA ") + msg); };
 
@@ -27,7 +26,7 @@ await page.evaluateOnNewDocument(() => {
 
 const texto = (sel) => page.$eval(sel, (el) => el.textContent);
 const barra = () => page.evaluate(() => {
-  const b = [...document.querySelectorAll("button")].find((x) => x.textContent.includes("Ver pedido"));
+  const b = [...document.querySelectorAll("button")].find((x) => x.textContent.includes("Ver mi pedido"));
   return b ? b.textContent.replace(/\s+/g, " ") : null;
 });
 const clic = (etiqueta) => page.evaluate((e) => {
@@ -45,15 +44,15 @@ const agregar = await page.$$eval("button", (bs) => bs.filter((b) => (b.getAttri
 ok(agregar === 14, `14 botones "Agregar" (16 productos - 2 agotados) -> ${agregar}`);
 
 await clic("Agregar Pan canilla"); // la primera vez el botón es «Agregar <producto>»; después pasa a «Agregar uno de …»
-await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent.includes("Ver pedido")));
-ok(new RegExp(`^1\\s*Ver pedido.*\\$0,50.*${esc(bs(0.5))}`).test(await barra()), `barra tras agregar Pan canilla: "${await barra()}"`);
+await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent.includes("Ver mi pedido")));
+ok(/^\s*1 artículo\s*Ver mi pedido · \$0,50/.test(await barra()), `barra tras agregar Pan canilla: "${await barra()}"`);
 
 await clic("Agregar uno de Pan canilla");
-ok(new RegExp(`^2\\s*Ver pedido.*\\$1,00.*${esc(bs(1))}`).test(await barra()), `subir a 2 -> "${await barra()}"`);
+ok(/^\s*2 artículos\s*Ver mi pedido · \$1,00/.test(await barra()), `subir a 2 -> "${await barra()}"`);
 
 await page.reload({ waitUntil: "networkidle0" });
-await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent.includes("Ver pedido")));
-ok(/^2\s*Ver pedido/.test(await barra()), "el carrito sobrevive a recargar la página");
+await page.waitForFunction(() => [...document.querySelectorAll("button")].some((b) => b.textContent.includes("Ver mi pedido")));
+ok(/^\s*2 artículos\s*Ver mi pedido/.test(await barra()), "el carrito sobrevive a recargar la página");
 ok(errores.filter((e) => /hydrat/i.test(e)).length === 0, "sin errores de hidratación al recargar con carrito guardado");
 
 // Agrega otro producto y abre el pedido.
@@ -61,7 +60,7 @@ await page.evaluate(() => {
   const li = [...document.querySelectorAll("li")].find((l) => l.textContent.includes("Torta de cumpleaños"));
   [...li.querySelectorAll("button")].find((b) => (b.getAttribute("aria-label") || "").startsWith("Agregar")).click();
 });
-await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver pedido")).click());
+await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver mi pedido")).click());
 await page.waitForSelector("dialog[open]");
 ok(true, "el pedido se abre como diálogo");
 ok((await texto("dialog")).includes("$19,00") && (await texto("dialog")).includes(bs(19)), `total del diálogo: 2 x 0,50 + 18 = $19,00 / ${bs(19)}`);

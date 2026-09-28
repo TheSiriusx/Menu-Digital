@@ -27,9 +27,11 @@ async function sesion() {
   page.on("console", async (m) => {
     if (m.type() !== "error") return;
     const p = await Promise.all(m.args().map((a) => a.evaluate((x) => (x instanceof Error ? (x.stack || x.message) : String(x))).catch(() => m.text())));
-    errores.push(`[${page.url()}] ` + (p.join(" ") || m.text()));
+    errores.push(`[${page.url()}] ${p.join(" ")} | texto=${m.text()} | origen=${JSON.stringify(m.location?.() ?? null)}`);
   });
-  const ir = (r) => page.goto(BASE + r, { waitUntil: "networkidle0" });
+  // Antes de navegar espera a que termine lo que esté en curso (acción del servidor, recarga): cortar una
+  // petición a medias deja en consola un «Error in input stream» que no es de la app.
+  const ir = async (r) => { await page.waitForNetworkIdle?.({ idleTime: 500, timeout: 10000 }).catch(() => {}); return page.goto(BASE + r, { waitUntil: "networkidle0" }); };
   const poner = (sel, v) => page.$eval(sel, (el, x) => { el.value = x; el.dispatchEvent(new Event("input", { bubbles: true })); }, v);
   const clic = (raiz, t) => page.evaluate((r, tx) => { const b = [...document.querySelector(r).querySelectorAll("button")].find((x) => x.textContent.trim() === tx); if (!b) throw new Error("sin botón " + tx); b.click(); }, raiz, t);
   const login = async (c, k, secreto) => { await ir("/login"); await poner("input[name=correo]", c); await poner("input[name=clave]", k); await clic("form", "Entrar"); await page.waitForFunction(() => location.pathname !== "/login", { timeout: 10000 }).catch(() => {}); await page.waitForNetworkIdle?.({ idleTime: 500, timeout: 8000 }).catch(() => {});  await pasoCodigo(page, secreto); };

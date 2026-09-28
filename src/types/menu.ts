@@ -36,6 +36,8 @@ export type Menu = {
   negocio: Negocio;
   // El local no hace delivery: el pedido solo ofrece «Retiro en el local».
   soloRetiro: boolean;
+  // Horario semanal del asistente (null si no se pudo leer): para «Abierto hasta las 7:00 pm».
+  horario: import("@/lib/asistente").Horario | null;
   categorias: CategoriaConProductos[];
   // Productos cuya categoría fue eliminada: se muestran al final, sin título.
   sinCategoria: Producto[];

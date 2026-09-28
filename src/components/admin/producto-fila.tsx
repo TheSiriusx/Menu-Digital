@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { SubirImagen } from "@/components/admin/subir-imagen";
+import { Interruptor } from "@/components/admin/interruptor";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
 import { formatBs, usdToBs } from "@/lib/precios";
@@ -25,7 +26,7 @@ function Flecha({ id, negocioId, direccion, deshabilitada }: { id: string; negoc
         type="submit"
         disabled={deshabilitada}
         aria-label={direccion === "arriba" ? "Subir" : "Bajar"}
-        className="h-8 w-8 rounded-full border border-line text-sm disabled:opacity-30"
+        className="h-[26px] w-[26px] rounded-[7px] border border-line bg-card text-xs text-muted disabled:opacity-30"
       >
         {direccion === "arriba" ? "↑" : "↓"}
       </button>
@@ -49,20 +50,23 @@ export function ProductoFila({
   ultimo: boolean;
 }) {
   return (
-    <li className="py-2.5" data-producto={producto.nombre}>
+    <li className="px-5 py-3" data-producto={producto.nombre}>
       {/* Línea 1: foto, nombre y orden */}
       <div className="flex items-center gap-3">
         {producto.foto_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={producto.foto_url} alt="" className="h-11 w-11 shrink-0 rounded-lg object-cover" />
+          <img src={producto.foto_url} alt="" className="h-11 w-11 shrink-0 rounded-[9px] object-cover" />
         ) : (
-          <div aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-surface font-semibold text-muted">
+          <div aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[9px] bg-surface font-titulo font-semibold text-muted">
             {producto.nombre.charAt(0).toUpperCase()}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium leading-tight">{producto.nombre}</p>
-          {tasaBs > 0 && <p className="text-xs text-muted">{formatBs(usdToBs(producto.precio_usd, tasaBs))}</p>}
+          <p className="truncate text-[13.5px] font-semibold leading-tight">{producto.nombre}</p>
+          <p className="truncate text-xs text-muted">
+            {producto.descripcion ?? ""}
+            {tasaBs > 0 && `${producto.descripcion ? " · " : ""}${formatBs(usdToBs(producto.precio_usd, tasaBs))}`}
+          </p>
         </div>
         <div className="flex shrink-0 gap-1">
           <Flecha id={producto.id} negocioId={negocioId} direccion="arriba" deshabilitada={primero} />
@@ -108,17 +112,7 @@ export function ProductoFila({
           <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
           <input type="hidden" name="disponible" value={String(!producto.disponible)} />
-          <button
-            type="submit"
-            aria-pressed={producto.disponible}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${
-              producto.disponible
-                ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-                : "bg-surface text-muted"
-            }`}
-          >
-            {producto.disponible ? "Disponible" : "Agotado"}
-          </button>
+          <Interruptor encendido={producto.disponible} si="Disponible" no="Agotado" />
         </form>
       </div>
 
@@ -166,7 +160,7 @@ export function ProductoFila({
         </FormAccion>
 
         <details className="mt-3">
-          <summary className="cursor-pointer text-sm text-red-700 dark:text-red-400">Borrar producto</summary>
+          <summary className="cursor-pointer text-sm text-peligro">Borrar producto</summary>
           <form action={borrarProducto} className="mt-2">
             <CampoNegocio id={negocioId} />
             <input type="hidden" name="id" value={producto.id} />

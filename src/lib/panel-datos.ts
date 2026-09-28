@@ -115,6 +115,7 @@ export type DatosDashboard = {
   grano: "day" | "week" | "month";
   masVendidos: ProductoVendido[];
   pedidosNuevos: number;
+  recientes: { id: string; cliente: string; resumen: string; total_usd: number; estado: EstadoPedido; creado: string }[];
 };
 
 const sumar = (filas: VentaPeriodo[]): Totales =>
@@ -129,12 +130,25 @@ export async function cargarDashboard(negocioId: string, vista: VistaVentas, top
   const hoy = hoyCaracas();
   const rango = rangoVista(vista, hoy);
 
-  const [treinta, grafico, top, nuevos] = await Promise.all([
+  const [treinta, grafico, top, nuevos, ultimos] = await Promise.all([
     supabase.rpc("ventas_por_periodo", { p_negocio: negocioId, p_desde: sumarDias(hoy, -29), p_hasta: hoy, p_grano: "day" }),
     supabase.rpc("ventas_por_periodo", { p_negocio: negocioId, p_desde: rango.desde, p_hasta: rango.hasta, p_grano: rango.grano }),
     supabase.rpc("productos_mas_vendidos", { p_negocio: negocioId, p_desde: sumarDias(hoy, -(topDias - 1)), p_hasta: hoy, p_limite: 8 }),
     supabase.from("pedidos").select("id", { count: "exact", head: true }).eq("negocio_id", negocioId).eq("estado", "nuevo"),
+    supabase
+      .from("pedidos")
+      .select("id, cliente_nombre, cliente_telefono, total_usd, estado, created_at")
+      .eq("negocio_id", negocioId)
+      .order("created_at", { ascending: false })
+      .limit(6),
   ]);
+  if (ultimos.error) throw new Error(`No se pudo leer el dashboard: ${ultimos.error.message}`);
+  const idsUltimos = (ultimos.data ?? []).map((p) => p.id as string);
+  const { data: lineasUltimos } = idsUltimos.length
+    ? await supabase.from("pedido_items").select("pedido_id, nombre_producto, cantidad").eq("negocio_id", negocioId).in("pedido_id", idsUltimos)
+    : { data: [] as { pedido_id: string; nombre_producto: string; cantidad: number }[] };
+  const resumen = (id: string) =>
+    (lineasUltimos ?? []).filter((l) => l.pedido_id === id).map((l) => `${l.cantidad} ${String(l.nombre_producto).toLowerCase()}`).join(", ");
   for (const r of [treinta, grafico, top]) if (r.error) throw new Error(`No se pudo leer el dashboard: ${r.error.message}`);
 
   const conversion = (filas: unknown): VentaPeriodo[] =>
@@ -157,6 +171,14 @@ export async function cargarDashboard(negocioId: string, vista: VistaVentas, top
     ),
     masVendidos: ((top.data ?? []) as ProductoVendido[]).map((p) => ({ ...p, unidades: num(p.unidades), total_usd: num(p.total_usd) })),
     pedidosNuevos: nuevos.count ?? 0,
+    recientes: (ultimos.data ?? []).map((p) => ({
+      id: p.id as string,
+      cliente: (p.cliente_nombre as string | null) || (p.cliente_telefono as string),
+      resumen: resumen(p.id as string),
+      total_usd: num(p.total_usd),
+      estado: p.estado as EstadoPedido,
+      creado: p.created_at as string,
+    })),
   };
 }
 

@@ -163,14 +163,14 @@ await dormir(300);
 await P.page.evaluate(() => document.querySelector('button[aria-label="Agregar uno de Pan canilla"]').click());
 await P.page.evaluate(() => document.querySelector('button[aria-label="Agregar Pan sobado"]').click());
 await dormir(300);
-await P.page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver pedido")).click());
+await P.page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver mi pedido")).click());
 await P.page.$eval("dialog input[autocomplete=name]", (i) => { i.value = "María Prueba"; });
 await P.page.$eval("dialog textarea", (t) => { t.value = "Sin azúcar, por favor"; });
 await P.page.evaluate(() => document.querySelector("dialog form").requestSubmit());
 const url = await P.page.evaluate(() => window.__wa);
 const mensajeWA = url ? decodeURIComponent(url.split("text=")[1]) : "";
 console.log(mensajeWA.split("\n").map((l) => "   | " + l).join("\n"));
-const bloque = mensajeWA.split("\n").at(-1);
+const bloque = mensajeWA.split("\n").at(-1).replace(/```/g, ""); // el código va en monoespaciado (entre ```)
 const cod = sql("select left(id::text,8) c, nombre from public.productos where negocio_id=(select id from public.negocios where slug='nueva-victoria') and nombre in ('Pan canilla','Pan sobado') order by nombre");
 const codCanilla = cod.find((x) => x.nombre === "Pan canilla").c, codSobado = cod.find((x) => x.nombre === "Pan sobado").c;
 ok(bloque.startsWith("[[PEDIDO v1|negocio=nueva-victoria|items="), "el mensaje real del navegador termina con el bloque estructurado");

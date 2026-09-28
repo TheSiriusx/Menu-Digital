@@ -36,7 +36,7 @@ if (conjunto === "todo" || conjunto === "publico") {
   await dormir(300);
   await page.evaluate(() => document.querySelector('button[aria-label^="Agregar "]')?.click());
   await foto(page, "menu-con-carrito");
-  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver pedido")).click());
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver mi pedido")).click());
   await foto(page, "pedido");
   await contexto.close();
 }

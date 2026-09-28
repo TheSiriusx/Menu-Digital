@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const boton = "rounded-full border border-line px-4 py-2 text-sm font-medium";
+const boton = "rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface";
 
 export function BotonCopiar({ texto }: { texto: string }) {
   const [copiado, setCopiado] = useState(false);

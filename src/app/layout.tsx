@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Work_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Se descargan en el build y se sirven desde el propio dominio (compatible con la CSP, sin Google en cada visita).
+const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], axes: ["opsz"] });
+const workSans = Work_Sans({ variable: "--font-work-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Starck Labs — Menús",
@@ -25,7 +19,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${workSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

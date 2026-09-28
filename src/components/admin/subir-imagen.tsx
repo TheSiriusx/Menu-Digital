@@ -66,7 +66,7 @@ export function SubirImagen({
   return (
     <div>
       <label
-        className={`inline-block cursor-pointer rounded-full border border-line px-4 py-2 text-sm font-medium ${
+        className={`inline-block cursor-pointer rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface ${
           ocupado ? "opacity-50" : ""
         }`}
       >
@@ -81,12 +81,12 @@ export function SubirImagen({
         />
       </label>
       {mensaje.error && (
-        <p role="alert" className="mt-2 text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="mt-2 text-sm text-peligro">
           {mensaje.error}
         </p>
       )}
       {mensaje.ok && (
-        <p role="status" className="mt-2 text-sm text-green-700 dark:text-green-400">
+        <p role="status" className="mt-2 text-sm text-exito">
           {mensaje.ok}
         </p>
       )}

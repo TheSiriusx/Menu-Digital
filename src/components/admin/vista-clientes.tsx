@@ -6,7 +6,7 @@ import { formatUsd } from "@/lib/precios";
 import type { ClienteResumen } from "@/types/panel";
 
 const chip = (activo: boolean) =>
-  `rounded-full px-3 py-1 text-sm font-medium ${activo ? "bg-foreground text-background" : "border border-line text-muted hover:bg-surface"}`;
+  `rounded-full px-3 py-1 text-sm font-medium ${activo ? "bg-(--acento) text-(--sobre-acento)" : "border border-line text-muted hover:bg-surface"}`;
 
 // Fecha del día de Venezuela a partir del instante ISO.
 const dia = (iso: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Caracas" }).format(new Date(iso));

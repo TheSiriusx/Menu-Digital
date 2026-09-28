@@ -70,7 +70,7 @@ const P = await sesion();
 await pantalla(P, "/nueva-victoria", async (page) => {
   await page.evaluate(() => { document.querySelectorAll('button[aria-label^="Agregar "]:not([aria-label^="Agregar uno"])').forEach((b, i) => i < 2 && b.click()); });
   await dormir(300);
-  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver pedido")).click());
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.textContent.includes("Ver mi pedido")).click());
   await dormir(300);
   const dentro = await page.evaluate(() => !!document.querySelector("dialog[open]"));
   ok(dentro, "el pedido se abre (la hidratación funciona con la CSP)");

@@ -30,7 +30,7 @@ function Estado({ config, negocioId }: { config: ConfigAsistente; negocioId: str
       <span
         data-estado-asistente={encendido ? "encendido" : "apagado"}
         className={`rounded-full px-3 py-1 text-sm font-medium ${
-          encendido ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300" : "bg-surface text-muted"
+          encendido ? "bg-exito-suave text-exito" : "bg-surface text-muted"
         }`}
       >
         {encendido ? "Atendiendo" : enPausa ? `En pausa hasta ${fechaHora(config.pausado_hasta!)}` : "Apagado"}
@@ -81,7 +81,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
             </p>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-2 xl:items-start">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:items-start">
             <Seccion id="horario" titulo="Horario de atención" descripcion="El asistente atiende siempre; el horario sirve para decirle al cliente cuándo preparan su pedido.">
               <FormAccion conservar accion={actualizarAsistente} className="space-y-2">
                 {oculto("horario")}

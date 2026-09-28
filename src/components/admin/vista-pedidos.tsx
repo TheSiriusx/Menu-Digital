@@ -41,7 +41,7 @@ function Detalle({ pedido, negocioId }: { pedido: Pedido; negocioId: string }) {
           {pedido.tasa_bs > 0 && <span className="font-normal text-muted"> · {formatBs(usdToBs(pedido.total_usd, pedido.tasa_bs))}</span>}
         </span>
       </p>
-      <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
+      <dl className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)]">
         <dt className="text-muted">Teléfono</dt>
         <dd>
           <a href={`https://wa.me/${pedido.cliente_telefono}`} target="_blank" rel="noopener noreferrer" className="underline">
@@ -71,7 +71,7 @@ function Detalle({ pedido, negocioId }: { pedido: Pedido; negocioId: string }) {
           {acciones.map((a) =>
             a.peligro ? (
               <details key={a.estado}>
-                <summary className="cursor-pointer rounded-full border border-line px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400">{a.texto}</summary>
+                <summary className="cursor-pointer rounded-[10px] border border-line bg-card px-3 py-1.5 text-[13px] font-semibold text-peligro">{a.texto}</summary>
                 <FormAccion accion={cambiarEstadoPedido} className="mt-2">
                   <CampoNegocio id={negocioId} />
                   <input type="hidden" name="id" value={pedido.id} />
@@ -132,7 +132,7 @@ export function VistaPedidos({
           Hasta
           <input type="date" name="hasta" defaultValue={filtros.hasta ?? ""} className={`${estiloCampo} w-40!`} />
         </label>
-        <button type="submit" className="rounded-full bg-foreground px-4 py-2.5 text-sm font-medium text-background">Filtrar</button>
+        <button type="submit" className="rounded-[10px] bg-(--acento) px-4 py-2.5 text-[13px] font-semibold text-(--sobre-acento)">Filtrar</button>
         {hayFiltros && <Link href={`${contexto.base}/pedidos`} className="py-2.5 text-sm text-muted underline">Quitar filtros</Link>}
       </form>
 
@@ -170,11 +170,11 @@ export function VistaPedidos({
       {paginas > 1 && (
         <nav aria-label="Páginas" className="mt-5 flex items-center justify-between text-sm">
           {filtros.pagina > 1 ? (
-            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina - 1)} rel="prev" className="rounded-full border border-line px-4 py-2">← Anterior</Link>
+            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina - 1)} rel="prev" className="rounded-[10px] border border-line bg-card px-4 py-2 font-semibold hover:bg-surface">← Anterior</Link>
           ) : <span />}
           <span className="text-muted">Página {filtros.pagina} de {paginas}</span>
           {filtros.pagina < paginas ? (
-            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina + 1)} rel="next" className="rounded-full border border-line px-4 py-2">Siguiente →</Link>
+            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina + 1)} rel="next" className="rounded-[10px] border border-line bg-card px-4 py-2 font-semibold hover:bg-surface">Siguiente →</Link>
           ) : <span />}
         </nav>
       )}

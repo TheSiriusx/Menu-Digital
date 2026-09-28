@@ -2,7 +2,7 @@
 #   docker compose build   (desde agente/, el compose ya apunta al contexto correcto)
 FROM node:24-alpine
 WORKDIR /app
-COPY src/lib/pedido-agente.ts src/lib/asistente.ts src/lib/precios.ts src/lib/
+COPY src/lib/pedido-agente.ts src/lib/asistente.ts src/lib/precios.ts src/lib/horario.ts src/lib/
 RUN echo '{"type":"module"}' > src/package.json
 COPY agente/package.json agente/
 COPY agente/src agente/src

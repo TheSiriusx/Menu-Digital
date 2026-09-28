@@ -22,7 +22,7 @@ export function GraficoVentas({ serie, grano, anioActual }: { serie: VentaPeriod
               <svg key={f.periodo} viewBox="0 0 10 100" preserveAspectRatio="none" className="h-full min-w-0 flex-1" aria-hidden="true">
                 <title>{`${etiquetaPeriodo(f.periodo, grano, anioActual)}: ${formatUsd(f.total_usd)} (${f.pedidos} pedidos)`}</title>
                 <rect x="0" y="99" width="10" height="1" className="fill-line" />
-                {alto > 0 && <rect x="0" y={100 - alto} width="10" height={alto} rx="1" className="fill-foreground" />}
+                {alto > 0 && <rect x="0" y={100 - alto} width="10" height={alto} rx="1" className="fill-(--acento)" />}
               </svg>
             );
           })}

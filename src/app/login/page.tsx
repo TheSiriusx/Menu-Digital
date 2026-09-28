@@ -1,36 +1,17 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Boton, FormAccion } from "@/components/admin/ui";
-import { estiloCampo } from "@/components/admin/estilos";
-import { iniciarSesion } from "@/app/login/actions";
+import { FormularioAcceso } from "@/app/login/formulario";
+import { MarcoAcceso } from "@/app/login/marco";
 
-export const metadata: Metadata = { title: "Entrar — Panel", robots: { index: false } };
+export const metadata: Metadata = { title: "Iniciar sesión — Panel", robots: { index: false } };
 
 export default async function Login() {
   // La CSP lleva un nonce distinto por petición: la página debe generarse en cada visita, no en el build.
   await connection();
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Panel del local</h1>
-      <p className="mt-1 text-sm text-muted">Entra para editar tu menú.</p>
-
-      <FormAccion accion={iniciarSesion} className="mt-6 space-y-4">
-        <label className="block text-sm font-medium">
-          Correo
-          <input name="correo" type="email" required autoComplete="username" className={`mt-1 ${estiloCampo}`} />
-        </label>
-        <label className="block text-sm font-medium">
-          Contraseña
-          <input
-            name="clave"
-            type="password"
-            required
-            autoComplete="current-password"
-            className={`mt-1 ${estiloCampo}`}
-          />
-        </label>
-        <Boton className="w-full py-3">Entrar</Boton>
-      </FormAccion>
-    </main>
+    <MarcoAcceso titulo="Inicia sesión en tu panel" descripcion="Accede con el correo y la contraseña que te configuramos.">
+      <FormularioAcceso />
+      <p className="mt-8 text-center text-[13px] text-muted">¿Olvidaste tu contraseña? Escríbele a Starck Labs y te ayudamos.</p>
+    </MarcoAcceso>
   );
 }

@@ -29,10 +29,10 @@ export async function VistaQR({ nombre, slug }: { nombre: string; slug: string }
       <div className="flex flex-wrap justify-center gap-2 print:hidden">
         <BotonCopiar texto={url} />
         <BotonImprimir />
-        <a href={qr.svg} download={`qr-${slug}.svg`} className="rounded-full border border-line px-4 py-2 text-sm font-medium">
+        <a href={qr.svg} download={`qr-${slug}.svg`} className="rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface">
           Descargar SVG
         </a>
-        <a href={qr.png} download={`qr-${slug}.png`} className="rounded-full border border-line px-4 py-2 text-sm font-medium">
+        <a href={qr.png} download={`qr-${slug}.png`} className="rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface">
           Descargar PNG
         </a>
       </div>

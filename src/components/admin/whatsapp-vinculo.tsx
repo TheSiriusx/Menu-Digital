@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { consultarWhatsApp, pedirQR, type EstadoVinculo } from "@/app/admin/whatsapp/actions";
 
 const ESTADOS = {
-  conectado: { texto: "Conectado", clase: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300" },
-  conectando: { texto: "Conectando…", clase: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200" },
-  desconectado: { texto: "Desconectado", clase: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300" },
+  conectado: { texto: "Conectado", clase: "bg-exito-suave text-exito" },
+  conectando: { texto: "Conectando…", clase: "bg-aviso-suave text-aviso" },
+  desconectado: { texto: "Desconectado", clase: "bg-peligro-suave text-peligro" },
   desconocido: { texto: "Estado desconocido", clase: "bg-surface text-muted" },
   sin_instancia: { texto: "Sin cuenta de WhatsApp", clase: "bg-surface text-muted" },
   no_configurado: { texto: "No configurado", clase: "bg-surface text-muted" },
@@ -105,7 +105,7 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
           <button
             type="button"
             onClick={empezar}
-            className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background"
+            className="rounded-[10px] bg-(--acento) px-4 py-2 text-[13px] font-semibold text-(--sobre-acento)"
           >
             {estado === "desconectado" ? "Reescanear WhatsApp" : "Vincular WhatsApp"}
           </button>
@@ -117,7 +117,7 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
               setEscaneando(false);
               setQr(null);
             }}
-            className="rounded-full border border-line px-4 py-2 text-sm font-medium"
+            className="rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface"
           >
             Cancelar
           </button>
@@ -135,7 +135,7 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
         </p>
       )}
       {vinculo?.ok === false && vinculo.error && (
-        <p role="alert" className="mt-3 text-sm text-red-700 dark:text-red-400">
+        <p role="alert" className="mt-3 text-sm text-peligro">
           {vinculo.error}
         </p>
       )}

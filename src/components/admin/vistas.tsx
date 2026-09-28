@@ -20,6 +20,7 @@ import { Boton, FormAccion } from "@/components/admin/ui";
 import { estiloCampo } from "@/components/admin/estilos";
 import { AvisoPausa, Editable, tarjeta, Titulo, type Contexto } from "@/components/admin/panel-base";
 import { VistaQR } from "@/components/admin/vista-qr";
+import { Interruptor } from "@/components/admin/interruptor";
 import { VistaAsistente } from "@/components/admin/vista-asistente";
 import type { ConfigAsistente } from "@/lib/asistente";
 import type { Panel } from "@/lib/admin";
@@ -81,7 +82,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
         Editar menú
       </Titulo>
       <Editable panel={panel} contexto={contexto}>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
           <div className="space-y-6">
             <section aria-labelledby="nuevo" className={tarjeta}>
               <details>
@@ -118,12 +119,15 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
               <h2 id="lista" className="text-lg font-semibold">Productos</h2>
               {grupos.length === 0 && <p className="text-muted">Todavía no hay productos.</p>}
               {grupos.map((g) => (
-                <div key={g.clave} className={tarjeta}>
-                  <h3 className="pb-1 text-base font-semibold">
-                    {g.titulo}
-                    {g.oculta && <span className="ml-2 rounded-full bg-surface px-2 py-0.5 text-xs font-normal text-muted">Oculta en el menú</span>}
-                  </h3>
-                  <ul className="divide-y divide-line">
+                <details key={g.clave} open className="group overflow-hidden rounded-2xl border border-line bg-card">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+                    <h3 className="text-[14.5px] font-semibold">
+                      {g.titulo} <span className="font-medium text-muted">({g.productos.length} {g.productos.length === 1 ? "producto" : "productos"})</span>
+                      {g.oculta && <span className="ml-2 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-muted">Oculta en el menú</span>}
+                    </h3>
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6" /></svg>
+                  </summary>
+                  <ul className="divide-y divide-line border-t border-line">
                     {g.productos.map((p, i) => (
                       <ProductoFila
                         key={p.id}
@@ -136,7 +140,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
                       />
                     ))}
                   </ul>
-                </div>
+                </details>
               ))}
             </section>
           </div>
@@ -173,16 +177,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
                         <CampoNegocio id={negocio.id} />
                         <input type="hidden" name="id" value={c.id} />
                         <input type="hidden" name="activa" value={String(!c.activa)} />
-                        <button
-                          type="submit"
-                          aria-pressed={c.activa}
-                          aria-label={`${c.nombre}: ${c.activa ? "visible en el menú" : "oculta del menú"}`}
-                          className={`rounded-full px-3 py-1.5 text-sm font-medium ${
-                            c.activa ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300" : "bg-surface text-muted"
-                          }`}
-                        >
-                          {c.activa ? "Visible" : "Oculta"}
-                        </button>
+                        <Interruptor encendido={c.activa} si="Visible" no="Oculta" etiqueta={`${c.nombre}: ${c.activa ? "visible en el menú" : "oculta del menú"}`} />
                       </form>
                       <details className="mt-1">
                         <summary className="cursor-pointer text-sm text-muted">Renombrar o borrar</summary>
@@ -193,7 +188,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
                           <Boton>Guardar</Boton>
                         </FormAccion>
                         <details className="mt-3">
-                          <summary className="cursor-pointer text-sm text-red-700 dark:text-red-400">Borrar categoría</summary>
+                          <summary className="cursor-pointer text-sm text-peligro">Borrar categoría</summary>
                           <form action={borrarCategoria} className="mt-2">
                             <CampoNegocio id={negocio.id} />
                             <input type="hidden" name="id" value={c.id} />
@@ -244,7 +239,7 @@ export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Pane
     <main>
       <AvisoPausa panel={panel} contexto={contexto} />
       <Titulo descripcion="Datos del local, la tasa del día, tu WhatsApp de pedidos, el QR del menú y el asistente de WhatsApp.">Configuración</Titulo>
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
         <div className="flex flex-col gap-6 print:hidden">
           <Editable panel={panel} contexto={contexto}>
             <div className="space-y-6">

@@ -38,7 +38,8 @@ begin
     -- ==================== 1) nadie de afuera ve nada del agente
     ('anon', 'anon: leer TODA la agente_config',               'select * from public.agente_config', 'error'),
     ('anon', 'anon: leer agente_avisos',                       'select * from public.agente_avisos', 'error'),
-    ('anon', 'anon: SÍ ve si el local hace delivery (0012)',  'select delivery_modo from public.agente_config where negocio_id = '':nid''', 'val=cotizado'),
+    ('anon', 'anon: SÍ ve si el local hace delivery (0012)',  'select count(*)::text from public.agente_config where negocio_id = '':nid'' and delivery_modo is not null', 'val=1'),
+    ('anon', 'anon: SÍ ve el horario (0012)',                  'select count(*)::text from public.agente_config where negocio_id = '':nid'' and horario ? ''lunes''', 'val=1'),
     ('anon', 'anon: NO ve los datos de pago',                  'select datos_pago from public.agente_config', 'error'),
     ('anon', 'anon: NO ve el teléfono del dueño',              'select telefono_dueno from public.agente_config', 'error'),
     ('anon', 'anon: no puede cambiar el delivery',             'update public.agente_config set delivery_modo = ''retiro''', 'error'),

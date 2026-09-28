@@ -112,7 +112,7 @@ union all
 select 'PROBLEMA: anon puede leer una columna privada de agente_config', column_name
 from information_schema.column_privileges
 where table_schema = 'public' and table_name = 'agente_config' and grantee = 'anon'
-  and (privilege_type <> 'SELECT' or column_name not in ('negocio_id', 'delivery_modo'))
+  and (privilege_type <> 'SELECT' or column_name not in ('negocio_id', 'delivery_modo', 'horario'))
 
 union all
 -- 9) Super admins sin segundo factor verificado (deberían ser 0 una vez activada la migración 0006).

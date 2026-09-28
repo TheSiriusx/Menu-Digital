@@ -9,7 +9,7 @@ export default function Inicio() {
         Menús con pedidos por WhatsApp para panaderías y locales. Si eres cliente de un local, abre el enlace o escanea
         el QR que te dieron.
       </p>
-      <Link href="/login" className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background">
+      <Link href="/login" className="rounded-[10px] bg-(--acento) px-5 py-2.5 text-[13px] font-semibold text-(--sobre-acento)">
         Entrar al panel
       </Link>
     </main>

@@ -1,7 +1,7 @@
 // El dueño puede elegir cualquier color de acento. El texto que va encima (botones, chips)
 // se elige solo entre blanco y negro, el que más contraste dé (WCAG), para que siempre se lea.
 
-export const ACENTO_POR_DEFECTO = "#111111";
+export const ACENTO_POR_DEFECTO = "#C96A3B";
 const COLOR_HEX = /^#[0-9a-fA-F]{6}$/;
 
 export function esColorHex(valor: string | null | undefined): valor is string {
@@ -25,7 +25,28 @@ export function colorSobre(hex: string): "#ffffff" | "#000000" {
   return contraste(hex, "#ffffff") >= contraste(hex, "#000000") ? "#ffffff" : "#000000";
 }
 
-export function acentoDe(color: string | null): { acento: string; sobre: string } {
+// Mezcla dos colores (0 = a, 1 = b).
+function mezclar(a: string, b: string, t: number): string {
+  const c = (hex: string, i: number) => parseInt(hex.slice(i, i + 2), 16);
+  return "#" + [1, 3, 5].map((i) => Math.round(c(a, i) * (1 - t) + c(b, i) * t).toString(16).padStart(2, "0")).join("");
+}
+
+// El acento como TEXTO sobre fondo claro (precios, enlaces): si no llega a 4,5:1, se oscurece hasta que se lea.
+export function textoLegible(hex: string, fondo = "#ffffff"): string {
+  for (let t = 0; t <= 1; t += 0.05) {
+    const c = mezclar(hex, "#24201b", t);
+    if (contraste(c, fondo) >= 4.5) return c;
+  }
+  return "#24201b";
+}
+
+export function acentoDe(color: string | null): { acento: string; sobre: string; texto: string } {
   const acento = esColorHex(color) ? color : ACENTO_POR_DEFECTO;
-  return { acento, sobre: colorSobre(acento) };
+  return { acento, sobre: colorSobre(acento), texto: textoLegible(acento) };
+}
+
+// Variables CSS del acento de un local, para el atributo style de su menú o su panel.
+export function variablesAcento(color: string | null): Record<string, string> {
+  const { acento, sobre, texto } = acentoDe(color);
+  return { "--acento": acento, "--sobre-acento": sobre, "--acento-texto": texto };
 }

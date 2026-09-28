@@ -78,8 +78,8 @@ export default async function Locales() {
                     data-estado
                     className={`rounded-full px-2 py-0.5 ${
                       l.activo
-                        ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-                        : "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+                        ? "bg-exito-suave text-exito"
+                        : "bg-aviso-suave text-aviso"
                     }`}
                   >
                     {l.activo ? "Activo" : "Pausado"}
@@ -100,7 +100,7 @@ export default async function Locales() {
               <div className="mt-2">
                 <Link
                   href={`/superadmin/locales/${l.slug}`}
-                  className="inline-block rounded-full border border-line px-4 py-2 text-sm font-medium"
+                  className="inline-block rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface"
                 >
                   Administrar menú →
                 </Link>
@@ -117,7 +117,7 @@ export default async function Locales() {
                   )}
                   {l.activo ? (
                     <details>
-                      <summary className="cursor-pointer text-sm text-amber-800 dark:text-amber-300">Pausar local (impago)</summary>
+                      <summary className="cursor-pointer text-sm text-aviso">Pausar local (impago)</summary>
                       <form action={cambiarEstado} className="mt-2">
                         <CampoNegocio id={l.id} />
                         <input type="hidden" name="activo" value="false" />

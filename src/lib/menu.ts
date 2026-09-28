@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { supabase } from "@/lib/supabase";
+import type { Horario } from "@/lib/asistente";
 import type { Categoria, Menu, Negocio, Producto } from "@/types/menu";
 
 // Con la clave pública hay que pedir columnas explícitas (no select('*')): ver 0002_rls.sql.
@@ -31,7 +32,7 @@ export const getMenuBySlug = cache(async (slug: string): Promise<Menu | null> =>
 
   const tasa_bs = Number(negocio.tasa_bs);
   const base: Negocio = { ...negocio, tasa_bs };
-  if (!negocio.activo) return { negocio: base, soloRetiro: false, categorias: [], sinCategoria: [] };
+  if (!negocio.activo) return { negocio: base, soloRetiro: false, horario: null, categorias: [], sinCategoria: [] };
 
   const [cats, prods, entrega] = await Promise.all([
     supabase
@@ -46,8 +47,12 @@ export const getMenuBySlug = cache(async (slug: string): Promise<Menu | null> =>
       .eq("negocio_id", negocio.id)
       .order("orden")
       .returns<Producto[]>(),
-    // Solo esta columna de la configuración del asistente es pública (0012).
-    supabase.from("agente_config").select("delivery_modo").eq("negocio_id", negocio.id).maybeSingle<{ delivery_modo: string }>(),
+    // Solo estas columnas de la configuración del asistente son públicas (0012).
+    supabase
+      .from("agente_config")
+      .select("delivery_modo, horario")
+      .eq("negocio_id", negocio.id)
+      .maybeSingle<{ delivery_modo: string; horario: Horario }>(),
   ]);
 
   if (cats.error) throw new Error(`No se pudieron leer las categorías: ${cats.error.message}`);
@@ -60,6 +65,7 @@ export const getMenuBySlug = cache(async (slug: string): Promise<Menu | null> =>
     negocio: base,
     // Si no se pudo leer, se ofrece domicilio (como siempre): el agente igual valida al recibir el pedido.
     soloRetiro: entrega.data?.delivery_modo === "retiro",
+    horario: entrega.data?.horario ?? null,
     categorias: cats.data.map((c) => ({
       ...c,
       productos: productos.filter((p) => p.categoria_id === c.id),

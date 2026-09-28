@@ -2,7 +2,9 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MenuPedido } from "@/components/menu-pedido";
-import { acentoDe } from "@/lib/color";
+import { TabsCategorias } from "@/components/tabs-categorias";
+import { variablesAcento } from "@/lib/color";
+import { estadoLocal } from "@/lib/horario";
 import { getMenuBySlug } from "@/lib/menu";
 import { formatBs } from "@/lib/precios";
 
@@ -25,15 +27,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title, description, openGraph: { title, description, type: "website" } };
 }
 
-function Inicial({ nombre, className }: { nombre: string; className: string }) {
-  return (
+function Insignia({ nombre, logo }: { nombre: string; logo: string | null }) {
+  return logo ? (
+    // Los logos se reducen a 256 px al subirlos (ver subir-imagen.tsx).
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={logo} alt="" width={44} height={44} className="h-11 w-11 shrink-0 rounded-full object-cover" />
+  ) : (
     <div
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center bg-[color-mix(in_oklab,var(--acento)_14%,var(--surface))] font-semibold text-[color-mix(in_oklab,var(--acento)_60%,var(--muted))] ${className}`}
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-(--acento) font-titulo text-base font-semibold text-(--sobre-acento)"
     >
-      {nombre.charAt(0).toUpperCase()}
+      {iniciales(nombre)}
     </div>
   );
+}
+
+// «Panadería Nueva Victoria» -> «NV» (sin palabras genéricas del rubro).
+function iniciales(nombre: string): string {
+  const palabras = nombre.split(/\s+/).filter((p) => p && !/^(panader[ií]a|pasteler[ií]a|caf[eé]|la|el|los|las|de|del)$/i.test(p));
+  return (palabras.length ? palabras : nombre.split(/\s+/)).slice(0, 2).map((p) => p.charAt(0).toUpperCase()).join("");
 }
 
 export default async function MenuPage({ params }: Props) {
@@ -42,59 +54,45 @@ export default async function MenuPage({ params }: Props) {
   if (!menu) notFound();
 
   const { negocio, categorias, sinCategoria } = menu;
-  const { acento, sobre } = acentoDe(negocio.color);
-  const estilo = { "--acento": acento, "--sobre-acento": sobre } as CSSProperties;
+  const estilo = variablesAcento(negocio.color) as CSSProperties;
 
   if (!negocio.activo) {
     return (
       <main style={estilo} className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-20 text-center">
-        <Inicial nombre={negocio.nombre} className="h-16 w-16 rounded-2xl text-2xl" />
-        <h1 className="text-2xl font-semibold tracking-tight">{negocio.nombre}</h1>
+        <Insignia nombre={negocio.nombre} logo={negocio.logo_url} />
+        <h1 className="text-2xl leading-tight">{negocio.nombre}</h1>
         <p className="max-w-xs text-muted">Menú temporalmente no disponible. Vuelve a intentarlo más tarde.</p>
       </main>
     );
   }
 
   const categoriasConProductos = categorias.filter((c) => c.productos.length > 0);
+  const estado = menu.horario ? estadoLocal(menu.horario) : null;
 
   return (
-    <div style={estilo} className="mx-auto w-full max-w-3xl flex-1">
-      <header className="bg-[color-mix(in_oklab,var(--acento)_7%,var(--background))] px-4 pt-10 pb-6 sm:rounded-b-3xl">
-        <div className="flex items-center gap-4">
-          {negocio.logo_url ? (
-            // Los logos se reducen a 256 px al subirlos (ver subir-imagen.tsx).
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={negocio.logo_url} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-2xl object-cover" />
-          ) : (
-            <Inicial nombre={negocio.nombre} className="h-16 w-16 rounded-2xl text-2xl" />
-          )}
+    <div style={estilo} className="mx-auto w-full max-w-xl flex-1">
+      <header className="px-5 pt-7 pb-3.5">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold leading-tight tracking-tight">{negocio.nombre}</h1>
-            {negocio.horario && <p className="mt-1 text-sm text-muted">{negocio.horario}</p>}
+            <h1 className="text-[22px] leading-tight">{negocio.nombre}</h1>
+            {estado ? (
+              <p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted">
+                <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${estado.abierto ? "bg-exito" : "bg-muted"}`} />
+                {estado.texto}
+              </p>
+            ) : (
+              negocio.horario && <p className="mt-1.5 text-[13px] text-muted">{negocio.horario}</p>
+            )}
           </div>
+          <Insignia nombre={negocio.nombre} logo={negocio.logo_url} />
         </div>
         {negocio.tasa_bs > 0 && (
-          <p className="mt-4 inline-block rounded-full border border-line bg-background px-3 py-1 text-xs font-medium text-muted tabular-nums">
-            Tasa del día: {formatBs(negocio.tasa_bs)} por $1
-          </p>
+          <p className="mt-3 text-xs text-muted tabular-nums">Tasa del día: {formatBs(negocio.tasa_bs)} por $1</p>
         )}
       </header>
 
       {categoriasConProductos.length > 1 && (
-        <nav
-          aria-label="Categorías"
-          className="sticky top-0 z-10 flex gap-2 overflow-x-auto border-b border-line bg-background/90 px-4 py-3 backdrop-blur [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {categoriasConProductos.map((c) => (
-            <a
-              key={c.id}
-              href={`#cat-${c.id}`}
-              className="shrink-0 rounded-full bg-surface px-4 py-1.5 text-sm font-medium"
-            >
-              {c.nombre}
-            </a>
-          ))}
-        </nav>
+        <TabsCategorias categorias={categoriasConProductos.map((c) => ({ id: c.id, nombre: c.nombre }))} />
       )}
 
       <MenuPedido

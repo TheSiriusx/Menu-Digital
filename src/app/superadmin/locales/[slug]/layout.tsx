@@ -15,9 +15,12 @@ export default async function LayoutLocal({
 
   return (
     <>
-      <div className="mb-4 rounded-lg bg-surface p-3 text-sm print:hidden">
-        Administrando: <strong>{local.nombre}</strong>{" "}
-        <span className="text-muted">({local.activo ? "activo" : "pausado"})</span>
+      <div className="mb-4 flex flex-wrap items-center gap-2 text-sm print:hidden">
+        <span className="text-muted">Administrando:</span>
+        <strong className="font-titulo text-base">{local.nombre}</strong>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${local.activo ? "bg-exito-suave text-exito" : "bg-aviso-suave text-aviso"}`}>
+          {local.activo ? "activo" : "pausado"}
+        </span>
       </div>
       <MarcoPanel etiqueta="Local" pestanas={pestanasDe(base, local.slug)}>
         {children}

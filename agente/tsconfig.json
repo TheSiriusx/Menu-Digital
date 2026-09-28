@@ -13,5 +13,5 @@
     "types": ["node"],
     "typeRoots": ["../node_modules/@types"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "../src/lib/pedido-agente.ts", "../src/lib/asistente.ts", "../src/lib/precios.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts", "../src/lib/pedido-agente.ts", "../src/lib/asistente.ts", "../src/lib/precios.ts", "../src/lib/horario.ts"]
 }

@@ -45,6 +45,11 @@ const mensaje = async (raiz, tipo) => {
   return page.evaluate((r, t) => document.querySelector(`${r} [role=${t}]`)?.textContent ?? null, raiz, tipo);
 };
 const nombresPanel = () => page.$$eval("li[data-producto]", (l) => l.map((x) => x.dataset.producto));
+// Productos del grupo «Panes», en orden (el orden de las categorías depende de los datos reales).
+const nombresPanes = () => page.$$eval("section[aria-labelledby=lista] details", (ds) => {
+  const d = ds.find((x) => x.querySelector("h3")?.textContent.startsWith("Panes"));
+  return d ? [...d.querySelectorAll("li[data-producto]")].map((x) => x.dataset.producto) : [];
+});
 const enLogin = async (correo, clave) => {
   await ir("/login");
   await poner("input[name=correo]", correo);
@@ -131,8 +136,8 @@ await page.$eval("section[aria-labelledby=nuevo] select[name=categoria]", (s) =>
 await clicBoton("section[aria-labelledby=nuevo]", "Agregar");
 ok((await mensaje("section[aria-labelledby=nuevo]", "status")) === "Producto agregado.", "producto agregado");
 await ir("/admin/menu");
-let nombres = await nombresPanel();
-ok(nombres.indexOf("Producto E2E") === 4, `queda al final de Panes (posición ${nombres.indexOf("Producto E2E") + 1} de 16+1)`);
+let nombres = await nombresPanes();
+ok(nombres.at(-1) === "Producto E2E", `queda al final de Panes (${nombres.join(", ")})`);
 ok(txt(filaPub(await publico(), "Producto E2E")).includes("$2,50"), "aparece en el menú público con $2,50");
 
 await abrir("section[aria-labelledby=nuevo]", "Agregar producto");
@@ -143,11 +148,11 @@ ok(await page.$eval("section[aria-labelledby=nuevo] input[name=nombre]", (i) => 
 
 await clicBoton(li("Producto E2E"), "Subir");
 await dormir(1500);
-nombres = await nombresPanel();
-ok(nombres.indexOf("Producto E2E") === 3, "↑ sube el producto una posición");
+nombres = await nombresPanes();
+ok(nombres.at(-2) === "Producto E2E", "↑ sube el producto una posición");
 await clicBoton(li("Producto E2E"), "Bajar");
 await dormir(1500);
-ok((await nombresPanel()).indexOf("Producto E2E") === 4, "↓ lo vuelve a bajar");
+ok((await nombresPanes()).at(-1) === "Producto E2E", "↓ lo vuelve a bajar");
 const primeroPan = li("Pan canilla");
 ok(await page.$eval(`${primeroPan} button[aria-label=Subir]`, (b) => b.disabled), "el primero de una categoría no puede subir");
 
@@ -196,7 +201,7 @@ await ir("/admin/menu");
 nombres = await nombresPanel();
 ok(["Café marrón", "Café con leche", "Jugo natural", "Refresco"].every((n) => nombres.includes(n)), "borrar 'Bebidas': sus 4 productos siguen en el panel");
 const titulos = await page.$$eval("section[aria-labelledby=lista] h3", (h3) => h3.map((x) => x.textContent));
-ok(titulos.at(-1) === "Sin categoría", `aparecen bajo "Sin categoría" (${titulos.join(" | ")})`);
+ok(titulos.at(-1)?.startsWith("Sin categoría"), `aparecen bajo "Sin categoría" (${titulos.join(" | ")})`);
 h = await publico();
 ok(h.includes("Café marrón") && !txt(h).includes("Bebidas"), "el menú público los sigue mostrando, sin la categoría");
 

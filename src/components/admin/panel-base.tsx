@@ -5,12 +5,12 @@ import type { Panel } from "@/lib/admin";
 // `superadmin` solo cambia los avisos y permisos; `base` es la ruta raíz del panel para armar enlaces.
 export type Contexto = { superadmin: boolean; base: string };
 
-export const tarjeta = "rounded-2xl border border-line p-4";
+export const tarjeta = "rounded-2xl border border-line bg-card p-5";
 
 export function AvisoPausa({ panel, contexto }: { panel: Panel; contexto: Contexto }) {
   if (panel.negocio.activo) return null;
   return (
-    <p role="status" className="mb-6 rounded-lg bg-amber-100 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+    <p role="status" className="mb-6 rounded-xl bg-aviso-suave p-3 text-sm text-aviso">
       {contexto.superadmin
         ? "Este local está pausado: los clientes no ven su menú. Tú puedes seguir editándolo."
         : "Tu menú está pausado y los clientes no lo ven. Puedes ver tus datos, pero no editarlos hasta ponerte al día. Contacta a Starck Labs."}
@@ -32,9 +32,9 @@ export function Editable({ panel, contexto, children }: { panel: Panel; contexto
 
 export function Titulo({ children, descripcion }: { children: ReactNode; descripcion?: string }) {
   return (
-    <div className="mb-5 print:hidden">
-      <h1 className="text-2xl font-semibold tracking-tight">{children}</h1>
-      {descripcion && <p className="mt-1 text-sm text-muted">{descripcion}</p>}
+    <div className="mb-6 print:hidden">
+      <h1 className="text-[26px] leading-tight">{children}</h1>
+      {descripcion && <p className="mt-1.5 text-[13.5px] text-muted">{descripcion}</p>}
     </div>
   );
 }
