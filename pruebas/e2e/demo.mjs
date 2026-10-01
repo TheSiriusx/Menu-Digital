@@ -5,7 +5,7 @@ import { execFileSync } from "node:child_process";
 
 const S = decodeURIComponent(new URL("..", import.meta.url).pathname);
 const env = Object.fromEntries(readFileSync(S + "e2e4.env", "utf8").trim().split("\n").map((l) => l.split(/=(.*)/s).slice(0, 2)));
-const L = Object.fromEntries(readFileSync("/home/thesirius/Documentos/Menu digital/.env.local", "utf8").split("\n").filter((l) => l.includes("=") && !l.startsWith("#")).map((l) => l.split(/=(.*)/s).slice(0, 2)));
+const L = Object.fromEntries(readFileSync(decodeURIComponent(new URL("../../.env.local", import.meta.url).pathname), "utf8").split("\n").filter((l) => l.includes("=") && !l.startsWith("#")).map((l) => l.split(/=(.*)/s).slice(0, 2)));
 const sql = (q) => JSON.parse(execFileSync("python3", ["-c", "import sys,json;sys.path.insert(0,sys.argv[1]);from db import sql;print(json.dumps(sql(sys.argv[2])))", S, q]).toString());
 
 const browser = await puppeteer.connect({ browserWSEndpoint: "ws://127.0.0.1:9222/session", protocol: "webDriverBiDi" });

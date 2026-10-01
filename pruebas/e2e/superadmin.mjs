@@ -116,7 +116,7 @@ ok(m && m.includes("minúsculas"), `slug con formato inválido: "${m}"`);
 console.log("--- VINCULAR DUEÑO ---");
 await a.ir("/superadmin");
 await a.abrir(LI, "Estado, plan y dueño");
-await a.poner(`${LI} input[type=email]`, "nadie-existe@starcklabs.test");
+await a.poner(`${LI} input[type=email]`, "nadie-existe@pidelo.test");
 await a.clic(LI, "Vincular dueño");
 m = await a.mensaje(LI, "alert");
 ok(m && m.includes("No existe una cuenta"), `correo inexistente: "${m}"`);

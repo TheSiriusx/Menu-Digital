@@ -1,8 +1,8 @@
 {
-  "name": "agente-panaderias",
+  "name": "pidelo-agente",
   "private": true,
   "type": "module",
-  "description": "Asistente de WhatsApp para panaderías (Evolution API + OpenRouter + menú digital en Supabase)",
+  "description": "Pídelo: asistente de WhatsApp para panaderías (Evolution API + OpenRouter + Supabase)",
   "engines": { "node": ">=24" },
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/main.ts",

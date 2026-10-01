@@ -24,6 +24,11 @@ async function sesion() {
   const contexto = await browser.createBrowserContext();
   const page = await contexto.newPage();
   page.on("pageerror", (e) => errores.push(String(e)));
+  // Los Error que React manda a console.error no se pueden leer desde aquí (llegan como «undefined»): se pasan a texto.
+  await page.evaluateOnNewDocument(() => {
+    const original = console.error.bind(console);
+    console.error = (...a) => original(...a.map((x) => (x instanceof Error ? `${x.name}: ${x.message}\n${x.stack ?? ""}` : x)));
+  });
   page.on("console", async (m) => {
     if (m.type() !== "error") return;
     const p = await Promise.all(m.args().map((a) => a.evaluate((x) => (x instanceof Error ? (x.stack || x.message) : String(x))).catch(() => m.text())));
@@ -241,7 +246,9 @@ const S2 = await sesion();
 await S2.ir("/admin/qr");
 ok(new URL(S2.page.url()).pathname === "/login", "sin sesión, /admin/qr pide login");
 
-const graves = errores.filter((e) => !/favicon|Failed to load resource|__cf_bm/i.test(e));
+// «Error in input stream»: la prueba recargó otra página con una petición a medias (la página vieja ya se cierra,
+// nadie lo ve). Lo que sí importa de un corte —sin pantalla rota ni CSP— lo comprueba red.mjs.
+const graves = errores.filter((e) => !/favicon|Failed to load resource|__cf_bm|Error in input stream/i.test(e));
 ok(graves.length === 0, `sin errores de consola (${graves.length})`);
 if (graves.length) console.log(graves.join("\n"));
 for (const s of [O, A, S2]) await s.contexto.close().catch(() => {});

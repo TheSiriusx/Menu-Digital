@@ -1,5 +1,5 @@
 #!/bin/bash
-# Conecta una panadería del menú digital con WhatsApp: crea su instancia en Evolution (menu-{slug}),
+# Conecta una panadería de Pídelo con WhatsApp: crea su instancia en Evolution (menu-{slug}),
 # apunta sus mensajes al agente y la registra en el local (Supabase). Se puede volver a correr.
 #   ./scripts/instancia.sh nueva-victoria        y luego   ./scripts/qr.sh menu-nueva-victoria
 set -eu

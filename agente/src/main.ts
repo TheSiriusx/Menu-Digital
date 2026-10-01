@@ -22,7 +22,7 @@ const deps: Deps = {
   supabase,
   evolution: new Evolution(cfg.evolutionUrl, cfg.evolutionClave),
   whisper: cfg.whisperUrl ? new Whisper(cfg.whisperUrl) : null,
-  modelo: new OpenRouter(cfg.openrouterClave, cfg.modelos),
+  modelo: new OpenRouter(cfg.openrouterClave, cfg.modelos, fetch, undefined, cfg.menuUrlBase),
   menus: new Menus(supabase),
   contextos: new Contextos(supabase),
   ahora: () => new Date(),

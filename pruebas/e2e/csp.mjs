@@ -44,7 +44,9 @@ async function sesion() {
   });
   const consola = [];
   page.on("console", (m) => { if (m.type() === "error" && /content.security|CSP|Refused/i.test(m.text())) consola.push(m.text()); });
-  page.on("pageerror", (e) => { if (!/__cf_bm/.test(String(e))) consola.push("pageerror: " + e); }); // cookie de Cloudflare de las imágenes de Supabase: ajena a la app
+  // __cf_bm: cookie de Cloudflare de las imágenes de Supabase (ajena a la app). «Error in input stream»: la prueba
+  // recargó con una petición a medias; lo que importa de un corte lo comprueba red.mjs.
+  page.on("pageerror", (e) => { if (!/__cf_bm|Error in input stream/.test(String(e))) consola.push("pageerror: " + e); });
   return { contexto, page, consola };
 }
 const violaciones = (page) => page.evaluate(() => window.__csp);

@@ -1,6 +1,6 @@
 # Agente de WhatsApp para panaderías
 
-Atiende el WhatsApp de cada panadería del menú digital: responde dudas con el menú real, toma pedidos (desde el
+Asistente de WhatsApp de **Pídelo** (by Starck Labs). Atiende el WhatsApp de cada panadería: responde dudas con el menú real, toma pedidos (desde el
 menú web y por conversación), avisa al cliente cuando cambia el estado de su pedido y le pasa a una persona lo que
 no debe resolver solo. Todo lo del negocio (menú, pedidos, clientes, configuración) vive en Supabase; el agente
 solo guarda las conversaciones (SQLite, en el volumen `agente_datos`).

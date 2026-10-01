@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { cerrarSesion } from "@/app/admin/actions";
 import { NavPanel, type PestanaPanel } from "@/components/admin/nav-panel";
 import { variablesAcento } from "@/lib/color";
+import { EMPRESA, MARCA } from "@/lib/marca";
 
 // Armazón del panel (dueño y super admin): barra lateral blanca con la marca, las pestañas y el estado;
 // en el celular, la barra va arriba y las pestañas en fila. El contenido va sobre el fondo cálido del panel.
@@ -47,6 +48,9 @@ export function Cascaron({
       </aside>
       <div className="min-w-0 flex-1 px-4 pt-6 pb-16 lg:px-10 lg:pt-9">
         <div className="mx-auto max-w-[1180px]">{children}</div>
+        <footer className="mx-auto mt-14 max-w-[1180px] text-center text-xs text-muted print:hidden">
+          <span className="font-titulo font-semibold text-foreground">{MARCA}</span> by {EMPRESA}
+        </footer>
       </div>
     </div>
   );
@@ -66,7 +70,7 @@ export function EstadoMenu({ activo }: { activo: boolean }) {
         <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${activo ? "bg-exito" : "bg-aviso"}`} />
         {activo ? "Menú activo" : "Menú pausado"}
       </p>
-      <p className="mt-1 text-[11.5px] text-muted">{activo ? "Tus clientes lo están viendo" : "Contacta a Starck Labs"}</p>
+      <p className="mt-1 text-[11.5px] text-muted">{activo ? "Tus clientes lo están viendo" : `Contacta a ${EMPRESA}`}</p>
     </div>
   );
 }

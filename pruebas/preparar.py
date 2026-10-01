@@ -13,7 +13,7 @@ tomar()   # los datos reales de Nueva Victoria, antes de tocar nada
 S = os.path.dirname(os.path.abspath(__file__))
 
 def crear(sufijo):
-    correo = f"e2e-{sufijo}-{secrets.token_hex(3)}@starcklabs.test"
+    correo = f"e2e-{sufijo}-{secrets.token_hex(3)}@pidelo.test"
     clave = secrets.token_urlsafe(24)
     sql(f"""
     do $$ declare uid uuid := gen_random_uuid(); begin

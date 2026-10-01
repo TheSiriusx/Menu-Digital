@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cascaron } from "@/components/admin/marco-panel";
 import { obtenerSesion } from "@/lib/admin";
+import { MARCA } from "@/lib/marca";
 
 export const metadata: Metadata = { title: "Super admin", robots: { index: false, follow: false } };
 
@@ -12,7 +13,7 @@ export default async function SuperadminLayout({ children }: { children: React.R
 
   return (
     <Cascaron
-      marca={{ nombre: "Starck Labs", subtitulo: "Super admin" }}
+      marca={{ nombre: MARCA, subtitulo: "Super admin" }}
       etiqueta="Super admin"
       pestanas={[
         { href: "/superadmin", texto: "Locales", icono: "locales", exacto: true },

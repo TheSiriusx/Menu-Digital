@@ -5,8 +5,11 @@ import { MenuPedido } from "@/components/menu-pedido";
 import { TabsCategorias } from "@/components/tabs-categorias";
 import { variablesAcento } from "@/lib/color";
 import { estadoLocal } from "@/lib/horario";
+import { MARCA } from "@/lib/marca";
 import { getMenuBySlug } from "@/lib/menu";
 import { formatBs } from "@/lib/precios";
+import { urlDelMenu } from "@/lib/qr";
+import { urlBase } from "@/lib/sitio";
 
 // Los cambios de precio/tasa hechos en la base de datos se ven en la página en ≤ 60 s.
 export const revalidate = 60;
@@ -19,12 +22,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!menu) return { title: "Menú no encontrado" };
 
   const { nombre } = menu.negocio;
-  const title = `${nombre} — Menú`;
+  const title = `${nombre} | ${MARCA}`;
   const description = menu.negocio.activo
     ? `Mira el menú de ${nombre} y haz tu pedido por WhatsApp.`
     : `El menú de ${nombre} no está disponible por ahora.`;
 
-  return { title, description, openGraph: { title, description, type: "website" } };
+  return {
+    title: { absolute: title },
+    description,
+    openGraph: { title, description, siteName: MARCA, url: await urlDelMenu(slug), type: "website", locale: "es_VE" },
+  };
+}
+
+// «Hecho con Pídelo», con enlace a la portada (dirección pública configurada).
+async function PieMarca() {
+  const base = await urlBase();
+  return (
+    <footer className="mt-12 text-center text-xs text-muted">
+      <a href={base} className="rounded-sm px-1 py-0.5 hover:text-foreground">
+        Hecho con <span className="font-titulo font-semibold text-foreground">{MARCA}</span>
+      </a>
+    </footer>
+  );
 }
 
 function Insignia({ nombre, logo }: { nombre: string; logo: string | null }) {
@@ -62,6 +81,7 @@ export default async function MenuPage({ params }: Props) {
         <Insignia nombre={negocio.nombre} logo={negocio.logo_url} />
         <h1 className="text-2xl leading-tight">{negocio.nombre}</h1>
         <p className="max-w-xs text-muted">Menú temporalmente no disponible. Vuelve a intentarlo más tarde.</p>
+        <PieMarca />
       </main>
     );
   }
@@ -105,6 +125,7 @@ export default async function MenuPage({ params }: Props) {
         categorias={categorias}
         sinCategoria={sinCategoria}
         soloRetiro={menu.soloRetiro}
+        pie={<PieMarca />}
       />
     </div>
   );

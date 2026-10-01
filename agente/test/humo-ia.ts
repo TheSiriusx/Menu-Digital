@@ -25,7 +25,7 @@ const deps: Deps = {
   ahora: () => new Date(),
   dormir: async () => {},
   log: (m, x) => console.log("   [log]", m, JSON.stringify(x ?? {})),
-  menuUrlBase: "https://menu-digital-inky-ten.vercel.app",
+  menuUrlBase: (E.NEXT_PUBLIC_BASE_URL?.trim() || E.MENU_URL?.trim())?.replace(/\/+$/, "") || null,
 };
 const cola = crearCola(deps, 10);
 let n = 0;

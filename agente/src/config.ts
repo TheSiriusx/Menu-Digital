@@ -11,7 +11,7 @@ export type Configuracion = {
   modelos: string[];
   whisperUrl: string | null;
   bd: string;                   // archivo SQLite
-  menuUrlBase: string | null;   // para mandar el enlace del menú
+  menuUrlBase: string | null;   // dirección pública de Pídelo: enlace del menú y origen ante OpenRouter
   esperaMs: number;             // cuánto se esperan los mensajes seguidos
   avisosCadaMs: number;
 };
@@ -41,7 +41,7 @@ export function leerConfiguracion(env: NodeJS.ProcessEnv = process.env): Configu
     modelos: (env.OPENROUTER_MODELOS?.split(",").map((m) => m.trim()).filter(Boolean)) || MODELOS_POR_DEFECTO,
     whisperUrl: env.WHISPER_URL?.trim() || null,
     bd: env.AGENTE_BD?.trim() || "datos/agente.db",
-    menuUrlBase: env.MENU_URL?.trim() || null,
+    menuUrlBase: (env.NEXT_PUBLIC_BASE_URL?.trim() || env.MENU_URL?.trim())?.replace(/\/+$/, "") || null,
     esperaMs: Number(env.AGENTE_ESPERA_MS ?? 4000),
     avisosCadaMs: Number(env.AGENTE_AVISOS_MS ?? 10000),
   };

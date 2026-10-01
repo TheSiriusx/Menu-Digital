@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Cantidad, Miniatura, ProductoCard } from "@/components/producto-card";
 import {
   cantidadTotal,
@@ -20,12 +20,13 @@ type Props = {
   categorias: CategoriaConProductos[];
   sinCategoria: Producto[];
   soloRetiro?: boolean;
+  pie?: ReactNode; // va al final de la lista, por encima de la barra del pedido
 };
 
 const campo =
   "mt-1.5 w-full rounded-[10px] border border-line bg-background px-3.5 py-2.5 text-base font-normal outline-offset-0 focus-visible:border-(--acento) focus-visible:outline-2";
 
-export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = false }: Props) {
+export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = false, pie }: Props) {
   const { carrito, cambiar, vaciar } = useCarrito(negocio.slug);
   const dialogo = useRef<HTMLDialogElement>(null);
   const [datos, setDatos] = useState<DatosPedido>({
@@ -94,6 +95,7 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
         ))}
 
         {sinCategoria.length > 0 && <section className="pt-6">{lista(sinCategoria)}</section>}
+        {pie}
       </main>
 
       {lineas.length > 0 && (

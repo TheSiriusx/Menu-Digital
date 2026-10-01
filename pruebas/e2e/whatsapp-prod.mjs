@@ -3,7 +3,9 @@ import puppeteer from "puppeteer-core";
 import { leerEnv } from "./comun.mjs";
 const S = decodeURIComponent(new URL("..", import.meta.url).pathname);
 const env = leerEnv(S + "e2e4.env");
-const BASE = "https://menu-digital-inky-ten.vercel.app";
+// Dirección de producción: la misma NEXT_PUBLIC_BASE_URL de Vercel (NEXT_PUBLIC_BASE_URL=https://… node whatsapp-prod.mjs).
+const BASE = (process.env.NEXT_PUBLIC_BASE_URL ?? "").trim().replace(/\/+$/, "");
+if (!BASE) throw new Error("Falta NEXT_PUBLIC_BASE_URL con la dirección de producción");
 const b = await puppeteer.connect({ browserWSEndpoint: "ws://127.0.0.1:9222/session", protocol: "webDriverBiDi", defaultViewport: { width: 1280, height: 900 } });
 const c = await b.createBrowserContext(); const p = await c.newPage();
 await p.goto(BASE + "/login", { waitUntil: "networkidle0" });

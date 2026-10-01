@@ -41,11 +41,19 @@ export class OpenRouter implements Modelo {
   private modelos: string[];
   private f: Fetch;
   private esperar: (ms: number) => Promise<void>;
-  constructor(clave: string, modelos: string[], f: Fetch = fetch, esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))) {
+  private origen: string | null;
+  constructor(
+    clave: string,
+    modelos: string[],
+    f: Fetch = fetch,
+    esperar = (ms: number) => new Promise<void>((r) => setTimeout(r, ms)),
+    origen: string | null = null, // dirección pública de Pídelo (OpenRouter la muestra como origen de las llamadas)
+  ) {
     this.clave = clave;
     this.modelos = modelos;
     this.f = f;
     this.esperar = esperar;
+    this.origen = origen;
   }
 
   async completar(mensajes: MensajeIA[], herramientas: Herramienta[]): Promise<RespuestaModelo> {
@@ -59,8 +67,8 @@ export class OpenRouter implements Modelo {
             headers: {
               Authorization: `Bearer ${this.clave}`,
               "Content-Type": "application/json",
-              "HTTP-Referer": "https://starcklabs.com",
-              "X-Title": "Asistente de panaderias",
+              ...(this.origen ? { "HTTP-Referer": this.origen } : {}),
+              "X-Title": "Pidelo - asistente de WhatsApp",
             },
             body: JSON.stringify({ model: modelo, messages: mensajes, tools, tool_choice: "auto", temperature: 0.3, max_tokens: 800, reasoning: { exclude: true } }),
             redirect: "error",

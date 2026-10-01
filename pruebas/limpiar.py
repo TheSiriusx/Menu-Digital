@@ -19,7 +19,7 @@ if not SOLO_STORAGE:
     else:
         print("AVISO: no hay foto de los datos reales (pruebas/foto-real.json): Nueva Victoria no se restauró.")
     if not SIN_USUARIOS:
-        sql("delete from auth.users where email like 'e2e-%@starcklabs.test'")
+        sql("delete from auth.users where email like 'e2e-%@pidelo.test'")
 
 # Storage: el borrado directo por SQL está prohibido; se usa la API con la clave de servicio, solo aquí y sin imprimirla.
 e = _entorno()
