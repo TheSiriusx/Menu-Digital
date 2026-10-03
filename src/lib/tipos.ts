@@ -2,6 +2,7 @@
 // exige migración); esta lista es la que ofrece el super admin.
 export const TIPOS = [
   { valor: "panaderia", etiqueta: "Panadería" },
+  { valor: "cafeteria", etiqueta: "Cafetería" },
   { valor: "restaurante", etiqueta: "Restaurante" },
   { valor: "puesto-de-comida", etiqueta: "Puesto de comida" },
   { valor: "charcuteria", etiqueta: "Charcutería" },
