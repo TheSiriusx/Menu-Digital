@@ -1,6 +1,6 @@
 // Registrar un pedido (venga del menú web o de la conversación) y los mensajes fijos que lo acompañan.
 // Nada de esto pasa por la IA: precios, totales y confirmaciones salen de la base de datos.
-import { parsearPedido } from "../../src/lib/pedido-agente.ts";
+import { parsearCodigoCorto, parsearPedido } from "../../src/lib/pedido-agente.ts";
 import { estaAbierto, proximaApertura } from "./horario.ts";
 import type { Contacto, Contexto, ItemPedido, ResultadoCrearPedido } from "./tipos.ts";
 import { codigoPedido, formatUsd, limpio, precio, primerNombre, soloDigitos } from "./texto.ts";
@@ -159,6 +159,15 @@ export async function registrarPedido(
 }
 
 // Mensaje del menú web: «… [[PEDIDO v1|negocio=…|items=…|total=…|tasa=…|entrega=…]]».
+// Código corto del menú («Código de tu pedido: P-4F7K2Q»). sin_codigo = el mensaje no trae ninguno (o no es texto).
+export function leerCodigoCorto(texto: string):
+  | { ok: true; codigo: string; nombre: string; direccion: string; notas: string }
+  | { ok: false; motivo: "sin_codigo" | "varios" } {
+  const p = parsearCodigoCorto(texto);
+  if (p.ok) return p;
+  return { ok: false, motivo: p.error === "multiples_codigos" ? "varios" : "sin_codigo" };
+}
+
 export function leerPedidoDelMenu(texto: string):
   | { ok: true; slug: string; items: ItemPedido[]; entrega: "retiro" | "domicilio"; nombre: string; direccion: string; notas: string }
   | { ok: false; motivo: "varios" | "ilegible" } {

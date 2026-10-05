@@ -17,9 +17,12 @@ where p.pronamespace = 'public'::regnamespace and p.prosecdef
 
 union all
 -- 3) Funciones security definer que la clave pública (anon) puede ejecutar.
+--    Única excepción, a propósito: guardar_pedido_web (0013). El cliente del menú no inicia sesión y guarda su
+--    carrito para recibir el código corto; la función valida todo y tiene topes por minuto y por día.
 select 'PROBLEMA: función security definer ejecutable sin sesión (anon)', p.oid::regprocedure::text
 from pg_proc p
 where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
+  and p.proname <> 'guardar_pedido_web'
 
 union all
 -- 4) anon con permisos de escritura, a nivel de tabla.
@@ -102,6 +105,17 @@ union all
 select 'PROBLEMA: agente_avisos accesible fuera del agente', format('%s (%s)', grantee, privilege_type)
 from information_schema.role_table_grants
 where table_schema = 'public' and table_name = 'agente_avisos' and grantee in ('anon', 'authenticated')
+
+union all
+select 'PROBLEMA: pedidos_web accesible fuera de sus funciones', format('%s (%s)', grantee, privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name = 'pedidos_web' and grantee in ('anon', 'authenticated')
+
+union all
+select 'PROBLEMA: agente_pedido_web ejecutable con clave pública o sesión de dueño', p.oid::regprocedure::text
+from pg_proc p
+where p.pronamespace = 'public'::regnamespace and p.proname = 'agente_pedido_web'
+  and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))
 
 union all
 select 'PROBLEMA: anon con permisos sobre agente_config', format('%s (%s)', grantee, privilege_type)

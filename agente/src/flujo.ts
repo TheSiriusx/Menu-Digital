@@ -15,14 +15,14 @@ import { estaAbierto, fechaLegible, hora12, momento, proximaApertura, textoHorar
 import { conversar, type MensajeIA, type Modelo } from "./ia.ts";
 import type { Menus } from "./menu.ts";
 import { normalizar } from "./normalizar.ts";
-import { leerPedidoDelMenu, registrarPedido } from "./pedidos.ts";
+import { leerCodigoCorto, leerPedidoDelMenu, registrarPedido } from "./pedidos.ts";
 import { comandoDueno, esConfirmacion, esNegacion, motivoHumano } from "./reglas.ts";
-import type { Contacto, Contexto, Entrante, ProductoMenu } from "./tipos.ts";
+import type { Contacto, Contexto, Entrante, ItemPedido, PedidoWeb, ProductoMenu } from "./tipos.ts";
 import { codigoPedido, formatUsd, limpio, precio } from "./texto.ts";
 
 export type ServicioSupabase = Pick<
   Supabase,
-  "contexto" | "menu" | "crearPedido" | "pedidosCliente" | "cancelarPedido" | "pedidosHoy" | "encendido" | "avisosTomar" | "avisoResultado"
+  "contexto" | "menu" | "crearPedido" | "pedidoWeb" | "pedidosCliente" | "cancelarPedido" | "pedidosHoy" | "encendido" | "avisosTomar" | "avisoResultado"
 >;
 export type ServicioEvolution = Pick<Evolution, "enviarTexto" | "escribiendo" | "enviarImagen" | "descargarMedia">;
 
@@ -137,6 +137,26 @@ export async function comandoDelDueno(deps: Deps, ctx: Contexto, texto: string, 
   deps.almacen.marcarEnviado(id);
 }
 
+// ---------------------------------------------------------------- pedido del menú (código corto o bloque)
+async function registrarDelMenu(
+  deps: Deps,
+  ctx: Contexto,
+  contacto: Contacto,
+  menuUrl: string | null,
+  p: { items: ItemPedido[]; entrega: "retiro" | "domicilio"; slug: string; origen: string; nombre: string; direccion: string; notas: string },
+): Promise<void> {
+  const delicado = motivoHumano(p.notas);
+  const r = await registrarPedido(deps.supabase, ctx, contacto, {
+    items: p.items, entrega: p.entrega, direccion: p.direccion || null, notas: p.notas || null,
+    nombre: p.nombre || contacto.nombre, origen: p.origen, slug: p.slug,
+    alerta: delicado === "alergia" ? "alergias o ingredientes" : delicado ? "un tema delicado" : null,
+  }, deps.ahora(), menuUrl);
+  if (r.creado) deps.menus.invalidar(ctx.instancia);
+  deps.almacen.borrarBorrador(contacto.id);
+  await enviar(deps, ctx.instancia, contacto.jid, r.respuesta, contacto.id);
+  if (r.avisoDueno) await avisarDueno(deps, ctx, r.avisoDueno);
+}
+
 // ---------------------------------------------------------------- lote de mensajes de un cliente
 export async function procesarLote(deps: Deps, entrantes: Entrante[]): Promise<void> {
   const ultimo = entrantes[entrantes.length - 1];
@@ -189,24 +209,45 @@ export async function procesarLote(deps: Deps, entrantes: Entrante[]): Promise<v
   const texto = textos.join("\n").trim();
   const menuUrl = deps.menuUrlBase ? `${deps.menuUrlBase.replace(/\/+$/, "")}/${ctx.negocio.slug}` : null;
 
-  // 3) Pedido del menú web: se registra sin IA.
+  // 3) Pedido del menú web: se registra sin IA. Lo normal es el código corto (el carrito quedó guardado en la
+  //    base); el bloque con el pedido completo es el respaldo cuando el menú no pudo guardarlo.
+  const armar = menuUrl ? ` Puedes armarlo de nuevo en el menú: ${menuUrl}` : "";
+  const varios = "Recibí más de un pedido a la vez 😅. Envíalos de uno en uno, por favor.";
   if (texto.includes("[[PEDIDO")) {
     const leido = leerPedidoDelMenu(texto);
     if (!leido.ok) {
-      const armar = menuUrl ? ` Puedes armarlo de nuevo en el menú: ${menuUrl}` : "";
-      await enviar(deps, ctx.instancia, destino, leido.motivo === "varios" ? "Recibí más de un pedido a la vez 😅. Envíalos de uno en uno, por favor." : `No pude leer tu pedido 😕.${armar}`, contacto.id);
+      await enviar(deps, ctx.instancia, destino, leido.motivo === "varios" ? varios : `No pude leer tu pedido 😕.${armar}`, contacto.id);
       return;
     }
-    const delicado = motivoHumano(leido.notas);
-    const r = await registrarPedido(deps.supabase, ctx, contacto, {
-      items: leido.items, entrega: leido.entrega, direccion: leido.direccion || null, notas: leido.notas || null,
-      nombre: leido.nombre || contacto.nombre, origen: origenPedido ?? ultimo.messageId, slug: leido.slug,
-      alerta: delicado === "alergia" ? "alergias o ingredientes" : delicado ? "un tema delicado" : null,
-    }, deps.ahora(), menuUrl);
-    if (r.creado) deps.menus.invalidar(ctx.instancia);
-    deps.almacen.borrarBorrador(contacto.id);
-    await enviar(deps, ctx.instancia, destino, r.respuesta, contacto.id);
-    if (r.avisoDueno) await avisarDueno(deps, ctx, r.avisoDueno);
+    await registrarDelMenu(deps, ctx, contacto, menuUrl, { ...leido, origen: origenPedido ?? ultimo.messageId });
+    return;
+  }
+  const corto = leerCodigoCorto(texto);
+  if (corto.ok || corto.motivo !== "sin_codigo") {
+    if (!corto.ok) {
+      await enviar(deps, ctx.instancia, destino, varios, contacto.id);
+      return;
+    }
+    let web: PedidoWeb | null;
+    try {
+      web = await deps.supabase.pedidoWeb(ctx.instancia, corto.codigo);
+    } catch {
+      web = null;
+    }
+    if (!web?.ok) {
+      const respuesta = !web
+        ? "Tuve un problema para leer tu pedido 🙏. Una persona del equipo te atiende enseguida."
+        : web.error === "vencido"
+          ? `Ese pedido ya venció: los códigos duran 24 horas 😕.${armar}`
+          : `No encontré el pedido P-${corto.codigo} 😕.${armar}`;
+      await enviar(deps, ctx.instancia, destino, respuesta, contacto.id);
+      if (!web) {
+        await avisarDueno(deps, ctx, `⚠️ Llegó el pedido P-${corto.codigo} de ${contacto.nombre ?? "un cliente"} (${contacto.telefono ?? "sin número"}) y no se pudo leer (el sistema no respondió). Atiéndelo a mano.`);
+      }
+      return;
+    }
+    // Origen «web-CÓDIGO»: si el cliente reenvía el mismo código, crear_pedido responde «ya lo tenía».
+    await registrarDelMenu(deps, ctx, contacto, menuUrl, { ...corto, items: web.items, entrega: web.entrega, slug: web.slug, origen: `web-${corto.codigo}` });
     return;
   }
 

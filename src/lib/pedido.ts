@@ -1,4 +1,4 @@
-import { codigoProducto, construirBloque } from "@/lib/pedido-agente";
+import { codigoProducto, construirBloque, lineaCodigoCorto } from "@/lib/pedido-agente";
 import { formatBs, formatUsd, usdToBs } from "@/lib/precios";
 import type { Producto } from "@/types/menu";
 
@@ -65,11 +65,13 @@ function limpiar(texto: string, max: number): string {
   return texto.replace(/\s+/g, " ").trim().slice(0, max);
 }
 
-// Mensaje legible para el cliente + una línea final estructurada para el agente (ver pedido-agente.ts).
+// Mensaje legible para el cliente + una línea final para el agente (ver pedido-agente.ts): el código corto del
+// pedido guardado o, si no se pudo guardar (sin `codigo`), el bloque con el pedido completo.
 export function construirMensaje(
   negocio: { nombre: string; slug: string; tasa_bs: number },
   lineas: Linea[],
   datos: DatosPedido,
+  codigo: string | null = null,
 ): string {
   const tasa = negocio.tasa_bs;
   const conBs = (usd: number) => (tasa > 0 ? ` (${formatBs(usdToBs(usd, tasa))})` : "");
@@ -95,7 +97,12 @@ export function construirMensaje(
   const notas = limpiar(datos.notas, 300);
   if (notas) partes.push(`Notas: ${notas}`);
 
-  // El bloque va en monoespaciado (```): WhatsApp lo muestra como un recuadro de «código», claramente aparte.
+  if (codigo) {
+    partes.push("", lineaCodigoCorto(codigo));
+    return partes.join("\n");
+  }
+
+  // Respaldo. El bloque va en monoespaciado (```): WhatsApp lo muestra como un recuadro de «código», aparte.
   partes.push(
     "",
     "Código de tu pedido (no lo borres) 👇",
