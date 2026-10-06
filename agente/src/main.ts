@@ -29,6 +29,7 @@ const deps: Deps = {
   dormir: (ms) => new Promise((r) => setTimeout(r, ms)),
   log,
   menuUrlBase: cfg.menuUrlBase,
+  respuestas: new Map(),
 };
 const cola = crearCola(deps, cfg.esperaMs);
 

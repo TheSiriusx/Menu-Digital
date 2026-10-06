@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { InscribirMfa } from "@/components/admin/inscribir-mfa";
+import { EncabezadoPagina, tarjetaSa } from "@/components/superadmin/marco";
 import { requerirSuperadminSinMfa } from "@/lib/admin";
 import { estadoMfa } from "@/lib/mfa";
 import { redirect } from "next/navigation";
@@ -14,24 +15,24 @@ export default async function Seguridad() {
   if (mfa.tieneFactor && mfa.nivel !== "aal2") redirect("/login/verificar");
 
   return (
-    <main className="max-w-2xl space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Verificación en dos pasos</h2>
-        <p className="text-sm text-muted">
-          Tu cuenta controla todos los locales. Con la verificación en dos pasos, aunque alguien conozca tu
-          contraseña necesita además el código de tu celular.
-        </p>
-      </div>
-
-      {mfa.tieneFactor ? (
-        <p role="status" className="rounded-xl border border-line bg-surface p-4 text-sm">
-          ✅ Activada. Al entrar se te pedirá el código de tu app autenticadora.
-        </p>
-      ) : (
-        <div className="rounded-2xl border border-line p-4">
-          <InscribirMfa />
-        </div>
-      )}
-    </main>
+    <>
+      <EncabezadoPagina
+        titulo="Seguridad"
+        descripcion="Tu cuenta controla todos los locales. Con la verificación en dos pasos, aunque alguien conozca tu contraseña necesita además el código de tu celular."
+      />
+      <main className="max-w-2xl space-y-6">
+        <h2 className="text-[16px] font-semibold">Verificación en dos pasos</h2>
+        {mfa.tieneFactor ? (
+          <p role="status" className={`${tarjetaSa} flex items-center gap-3 p-4 text-sm`}>
+            <span className="rounded-full bg-exito-suave px-2.5 py-1 text-xs font-semibold text-exito">Activada</span>
+            Al entrar se te pedirá el código de tu app autenticadora.
+          </p>
+        ) : (
+          <div className={`${tarjetaSa} p-5`}>
+            <InscribirMfa />
+          </div>
+        )}
+      </main>
+    </>
   );
 }

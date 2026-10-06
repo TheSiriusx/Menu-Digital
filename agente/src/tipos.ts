@@ -68,6 +68,7 @@ export type Entrante = {
   texto: string;
   base64: string | null;
   mimetype: string | null;
+  recibido?: number;          // cuándo llegó al agente (ms), para medir el tiempo de respuesta
 };
 
 export type Contacto = { id: number; instancia: string; telefono: string | null; lid: string | null; nombre: string | null; jid: string };

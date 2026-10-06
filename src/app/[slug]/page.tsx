@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ContarVisita } from "@/components/contar-visita";
 import { MenuPedido } from "@/components/menu-pedido";
 import { TabsCategorias } from "@/components/tabs-categorias";
 import { variablesAcento } from "@/lib/color";
@@ -91,6 +92,7 @@ export default async function MenuPage({ params }: Props) {
 
   return (
     <div style={estilo} className="mx-auto w-full max-w-xl flex-1">
+      <ContarVisita slug={negocio.slug} />
       <header className="px-5 pt-7 pb-3.5">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

@@ -22,7 +22,7 @@ import { codigoPedido, formatUsd, limpio, precio } from "./texto.ts";
 
 export type ServicioSupabase = Pick<
   Supabase,
-  "contexto" | "menu" | "crearPedido" | "pedidoWeb" | "pedidosCliente" | "cancelarPedido" | "pedidosHoy" | "encendido" | "avisosTomar" | "avisoResultado"
+  "contexto" | "menu" | "crearPedido" | "pedidoWeb" | "registrarRespuesta" | "pedidosCliente" | "cancelarPedido" | "pedidosHoy" | "encendido" | "avisosTomar" | "avisoResultado"
 >;
 export type ServicioEvolution = Pick<Evolution, "enviarTexto" | "escribiendo" | "enviarImagen" | "descargarMedia">;
 
@@ -38,6 +38,8 @@ export type Deps = {
   dormir: (ms: number) => Promise<void>;
   log: (mensaje: string, extra?: Record<string, unknown>) => void;
   menuUrlBase: string | null;
+  // Tiempo de respuesta: contactos con un lote en curso → cuándo salió la primera respuesta (NaN = todavía no).
+  respuestas?: Map<number, number>;
 };
 
 const PAUSA_MANUAL_H = 2;      // el dueño le escribió a mano a un cliente
@@ -79,6 +81,7 @@ export function crearCola(deps: Deps, esperaMs: number) {
 export async function recibir(deps: Deps, cola: Cola<Entrante>, cuerpo: unknown): Promise<void> {
   const e = normalizar(cuerpo);
   if (!e || e.esGrupo) return;
+  e.recibido = deps.ahora().getTime();
   if (deps.almacen.yaProcesado(e.messageId)) return;
   deps.almacen.recordarNumeroPropio(e.instancia, e.numeroPropio);
   const ctx = await deps.contextos.de(e.instancia);
@@ -163,6 +166,28 @@ export async function procesarLote(deps: Deps, entrantes: Entrante[]): Promise<v
   const ctx = await deps.contextos.de(ultimo.instancia);
   if (!ctx) return;
   const contacto = deps.almacen.contacto(ultimo.instancia, ultimo.telefono, ultimo.lid, ultimo.nombrePush, ultimo.jid);
+  deps.respuestas?.set(contacto.id, Number.NaN);
+  try {
+    await atenderLote(deps, entrantes, ctx, contacto);
+  } finally {
+    anotarRespuesta(deps, ctx, contacto.id, entrantes);
+  }
+}
+
+// Tiempo de respuesta (métricas del super admin): desde que llegó el primer mensaje del lote hasta que salió la
+// primera respuesta del asistente a ese cliente. Si no respondió (pausa, apagado, comando), no se anota. Si la
+// base no responde, la conversación sigue igual.
+function anotarRespuesta(deps: Deps, ctx: Contexto, contactoId: number, entrantes: Entrante[]) {
+  const primera = deps.respuestas?.get(contactoId);
+  deps.respuestas?.delete(contactoId);
+  const llegadas = entrantes.map((e) => e.recibido).filter((t): t is number => typeof t === "number");
+  if (primera === undefined || Number.isNaN(primera) || llegadas.length === 0) return;
+  const segundos = Math.max(0, Math.round((primera - Math.min(...llegadas)) / 1000));
+  deps.supabase.registrarRespuesta(ctx.instancia, segundos).catch((e) => deps.log("no se pudo anotar el tiempo de respuesta", { error: String(e) }));
+}
+
+async function atenderLote(deps: Deps, entrantes: Entrante[], ctx: Contexto, contacto: Contacto): Promise<void> {
+  const ultimo = entrantes[entrantes.length - 1];
   const destino = contacto.jid;
 
   // 1) Todo lo que mandó queda guardado (aunque el asistente esté apagado: sirve de contexto después).

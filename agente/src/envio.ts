@@ -24,6 +24,8 @@ export async function enviar(deps: Deps, instancia: string, destino: string, tex
     await deps.dormir(Math.min(800 + parte.length * 15, 3000));
     const id = await deps.evolution.enviarTexto(instancia, destino, parte);
     deps.almacen.marcarEnviado(id);
+    // Primera respuesta del lote en curso para este cliente (tiempo de respuesta, ver procesarLote).
+    if (contactoId !== null && Number.isNaN(deps.respuestas?.get(contactoId))) deps.respuestas!.set(contactoId, deps.ahora().getTime());
     if (contactoId !== null) deps.almacen.guardarMensaje(contactoId, "asistente", parte);
   }
 }

@@ -78,6 +78,11 @@ export class FakeSupabase {
     const total = Math.round(items.reduce((t, i) => t + i.cantidad * i.precio_unitario_usd, 0) * 100) / 100;
     return { ok: true, duplicado: false, pedido_id: "c0ffee01-0000-4000-8000-000000000001", total_usd: total, tasa_bs: 50, items };
   }
+  respuestaFalla = false;
+  async registrarRespuesta(instancia: string, segundos: number) {
+    this.reg("registrarRespuesta", { instancia, segundos });
+    if (this.respuestaFalla) throw new Error("supabase: no alcanzable");
+  }
   async pedidoWeb(instancia: string, codigo: string): Promise<PedidoWeb> {
     this.reg("pedidoWeb", { instancia, codigo });
     const p = instancia === INSTANCIA ? this.pedidosWeb[codigo] : undefined;
@@ -174,6 +179,7 @@ export function montar(opciones: { cfg?: Partial<ConfigAsistente>; activo?: bool
     dormir: async () => {},
     log: (m) => logs.push(m),
     menuUrlBase: "https://menu.ejemplo",
+    respuestas: new Map(),
   };
   const cola = crearCola(deps, 5);
   return { deps, cola, supabase, evolution, modelo, logs, avanzar: (ms: number) => (ahora = new Date(ahora.getTime() + ms)) };

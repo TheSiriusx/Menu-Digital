@@ -17,12 +17,13 @@ where p.pronamespace = 'public'::regnamespace and p.prosecdef
 
 union all
 -- 3) Funciones security definer que la clave pública (anon) puede ejecutar.
---    Única excepción, a propósito: guardar_pedido_web (0013). El cliente del menú no inicia sesión y guarda su
---    carrito para recibir el código corto; la función valida todo y tiene topes por minuto y por día.
+--    Excepciones, a propósito (el cliente del menú no inicia sesión): guardar_pedido_web (0013), que guarda el
+--    carrito para el código corto, valida todo y tiene topes; y contar_visita (0014), que solo suma 1 al contador
+--    diario de visitas de un local activo, con tope por día.
 select 'PROBLEMA: función security definer ejecutable sin sesión (anon)', p.oid::regprocedure::text
 from pg_proc p
 where p.pronamespace = 'public'::regnamespace and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
-  and p.proname <> 'guardar_pedido_web'
+  and p.proname not in ('guardar_pedido_web', 'contar_visita')
 
 union all
 -- 4) anon con permisos de escritura, a nivel de tabla.
@@ -75,7 +76,7 @@ union all
 select 'PROBLEMA: política de lectura sin filtro de local para authenticated', format('%s.%s', tablename, policyname)
 from pg_policies
 where schemaname = 'public' and cmd = 'SELECT' and 'authenticated' = any(roles)
-  and tablename in ('productos', 'pedidos', 'pedido_items', 'clientes')
+  and tablename in ('productos', 'pedidos', 'pedido_items', 'clientes', 'visitas_menu', 'agente_respuestas')
   and qual not like '%mi_negocio_id%' and qual not like '%es_superadmin%'
 
 union all
@@ -110,6 +111,17 @@ union all
 select 'PROBLEMA: pedidos_web accesible fuera de sus funciones', format('%s (%s)', grantee, privilege_type)
 from information_schema.role_table_grants
 where table_schema = 'public' and table_name = 'pedidos_web' and grantee in ('anon', 'authenticated')
+
+union all
+select 'PROBLEMA: métricas escribibles fuera de sus funciones', format('%s: %s (%s)', grantee, table_name, privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name in ('visitas_menu', 'agente_respuestas')
+  and grantee in ('anon', 'authenticated') and privilege_type <> 'SELECT'
+
+union all
+select 'PROBLEMA: anon puede leer métricas', format('%s (%s)', table_name, privilege_type)
+from information_schema.role_table_grants
+where table_schema = 'public' and table_name in ('visitas_menu', 'agente_respuestas') and grantee = 'anon'
 
 union all
 select 'PROBLEMA: agente_pedido_web ejecutable con clave pública o sesión de dueño', p.oid::regprocedure::text

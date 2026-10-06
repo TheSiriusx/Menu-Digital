@@ -85,11 +85,11 @@ export const cargarLocalPorSlug = cache(async (slug: string) => {
   const { supabase } = await requerirSuperadmin();
   const { data } = await supabase
     .from("negocios")
-    .select("id, slug, nombre, activo")
+    .select("id, slug, nombre, tipo, logo_url, activo")
     .eq("slug", slug)
     .maybeSingle();
   if (!data) notFound();
-  return data as { id: string; slug: string; nombre: string; activo: boolean };
+  return data as { id: string; slug: string; nombre: string; tipo: string; logo_url: string | null; activo: boolean };
 });
 
 const COLUMNAS_NEGOCIO =

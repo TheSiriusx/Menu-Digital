@@ -373,3 +373,40 @@ test("audio que no se pudo transcribir: pide que lo escriba", async () => {
   await llega(m, evento("", { tipo: "audio" }));
   assert.match(m.evolution.a(CLIENTE), /No pude escuchar tu audio/);
 });
+
+// ------------------------------------------------------------------ tiempo de respuesta (métricas)
+test("tiempo de respuesta: se anota una vez por lote, desde el primer mensaje hasta la primera respuesta", async () => {
+  const m = montar();
+  m.modelo.completar = async () => {
+    m.avanzar(7000); // la IA tarda 7 s
+    return { contenido: "¡Hola! Sí tenemos pan canilla 😊", llamadas: [] };
+  };
+  await llega(m, evento("hola", { id: "T1" }), evento("¿tienen pan?", { id: "T2" }));
+  assert.deepEqual(m.supabase.de("registrarRespuesta"), [{ instancia: "menu-nueva-victoria", segundos: 7 }]);
+  assert.equal(m.deps.respuestas?.size, 0, "no quedan lotes abiertos");
+});
+
+test("tiempo de respuesta: si el asistente no responde (apagado), no se anota", async () => {
+  const m = montar({ cfg: { agente_activo: false } });
+  await llega(m, evento("hola"));
+  assert.equal(m.supabase.de("registrarRespuesta").length, 0);
+});
+
+test("tiempo de respuesta: si la base falla al anotarlo, la conversación sigue igual", async () => {
+  const m = montar();
+  m.supabase.respuestaFalla = true;
+  await llega(m, evento("hola"));
+  assert.match(m.evolution.a(CLIENTE), /Hola/);
+  await new Promise((r) => setTimeout(r, 10));
+  assert.ok(m.logs.includes("no se pudo anotar el tiempo de respuesta"));
+});
+
+test("tiempo de respuesta: los avisos de estado (fuera de un lote) no cuentan", async () => {
+  const m = montar();
+  await llega(m, evento("hola"));
+  const antes = m.supabase.de("registrarRespuesta").length;
+  const { enviar } = await import("../src/envio.ts");
+  await enviar(m.deps, "menu-nueva-victoria", `${CLIENTE}@s.whatsapp.net`, "Tu pedido está listo", 1);
+  assert.equal(m.supabase.de("registrarRespuesta").length, antes);
+  assert.equal(m.deps.respuestas?.size, 0);
+});

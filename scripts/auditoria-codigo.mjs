@@ -23,9 +23,10 @@ const fuentes = archivos(join(raiz, "src"));
 
 // 1) Toda acción de servidor debe comprobar la sesión ANTES de tocar datos.
 //    Exentas: las de autenticación (la crean), cerrarSesion (no toca datos: solo cierra la sesión de quien la llama)
-//    y guardarPedidoWeb (el cliente del menú no inicia sesión; usa la clave pública y la función guardar_pedido_web,
-//    que valida todo y tiene topes: ver 0013_pedido_web.sql y la excepción equivalente en supabase/auditoria.sql).
-const EXENTAS = new Set(["iniciarSesion", "verificarCodigo", "cerrarSesion", "guardarPedidoWeb"]);
+//    y las dos del menú público, cuyo cliente no inicia sesión: guardarPedidoWeb (función guardar_pedido_web, que valida
+//    todo y tiene topes; 0013) y registrarVisita (contar_visita, solo suma 1 con tope diario; 0014). Ver las
+//    excepciones equivalentes en supabase/auditoria.sql.
+const EXENTAS = new Set(["iniciarSesion", "verificarCodigo", "cerrarSesion", "guardarPedidoWeb", "registrarVisita"]);
 const PUERTAS = /await\s+(requerirNegocio|requerirDueno|requerirSuperadmin|requerirSuperadminSinMfa|requerirUsuario)\s*\(/;
 const ACCESO_DATOS = /\.(from|rpc|storage)\s*\(|datos\.get\(/;
 let acciones = 0;
