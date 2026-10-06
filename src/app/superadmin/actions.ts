@@ -8,7 +8,6 @@ import {
   ErrorValidacion,
   leerCorreo,
   leerId,
-  leerPlan,
   leerSlug,
   leerTexto,
   leerTipo,
@@ -63,9 +62,8 @@ export async function crearLocal(_previo: Estado, datos: FormData): Promise<Esta
     const nombre = leerTexto(datos, "nombre", "El nombre", 80, { requerido: true });
     const slug = leerSlug(datos, "slug", nombre);
     const tipo = leerTipo(datos, "tipo");
-    const plan = leerPlan(datos, "plan");
-
-    const { data: id, error } = await supabase.rpc("crear_negocio", { p_slug: slug, p_nombre: nombre, p_tipo: tipo, p_plan: plan });
+    // Pídelo no tiene planes: la base todavía pide uno y siempre va «basico» (no cambia nada en la app).
+    const { data: id, error } = await supabase.rpc("crear_negocio", { p_slug: slug, p_nombre: nombre, p_tipo: tipo, p_plan: "basico" });
     if (error) traducir("No se pudo crear el local", error);
 
     const whatsapp = await prepararInstancia(supabase, id as string, slug);
@@ -83,17 +81,6 @@ export async function cambiarEstado(datos: FormData) {
   publicar();
 }
 
-export async function cambiarPlan(_previo: Estado, datos: FormData): Promise<Estado> {
-  return conValidacion(async () => {
-    const { supabase } = await requerirSuperadmin();
-    const id = leerId(datos, "negocio");
-    const plan = leerPlan(datos, "plan");
-    const { error } = await supabase.rpc("cambiar_plan_negocio", { p_negocio: id, p_plan: plan });
-    if (error) traducir("No se pudo cambiar el plan", error);
-    publicar();
-    return { ok: "Plan actualizado." };
-  });
-}
 
 export async function vincularDueno(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {

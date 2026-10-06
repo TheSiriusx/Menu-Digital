@@ -1,7 +1,7 @@
 import { requerirSuperadmin } from "@/lib/admin";
 import { hoyCaracas } from "@/lib/fechas";
 import { cargarMetricas, conversion, leerPeriodo } from "@/lib/metricas";
-import { etiquetaPlan, etiquetaTipo } from "@/lib/tipos";
+import { etiquetaTipo } from "@/lib/tipos";
 
 // Descarga «Reporte»: los locales con sus métricas del periodo, en CSV (se abre en Excel o Google Sheets).
 // Solo con sesión de super admin (con su segundo factor): requerirSuperadmin redirige a cualquier otro.
@@ -18,9 +18,9 @@ export async function GET(request: Request) {
   };
   const numero = (n: number | null, decimales = 0) => (n === null ? "" : n.toFixed(decimales));
   const filas = [
-    ["Local", "Enlace", "Tipo", "Plan", "Estado", "Productos", "Dueños", "WhatsApp", `Visitas (${dias} días)`, `Pedidos (${dias} días)`, "Conversión (%)", "Ventas (USD)", "Respuesta típica (s)"],
+    ["Local", "Enlace", "Tipo", "Estado", "Productos", "Dueños", "WhatsApp", `Visitas (${dias} días)`, `Pedidos (${dias} días)`, "Conversión (%)", "Ventas (USD)", "Respuesta típica (s)"],
     ...m.locales.map((l) => [
-      l.nombre, `/${l.slug}`, etiquetaTipo(l.tipo), etiquetaPlan(l.plan), l.activo ? "Activo" : "Pausado", l.productos,
+      l.nombre, `/${l.slug}`, etiquetaTipo(l.tipo), l.activo ? "Activo" : "Pausado", l.productos,
       l.duenos.join(" / "), l.instancia ?? "Pendiente", l.visitas, l.pedidos, numero(conversion(l.pedidos, l.visitas), 1),
       numero(l.ventas_usd, 2), numero(l.respuesta_mediana_s),
     ]),

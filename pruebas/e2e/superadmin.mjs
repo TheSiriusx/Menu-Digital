@@ -115,19 +115,19 @@ ok(m && m.includes("minúsculas"), `slug con formato inválido: "${m}"`);
 
 console.log("--- VINCULAR DUEÑO ---");
 await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
+await a.abrir(LI, "Estado y dueño");
 await a.poner(`${LI} input[type=email]`, "nadie-existe@pidelo.test");
 await a.clic(LI, "Vincular dueño");
 m = await a.mensaje(LI, "alert");
 ok(m && m.includes("No existe una cuenta"), `correo inexistente: "${m}"`);
 await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
+await a.abrir(LI, "Estado y dueño");
 await a.poner(`${LI} input[type=email]`, env.SA_CORREO);
 await a.clic(LI, "Vincular dueño");
 m = await a.mensaje(LI, "alert");
 ok(m && m.includes("super admin"), `vincular a un super admin: "${m}"`);
 await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
+await a.abrir(LI, "Estado y dueño");
 await a.poner(`${LI} input[type=email]`, env.OWN2_CORREO.toUpperCase());
 await a.clic(LI, "Vincular dueño");
 m = await a.mensaje(LI, "status");
@@ -153,14 +153,6 @@ let h = await publico(SLUG);
 ok(txt(h).includes("Prod E2E") && txt(h).includes("Cat E2E"), "el menú público del local nuevo ya lo muestra");
 ok(!(await publico("nueva-victoria")).includes("Prod E2E"), "y NO aparece en Nueva Victoria");
 
-console.log("--- PLAN ---");
-await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
-await A.page.$eval(`${LI} select[name=plan]`, (s) => { s.value = "pro"; });
-await a.clic(LI, "Guardar plan");
-ok((await a.mensaje(LI, "status")) === "Plan actualizado.", "plan cambiado a Pro");
-await a.ir("/superadmin");
-ok((await A.page.$eval(LI, (e) => e.textContent)).includes("Pro"), "la lista muestra el plan Pro");
 
 // ======================================================================= DUEÑO 2 (del local nuevo)
 const B = await nuevaSesion();
@@ -179,7 +171,7 @@ for (const p of ["/superadmin", `/superadmin/locales/${SLUG}`, "/superadmin/cuen
 
 console.log("--- PAUSAR (impago) ---");
 await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
+await a.abrir(LI, "Estado y dueño");
 await a.abrir(LI, "Pausar local");
 await a.clic(LI, "Sí, pausar");
 await dormir(1500);
@@ -216,7 +208,7 @@ ok((await a.mensaje("section[aria-labelledby=tasa]", "status")) === "Tasa guarda
 
 console.log("--- REACTIVAR ---");
 await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
+await a.abrir(LI, "Estado y dueño");
 await a.clic(LI, "Reactivar local");
 await dormir(1500);
 await a.ir("/superadmin");
@@ -268,7 +260,7 @@ ok((await publico("nueva-victoria")).includes("Intruso E2E"), "cayó en el local
 
 console.log("--- QUITAR DUEÑO ---");
 await a.ir("/superadmin");
-await a.abrir(LI, "Estado, plan y dueño");
+await a.abrir(LI, "Estado y dueño");
 await a.clic(LI, "Quitar");
 await dormir(1500);
 await a.ir("/superadmin");

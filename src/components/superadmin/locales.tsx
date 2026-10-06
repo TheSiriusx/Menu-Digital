@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
-import { cambiarEstado, cambiarPlan, crearLocal, quitarDueno, reintentarWhatsApp, vincularDueno } from "@/app/superadmin/actions";
+import { cambiarEstado, crearLocal, quitarDueno, reintentarWhatsApp, vincularDueno } from "@/app/superadmin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { estiloCampo } from "@/components/admin/estilos";
 import { iniciales } from "@/components/admin/marco-panel";
@@ -9,14 +9,13 @@ import { Icono, type NombreIcono } from "@/components/iconos";
 import { AbrirNuevoLocal } from "@/components/superadmin/interactivos";
 import { tarjetaSa } from "@/components/superadmin/marco";
 import { esColorHex } from "@/lib/color";
-import { etiquetaPlan, etiquetaTipo, PLANES, TIPOS } from "@/lib/tipos";
+import { etiquetaTipo, TIPOS } from "@/lib/tipos";
 
 export type LocalSa = {
   id: string;
   slug: string;
   nombre: string;
   tipo: string;
-  plan: string;
   activo: boolean;
   productos: number;
   duenos: string[];
@@ -139,12 +138,6 @@ export function PanelNuevoLocal() {
               {TIPOS.map((t) => <option key={t.valor} value={t.valor}>{t.etiqueta}</option>)}
             </select>
           </label>
-          <label className="block text-[13px] font-semibold">
-            Plan
-            <select name="plan" defaultValue="basico" className={`${estiloCampo} mt-1.5 bg-card!`}>
-              {PLANES.map((p) => <option key={p.valor} value={p.valor}>{p.etiqueta}</option>)}
-            </select>
-          </label>
           <div className="sm:col-span-2"><Boton>Crear local</Boton></div>
         </FormAccion>
       </details>
@@ -214,7 +207,6 @@ export function TarjetaLocal({ local: l, hoy, semana }: { local: LocalSa; hoy: M
             <span aria-hidden="true" className={`h-2 w-2 rounded-full ${l.activo ? "bg-exito" : "bg-aviso"}`} />
             <span data-estado className={l.activo ? "text-exito" : "text-aviso"}>{l.activo ? "Activo" : "Pausado"}</span>
           </span>
-          <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11.5px] font-semibold text-(--acento-texto) shadow-(--sombra-1)">Plan {etiquetaPlan(l.plan)}</span>
         </div>
       </div>
 
@@ -234,7 +226,7 @@ export function TarjetaLocal({ local: l, hoy, semana }: { local: LocalSa; hoy: M
               <span className="rounded-md bg-surface px-2 py-0.5 text-xs text-muted">{etiquetaTipo(l.tipo)}</span>
               <span className="hidden items-center gap-1.5 text-[11.5px] font-semibold group-data-[vista=lista]/locales:inline-flex">
                 <span aria-hidden="true" className={`h-2 w-2 rounded-full ${l.activo ? "bg-exito" : "bg-aviso"}`} />
-                {l.activo ? "Activo" : "Pausado"} · Plan {etiquetaPlan(l.plan)}
+                {l.activo ? "Activo" : "Pausado"}
               </span>
             </div>
             <Link href={`/${l.slug}`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 text-[13px] font-medium text-(--acento-texto) hover:underline">
@@ -299,12 +291,12 @@ export function TarjetaLocal({ local: l, hoy, semana }: { local: LocalSa; hoy: M
           </Link>
         </div>
 
-        {/* Gestión rápida: estado, plan, WhatsApp y dueño (las mismas acciones de siempre) */}
+        {/* Gestión rápida: estado, WhatsApp y dueño (las mismas acciones de siempre) */}
         <details className="group/gestion mt-4 rounded-xl bg-surface">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-[13px] font-semibold [&::-webkit-details-marker]:hidden">
             <span className="flex items-center gap-2">
               <Icono nombre="ajustes" tamano={18} className="text-(--acento-texto)" />
-              Gestión rápida · Estado, plan y dueño
+              Gestión rápida · Estado y dueño
             </span>
             <Icono nombre="chevron" tamano={16} className="text-muted transition-transform group-open/gestion:rotate-90" />
           </summary>
@@ -341,16 +333,6 @@ export function TarjetaLocal({ local: l, hoy, semana }: { local: LocalSa; hoy: M
               )}
             </div>
 
-            <FormAccion accion={cambiarPlan} className="flex flex-wrap items-end gap-2 rounded-lg bg-card p-3">
-              <CampoNegocio id={l.id} />
-              <label className="flex-1 text-[13px] font-semibold">
-                Plan
-                <select name="plan" defaultValue={l.plan} aria-label="Plan" className={`${estiloCampo} mt-1.5`}>
-                  {PLANES.map((p) => <option key={p.valor} value={p.valor}>{p.etiqueta}</option>)}
-                </select>
-              </label>
-              <Boton variante="suave">Guardar plan</Boton>
-            </FormAccion>
 
             <div className="rounded-lg bg-card p-3">
               <FormAccion accion={vincularDueno} className="flex flex-wrap items-end gap-2">

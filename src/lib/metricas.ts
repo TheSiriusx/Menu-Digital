@@ -11,7 +11,7 @@ export type Periodo = (typeof PERIODOS)[number];
 export const leerPeriodo = (v: unknown): Periodo => (PERIODOS.includes(Number(v) as Periodo) ? (Number(v) as Periodo) : 30);
 
 export type FilaLocal = {
-  id: string; slug: string; nombre: string; tipo: string; plan: string; activo: boolean; productos: number;
+  id: string; slug: string; nombre: string; tipo: string; activo: boolean; productos: number;
   duenos: string[]; instancia: string | null;
   visitas: number; pedidos: number; ventas_usd: number; respuestas: number; respuesta_mediana_s: number | null;
 };
