@@ -1,179 +1,79 @@
 import Link from "next/link";
-import { cambiarEstado, cambiarPlan, crearLocal, quitarDueno, reintentarWhatsApp, vincularDueno } from "@/app/superadmin/actions";
-import { CampoNegocio } from "@/components/admin/campo-negocio";
-import { Boton, FormAccion } from "@/components/admin/ui";
-import { estiloCampo } from "@/components/admin/estilos";
+import { Icono } from "@/components/iconos";
+import { FiltroLocales } from "@/components/superadmin/interactivos";
+import {
+  BotonNuevoLocal,
+  botonSecundario,
+  Indicadores,
+  PanelNuevoLocal,
+  TarjetaAgregar,
+  TarjetaLocal,
+  type LocalSa,
+  type MetricasLocal,
+} from "@/components/superadmin/locales";
+import { EncabezadoPagina } from "@/components/superadmin/marco";
 import { requerirSuperadmin } from "@/lib/admin";
-import { etiquetaPlan, etiquetaTipo, PLANES, TIPOS } from "@/lib/tipos";
+import { hoyCaracas, sumarDias } from "@/lib/fechas";
 
-type Local = {
-  id: string;
-  slug: string;
-  nombre: string;
-  tipo: string;
-  plan: string;
-  activo: boolean;
-  productos: number;
-  duenos: string[];
-  instancia: string | null;
-  created_at: string;
-};
+export const metadata = { title: "Super admin — Locales" };
+
+type FilaMetricas = MetricasLocal & { negocio_id: string };
 
 export default async function Locales() {
   const { supabase } = await requerirSuperadmin();
-  const { data, error } = await supabase.rpc("listar_negocios");
-  if (error) throw new Error(`No se pudieron listar los locales: ${error.message}`);
-  const locales = (data ?? []) as Local[];
+  const hoy = hoyCaracas();
+  const [lista, extras, mHoy, mSemana] = await Promise.all([
+    supabase.rpc("listar_negocios"),
+    supabase.from("negocios").select("id, telefono_whatsapp, logo_url, color"),
+    supabase.rpc("metricas_locales", { p_desde: hoy, p_hasta: hoy }),
+    supabase.rpc("metricas_locales", { p_desde: sumarDias(hoy, -6), p_hasta: hoy }),
+  ]);
+  if (lista.error) throw new Error(`No se pudieron listar los locales: ${lista.error.message}`);
+
+  const porId = new Map((extras.data ?? []).map((n) => [n.id as string, n]));
+  const locales: LocalSa[] = ((lista.data ?? []) as Omit<LocalSa, "telefono_whatsapp" | "logo_url" | "color">[]).map((l) => ({
+    ...l,
+    telefono_whatsapp: (porId.get(l.id)?.telefono_whatsapp as string | null) ?? null,
+    logo_url: (porId.get(l.id)?.logo_url as string | null) ?? null,
+    color: (porId.get(l.id)?.color as string | null) ?? null,
+  }));
+  // Si las métricas fallan, el panel sigue funcionando y las cifras dicen «Sin datos aún».
+  const metricas = (r: { data: unknown; error: unknown }) =>
+    new Map(r.error ? [] : ((r.data ?? []) as FilaMetricas[]).map((m) => [m.negocio_id, { ...m, visitas: Number(m.visitas), pedidos: Number(m.pedidos), respuestas: Number(m.respuestas), ventas_usd: Number(m.ventas_usd), respuesta_mediana_s: m.respuesta_mediana_s === null ? null : Number(m.respuesta_mediana_s) }]));
+  const hoyPorLocal = metricas(mHoy);
+  const semanaPorLocal = metricas(mSemana);
 
   return (
-    <main className="max-w-2xl space-y-8">
-      <section aria-labelledby="nuevo">
-        <details>
-          <summary id="nuevo" className="cursor-pointer text-lg font-semibold">Nuevo local</summary>
-          <FormAccion accion={crearLocal} className="mt-3 space-y-2">
-            <label className="block text-sm">
-              Nombre
-              <input name="nombre" required maxLength={80} className={estiloCampo} />
-            </label>
-            <label className="block text-sm">
-              Enlace (opcional)
-              <input name="slug" maxLength={60} placeholder="la-espiga" className={estiloCampo} />
-              <span className="text-xs text-muted">Vacío = se genera del nombre. No se puede cambiar después.</span>
-            </label>
-            <label className="block text-sm">
-              Tipo
-              <select name="tipo" defaultValue="panaderia" className={estiloCampo}>
-                {TIPOS.map((t) => <option key={t.valor} value={t.valor}>{t.etiqueta}</option>)}
-              </select>
-            </label>
-            <label className="block text-sm">
-              Plan
-              <select name="plan" defaultValue="basico" className={estiloCampo}>
-                {PLANES.map((p) => <option key={p.valor} value={p.valor}>{p.etiqueta}</option>)}
-              </select>
-            </label>
-            <Boton>Crear local</Boton>
-          </FormAccion>
-        </details>
-      </section>
+    <>
+      <EncabezadoPagina
+        titulo="Locales"
+        etiqueta={`${locales.length} registrado${locales.length === 1 ? "" : "s"}`}
+        descripcion="Administra los locales, sus menús, la asignación de dueños y la vinculación con WhatsApp."
+        acciones={
+          <>
+            <Link href="/superadmin/reporte" prefetch={false} className={botonSecundario}>
+              <Icono nombre="descarga" tamano={18} />
+              Reporte
+            </Link>
+            <BotonNuevoLocal />
+          </>
+        }
+      />
 
-      <section aria-labelledby="lista">
-        <h2 id="lista" className="text-lg font-semibold">
-          Locales <span className="text-sm font-normal text-muted">({locales.length})</span>
-        </h2>
-        {locales.length === 0 && <p className="mt-2 text-muted">Todavía no hay locales.</p>}
-        <ul className="divide-y divide-line">
+      <PanelNuevoLocal />
+      <Indicadores locales={locales} />
+
+      <FiltroLocales>
+        <ul aria-label="Lista de locales" className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2 lg:gap-6 group-data-[vista=lista]/locales:lg:grid-cols-1">
           {locales.map((l) => (
-            <li key={l.id} data-local={l.slug} className="py-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-medium leading-tight">{l.nombre}</p>
-                  <p className="text-sm text-muted">
-                    <Link href={`/${l.slug}`} target="_blank" className="underline">/{l.slug} ↗</Link>
-                    {" · "}{etiquetaTipo(l.tipo)} · {l.productos} productos
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1 text-xs font-medium">
-                  <span
-                    data-estado
-                    className={`rounded-full px-2 py-0.5 ${
-                      l.activo
-                        ? "bg-exito-suave text-exito"
-                        : "bg-aviso-suave text-aviso"
-                    }`}
-                  >
-                    {l.activo ? "Activo" : "Pausado"}
-                  </span>
-                  <span className="rounded-full bg-surface px-2 py-0.5">{etiquetaPlan(l.plan)}</span>
-                </div>
-              </div>
-
-              <p className="mt-1 text-sm">
-                <span className="text-muted">Dueño: </span>
-                {l.duenos.length > 0 ? l.duenos.join(", ") : <em>sin vincular</em>}
-              </p>
-              <p className="mt-0.5 text-sm" data-whatsapp={l.instancia ? "listo" : "pendiente"}>
-                <span className="text-muted">WhatsApp: </span>
-                {l.instancia ? <span>✓ {l.instancia}</span> : <em>pendiente</em>}
-              </p>
-
-              <div className="mt-2">
-                <Link
-                  href={`/superadmin/locales/${l.slug}`}
-                  className="inline-block rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface"
-                >
-                  Administrar menú →
-                </Link>
-              </div>
-
-              <details className="mt-3">
-                <summary className="cursor-pointer text-sm text-muted">Estado, plan y dueño</summary>
-                <div className="mt-3 space-y-5">
-                  {!l.instancia && (
-                    <FormAccion accion={reintentarWhatsApp} className="flex flex-wrap items-center gap-2">
-                      <CampoNegocio id={l.id} />
-                      <Boton variante="suave">Crear cuenta de WhatsApp</Boton>
-                    </FormAccion>
-                  )}
-                  {l.activo ? (
-                    <details>
-                      <summary className="cursor-pointer text-sm text-aviso">Pausar local (impago)</summary>
-                      <form action={cambiarEstado} className="mt-2">
-                        <CampoNegocio id={l.id} />
-                        <input type="hidden" name="activo" value="false" />
-                        <p className="mb-2 text-sm">
-                          Los clientes verán «menú no disponible» y el dueño quedará en solo lectura.
-                        </p>
-                        <Boton variante="peligro">Sí, pausar</Boton>
-                      </form>
-                    </details>
-                  ) : (
-                    <form action={cambiarEstado}>
-                      <CampoNegocio id={l.id} />
-                      <input type="hidden" name="activo" value="true" />
-                      <Boton>Reactivar local</Boton>
-                    </form>
-                  )}
-
-                  <FormAccion accion={cambiarPlan} className="flex flex-wrap items-center gap-2">
-                    <CampoNegocio id={l.id} />
-                    <select name="plan" defaultValue={l.plan} aria-label="Plan" className={`${estiloCampo} w-40!`}>
-                      {PLANES.map((p) => <option key={p.valor} value={p.valor}>{p.etiqueta}</option>)}
-                    </select>
-                    <Boton variante="suave">Guardar plan</Boton>
-                  </FormAccion>
-
-                  <div>
-                    <FormAccion accion={vincularDueno} className="flex flex-wrap items-center gap-2">
-                      <CampoNegocio id={l.id} />
-                      <input
-                        name="correo"
-                        type="email"
-                        required
-                        aria-label="Correo del dueño"
-                        placeholder="correo del dueño"
-                        className={`${estiloCampo} w-64!`}
-                      />
-                      <Boton variante="suave">Vincular dueño</Boton>
-                    </FormAccion>
-                    <p className="mt-1 text-xs text-muted">
-                      La cuenta debe existir ya en Supabase (Authentication → Users).
-                    </p>
-                    {l.duenos.map((correo) => (
-                      <form key={correo} action={quitarDueno} className="mt-2 flex items-center gap-2 text-sm">
-                        <CampoNegocio id={l.id} />
-                        <input type="hidden" name="correo" value={correo} />
-                        <span>{correo}</span>
-                        <Boton variante="suave">Quitar</Boton>
-                      </form>
-                    ))}
-                  </div>
-                </div>
-              </details>
-            </li>
+            <TarjetaLocal key={l.id} local={l} hoy={hoyPorLocal.get(l.id) ?? null} semana={semanaPorLocal.get(l.id) ?? null} />
           ))}
+          <TarjetaAgregar />
         </ul>
-      </section>
-    </main>
+        <p data-sin-resultados hidden className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">
+          Ningún local coincide con la búsqueda.
+        </p>
+      </FiltroLocales>
+    </>
   );
 }

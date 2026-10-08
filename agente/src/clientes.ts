@@ -1,7 +1,7 @@
 // Clientes de los servicios externos: Supabase (menú y pedidos), Evolution API (WhatsApp) y Whisper (audios).
 // Todos con tiempo máximo, sin seguir redirecciones (una clave nunca viaja a otro servidor) y sin poner
 // claves ni respuestas internas en los errores.
-import type { Contexto, PedidoCliente, ProductoMenu, ResultadoCrearPedido } from "./tipos.ts";
+import type { Contexto, PedidoCliente, PedidoWeb, ProductoMenu, ResultadoCrearPedido } from "./tipos.ts";
 import { normalizarAsistente } from "../../src/lib/asistente.ts";
 
 export class ErrorServicio extends Error {
@@ -109,6 +109,16 @@ export class Supabase {
       };
     }
     return r;
+  }
+
+  // Tiempo de respuesta (métricas del super admin, migración 0014).
+  async registrarRespuesta(instancia: string, segundos: number): Promise<void> {
+    await this.rpc("agente_registrar_respuesta", { p_instancia: instancia, p_segundos: segundos });
+  }
+
+  // Pedido del menú guardado con su código corto. Solo lo encuentra el local de esa instancia y caduca a las 24 h.
+  pedidoWeb(instancia: string, codigo: string): Promise<PedidoWeb> {
+    return this.rpc("agente_pedido_web", { p_instancia: instancia, p_codigo: codigo }) as Promise<PedidoWeb>;
   }
 
   async pedidosCliente(instancia: string, telefono: string): Promise<PedidoCliente[]> {

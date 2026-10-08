@@ -69,6 +69,44 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Super admin: estilo «Warm Culinary Modernism» (diseño de Stitch). Redefine los mismos tokens solo dentro de
+   .tema-superadmin, así los componentes compartidos (botones, campos, tarjetas) toman estos colores sin cambiar
+   el menú público ni el panel del dueño. Fuentes: Plus Jakarta Sans (títulos) e Inter (texto). */
+.tema-superadmin {
+  --background: #fbf9f5;
+  --panel: #fbf9f5;
+  --card: #ffffff;
+  --surface: #f5f1eb;
+  --foreground: #2d2622;
+  --muted: #6b635b;
+  --line: #efece6;
+  --field: #ddd7ce;
+  --exito: #2e7d5b;
+  --exito-suave: #eaf5ee;
+  --aviso: #b26a00;
+  --aviso-suave: #fef5e7;
+  --peligro: #b3432e;
+  --peligro-suave: #fbeae5;
+  --acento: #c45a38;
+  --sobre-acento: #ffffff;
+  --acento-texto: #9b3e22;
+  --acento-suave: #f8efe9;
+  --sombra-1: 0 1px 3px rgb(132 85 60 / 0.04), 0 4px 12px rgb(132 85 60 / 0.03);
+  --sombra-2: 0 4px 6px -1px rgb(132 85 60 / 0.06), 0 10px 24px -3px rgb(132 85 60 / 0.08);
+  /* Con «@theme inline», font-titulo y font-sans usan directamente las variables de next/font del <html>:
+     se redirigen aquí para que dentro del super admin sean Plus Jakarta Sans e Inter. */
+  --font-fraunces: var(--font-jakarta);
+  --font-work-sans: var(--font-inter);
+  font-family: var(--font-inter);
+  font-feature-settings: "tnum";
+}
+@layer base {
+  .tema-superadmin :is(h1, h2, h3) {
+    font-family: var(--font-jakarta);
+    letter-spacing: -0.015em;
+  }
+}
+
 /* En la capa base para que las utilidades (outline-none, font-sans…) puedan pisarlas. */
 @layer base {
   :focus-visible {

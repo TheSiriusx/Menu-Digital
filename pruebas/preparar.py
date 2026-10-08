@@ -6,7 +6,7 @@ import os, secrets, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from db import sql
 from comun import inscribir_totp
-from foto import tomar
+from foto import SLUG, tomar
 
 tomar()   # los datos reales de Nueva Victoria, antes de tocar nada
 
@@ -34,7 +34,7 @@ sql(f"""
 insert into public.perfiles (id, negocio_id, rol)
 select id, null, 'superadmin' from auth.users where email in ('{sa[0]}', '{sa2[0]}');
 insert into public.perfiles (id, negocio_id, rol)
-select u.id, n.id, 'dueno' from auth.users u, public.negocios n where u.email in ('{own[0]}', '{e2e[0]}') and n.slug = 'nueva-victoria';""")
+select u.id, n.id, 'dueno' from auth.users u, public.negocios n where u.email in ('{own[0]}', '{e2e[0]}') and n.slug = '{SLUG}';""")
 
 secreto, codigo_usado = inscribir_totp(sa[0], sa[1])
 def escribir(nombre, texto):

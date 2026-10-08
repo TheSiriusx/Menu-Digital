@@ -1,5 +1,5 @@
 import { normalizarTelefono } from "@/lib/pedido";
-import { PLANES, TIPOS } from "@/lib/tipos";
+import { TIPOS } from "@/lib/tipos";
 
 // Estado que devuelven las acciones de formulario del panel.
 export type Estado = { error?: string; ok?: string };
@@ -113,12 +113,6 @@ export function leerSlug(datos: FormData, campo: string, nombre: string): string
 export function leerTipo(datos: FormData, campo: string): string {
   const valor = bruto(datos, campo);
   if (!TIPOS.some((t) => t.valor === valor)) throw new ErrorValidacion("Elige un tipo de negocio.");
-  return valor;
-}
-
-export function leerPlan(datos: FormData, campo: string): string {
-  const valor = bruto(datos, campo);
-  if (!PLANES.some((p) => p.valor === valor)) throw new ErrorValidacion("Elige un plan.");
   return valor;
 }
 

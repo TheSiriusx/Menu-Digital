@@ -41,6 +41,18 @@ Tasa del día: Bs 52,35 por $1
 Nombre: Juan Pérez
 Retiro en el local
 
+Código de tu pedido: *P-4F7K2Q*
+```
+
+**Código corto (desde la migración 0013).** Al pulsar «Enviar pedido por WhatsApp», el menú guarda el carrito en
+`pedidos_web` (función pública `guardar_pedido_web`, con topes) y el mensaje termina solo con el código. El agente lo
+busca con `agente_pedido_web(instancia, código)` —solo entre los pedidos de ese local y de las últimas 24 h— y
+registra con `crear_pedido` usando el origen `web-CÓDIGO` (reenviar el mismo código no duplica el pedido).
+
+**Respaldo:** si el menú no pudo guardar el carrito (sin conexión, base caída), el mensaje lleva en su lugar el
+bloque con el pedido completo, que el agente sigue aceptando:
+
+```
 [[PEDIDO v1|negocio=nueva-victoria|items=a1b2c3d4x2,e5f6a7b8x1|total=19.00|tasa=52.35|entrega=retiro]]
 ```
 

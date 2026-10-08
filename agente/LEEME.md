@@ -9,7 +9,7 @@ solo guarda las conversaciones (SQLite, en el volumen `agente_datos`).
 
 | Situación | Qué pasa | ¿IA? |
 |---|---|---|
-| Llega el mensaje del menú web `[[PEDIDO v1\|…]]` | Registra el pedido (`crear_pedido`), responde con el total real y los datos de pago, avisa al dueño | No |
+| Llega el mensaje del menú web (código `P-4F7K2Q` o bloque `[[PEDIDO v1\|…]]`) | Registra el pedido (`crear_pedido`), responde con el total real y los datos de pago, avisa al dueño | No |
 | «quiero 2 canillas y un café» | La IA arma el pedido → el sistema muestra el resumen → **solo con un «sí»** se registra | Sí (propone) |
 | Pregunta por precios, productos, horario, delivery | Responde con el menú y la configuración reales | Sí |
 | «¿Cómo va mi pedido?» / «cancélalo» | Consulta sus pedidos; cancela solo si está «nuevo» (devuelve stock) | Sí (herramientas) |

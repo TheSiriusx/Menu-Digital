@@ -36,6 +36,11 @@ export type PedidoCliente = {
 
 export type ItemPedido = { codigo: string; cantidad: number };
 
+// Pedido del menú guardado con su código corto (agente_pedido_web, migración 0013).
+export type PedidoWeb =
+  | { ok: true; slug: string; items: ItemPedido[]; entrega: "retiro" | "domicilio"; total_usd: number; tasa_bs: number }
+  | { ok: false; error: string };
+
 export type ResultadoCrearPedido =
   | {
       ok: true;
@@ -63,6 +68,7 @@ export type Entrante = {
   texto: string;
   base64: string | null;
   mimetype: string | null;
+  recibido?: number;          // cuándo llegó al agente (ms), para medir el tiempo de respuesta
 };
 
 export type Contacto = { id: number; instancia: string; telefono: string | null; lid: string | null; nombre: string | null; jid: string };

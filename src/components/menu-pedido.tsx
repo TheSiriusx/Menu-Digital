@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { guardarPedidoWeb } from "@/app/[slug]/actions";
 import { Cantidad, Miniatura, ProductoCard } from "@/components/producto-card";
 import {
   cantidadTotal,
@@ -35,6 +36,7 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
     direccion: "",
     notas: "",
   });
+  const [enviando, setEnviando] = useState(false);
 
   const categoriasConProductos = categorias.filter((c) => c.productos.length > 0);
   const todos = [...categoriasConProductos.flatMap((c) => c.productos), ...sinCategoria];
@@ -54,14 +56,32 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
     dialogo.current?.focus();
   }
 
-  function enviar(e: FormEvent<HTMLFormElement>) {
+  async function enviar(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const url = urlWhatsApp(negocio.telefono_whatsapp, construirMensaje(negocio, lineas, datos));
-    if (!url) return;
+    if (enviando || !puedePedir) return;
 
-    const ventana = window.open(url, "_blank");
-    if (ventana) ventana.opener = null;
-    else window.location.href = url; // el navegador bloqueó la ventana nueva
+    // La ventana se abre YA, dentro del clic: si se abriera después de esperar al servidor, el navegador la
+    // bloquearía. Luego se le pone la dirección de WhatsApp.
+    const ventana = window.open("", "_blank");
+    setEnviando(true);
+    // El carrito se guarda y el mensaje lleva solo el código corto. Si no se pudo (o tarda), va el bloque largo.
+    const codigo = await Promise.race([
+      guardarPedidoWeb(negocio.slug, lineas.map((l) => ({ producto: l.producto.id, cantidad: l.cantidad })), datos.entrega).catch(() => null),
+      new Promise<null>((listo) => setTimeout(() => listo(null), 6000)),
+    ]);
+    setEnviando(false);
+
+    const url = urlWhatsApp(negocio.telefono_whatsapp, construirMensaje(negocio, lineas, datos, codigo));
+    if (!url) {
+      ventana?.close();
+      return;
+    }
+    if (ventana) {
+      ventana.opener = null;
+      ventana.location.href = url;
+    } else {
+      window.location.href = url; // el navegador bloqueó la ventana nueva
+    }
 
     vaciar();
     dialogo.current?.close();
@@ -251,10 +271,11 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
             {puedePedir ? (
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-2.5 rounded-[14px] bg-exito p-[15px] text-[15px] font-semibold text-white"
+                disabled={enviando}
+                className="flex w-full items-center justify-center gap-2.5 rounded-[14px] bg-exito p-[15px] text-[15px] font-semibold text-white disabled:opacity-70"
               >
                 <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.4 1.26 4.83L2 22l5.34-1.29a9.9 9.9 0 0 0 4.7 1.19h.01c5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2Zm5.8 14.1c-.24.68-1.4 1.3-1.94 1.38-.5.08-1.13.11-1.82-.11a16 16 0 0 1-1.66-.61c-2.93-1.27-4.84-4.2-4.99-4.4-.15-.19-1.2-1.6-1.2-3.05s.75-2.16 1.02-2.45c.26-.29.58-.36.77-.36h.55c.18 0 .42-.03.64.5.24.58.82 2 .89 2.15.08.15.13.32.02.51-.1.19-.15.31-.3.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.3.77 1.28 1.66 2.08 1.14 1.02 2.1 1.34 2.4 1.5.3.15.47.13.64-.08.18-.2.75-.87.95-1.17.2-.3.4-.25.68-.15.28.1 1.77.83 2.07.98.3.15.5.22.57.35.08.13.08.75-.16 1.43Z" /></svg>
-                Enviar pedido por WhatsApp
+                {enviando ? "Abriendo WhatsApp…" : "Enviar pedido por WhatsApp"}
               </button>
             ) : (
               <p className="rounded-[10px] bg-surface p-3 text-sm text-muted">

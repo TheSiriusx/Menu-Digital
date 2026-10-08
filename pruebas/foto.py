@@ -7,7 +7,7 @@ from db import sql
 
 S = os.path.dirname(os.path.abspath(__file__))
 ARCHIVO = os.path.join(S, "foto-real.json")
-SLUG = "nueva-victoria"
+SLUG = "masscafe-1507"   # el local real (antes Nueva Victoria; mismo id)
 TABLAS = ["categorias", "productos", "clientes", "pedidos", "pedido_items", "agente_avisos"]
 
 

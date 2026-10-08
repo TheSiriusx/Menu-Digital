@@ -4,7 +4,7 @@ import type { AvisoPendiente } from "../src/clientes.ts";
 import { Contextos, crearCola, type Deps } from "../src/flujo.ts";
 import type { Herramienta, MensajeIA, Modelo, RespuestaModelo } from "../src/ia.ts";
 import { Menus } from "../src/menu.ts";
-import type { ConfigAsistente, Contexto, PedidoCliente, ProductoMenu, ResultadoCrearPedido } from "../src/tipos.ts";
+import type { ConfigAsistente, Contexto, PedidoCliente, PedidoWeb, ProductoMenu, ResultadoCrearPedido } from "../src/tipos.ts";
 
 export const INSTANCIA = "menu-nueva-victoria";
 export const PROPIO = "584120000000";   // el WhatsApp del local
@@ -42,6 +42,10 @@ export class FakeSupabase {
   avisos: AvisoPendiente[] = [];
   resultados: { id: number; ok: boolean; error: string | null }[] = [];
   respuestaCrear: ((a: Record<string, unknown>) => ResultadoCrearPedido) | null = null;
+  // Pedidos del menú guardados con código corto (agente_pedido_web). «falla» simula que Supabase no responde.
+  pedidosWeb: Record<string, PedidoWeb | "falla"> = {
+    "4F7K2Q": { ok: true, slug: "nueva-victoria", items: [{ codigo: "aaaa0001", cantidad: 2 }, { codigo: "aaaa0004", cantidad: 1 }], entrega: "retiro", total_usd: 3.5, tasa_bs: 50 },
+  };
 
   constructor(cfg: Partial<ConfigAsistente> = {}, activo = true) {
     this.ctx = {
@@ -73,6 +77,17 @@ export class FakeSupabase {
     });
     const total = Math.round(items.reduce((t, i) => t + i.cantidad * i.precio_unitario_usd, 0) * 100) / 100;
     return { ok: true, duplicado: false, pedido_id: "c0ffee01-0000-4000-8000-000000000001", total_usd: total, tasa_bs: 50, items };
+  }
+  respuestaFalla = false;
+  async registrarRespuesta(instancia: string, segundos: number) {
+    this.reg("registrarRespuesta", { instancia, segundos });
+    if (this.respuestaFalla) throw new Error("supabase: no alcanzable");
+  }
+  async pedidoWeb(instancia: string, codigo: string): Promise<PedidoWeb> {
+    this.reg("pedidoWeb", { instancia, codigo });
+    const p = instancia === INSTANCIA ? this.pedidosWeb[codigo] : undefined;
+    if (p === "falla") throw new Error("supabase: no alcanzable");
+    return p ?? { ok: false, error: "no_encontrado" };
   }
   async pedidosCliente(instancia: string, telefono: string) {
     this.reg("pedidosCliente", { instancia, telefono });
@@ -164,6 +179,7 @@ export function montar(opciones: { cfg?: Partial<ConfigAsistente>; activo?: bool
     dormir: async () => {},
     log: (m) => logs.push(m),
     menuUrlBase: "https://menu.ejemplo",
+    respuestas: new Map(),
   };
   const cola = crearCola(deps, 5);
   return { deps, cola, supabase, evolution, modelo, logs, avanzar: (ms: number) => (ahora = new Date(ahora.getTime() + ms)) };

@@ -41,6 +41,61 @@ test("pedido del menú tal como lo manda la web (código explicado y en monoespa
   assert.match(m.evolution.a(CLIENTE), /Recibí tu pedido/);
 });
 
+// El menú guarda el carrito y el mensaje termina con el código corto (lo normal desde la migración 0013).
+const CORTO = (codigo = "4F7K2Q") => `Hola *Panadería Nueva Victoria*, quiero hacer un pedido:\n\n2 x Pan canilla — $1,00\n1 x Torta de chocolate — $2,50\n\n*Total: $3,50*\n\nNombre: Ana Gómez\nRetiro en el local\nNotas: Bien tostado\n\nCódigo de tu pedido: *P-${codigo}*`;
+
+test("pedido del menú con código corto: lo busca en la base y lo registra sin IA", async () => {
+  const m = montar();
+  await llega(m, evento(CORTO(), { id: "CORTO1" }));
+  assert.deepEqual(m.supabase.de("pedidoWeb"), [{ instancia: "menu-nueva-victoria", codigo: "4F7K2Q" }], "lo busca solo en su local");
+  const [c] = m.supabase.de("crearPedido");
+  assert.deepEqual(c?.items, [{ codigo: "aaaa0001", cantidad: 2 }, { codigo: "aaaa0004", cantidad: 1 }], "los productos salen de la base, no del texto");
+  assert.equal(c?.origen, "web-4F7K2Q", "el código evita pedidos repetidos");
+  assert.equal(c?.nombre, "Ana Gómez");
+  assert.equal(c?.notas, "Bien tostado");
+  assert.equal(m.modelo.recibido.length, 0, "la IA no interviene");
+  assert.match(m.evolution.a(CLIENTE), /¡Listo, Ana! Recibí tu pedido #C0FFEE01/);
+  assert.match(m.evolution.a(PROPIO), /🛒 Nuevo pedido #C0FFEE01/);
+});
+
+test("código corto escrito a mano en minúsculas: también vale", async () => {
+  const m = montar();
+  await llega(m, evento("mi pedido es p-4f7k2q"));
+  assert.equal(m.supabase.de("pedidoWeb")[0]?.codigo, "4F7K2Q");
+  assert.equal(m.supabase.de("crearPedido").length, 1);
+});
+
+test("código corto que no existe (o de otro local): lo dice y manda al menú", async () => {
+  const m = montar();
+  await llega(m, evento(CORTO("ZZZZZZ")));
+  assert.equal(m.supabase.de("crearPedido").length, 0);
+  assert.match(m.evolution.a(CLIENTE), /No encontré el pedido P-ZZZZZZ/);
+});
+
+test("código corto vencido: lo explica", async () => {
+  const m = montar();
+  m.supabase.pedidosWeb["VVVVVV"] = { ok: false, error: "vencido" };
+  await llega(m, evento(CORTO("VVVVVV")));
+  assert.equal(m.supabase.de("crearPedido").length, 0);
+  assert.match(m.evolution.a(CLIENTE), /venció: los códigos duran 24 horas/);
+});
+
+test("dos códigos distintos en el mismo mensaje: pide uno a la vez", async () => {
+  const m = montar();
+  await llega(m, evento("P-4F7K2Q y también P-ABCDEF"));
+  assert.equal(m.supabase.de("pedidoWeb").length, 0);
+  assert.match(m.evolution.a(CLIENTE), /más de un pedido a la vez/);
+});
+
+test("si la base no responde al buscar el código: disculpa y aviso al dueño", async () => {
+  const m = montar();
+  m.supabase.pedidosWeb["4F7K2Q"] = "falla";
+  await llega(m, evento(CORTO()));
+  assert.equal(m.supabase.de("crearPedido").length, 0);
+  assert.match(m.evolution.a(CLIENTE), /Una persona del equipo te atiende/);
+  assert.match(m.evolution.a(PROPIO), /pedido P-4F7K2Q .* no se pudo leer/);
+});
+
 test("el mismo mensaje dos veces (webhook repetido) se atiende una sola vez", async () => {
   const m = montar();
   await llega(m, evento(BLOQUE(), { id: "REP" }), evento(BLOQUE(), { id: "REP" }));
@@ -317,4 +372,41 @@ test("audio que no se pudo transcribir: pide que lo escriba", async () => {
   const m = montar({ whisper: null });
   await llega(m, evento("", { tipo: "audio" }));
   assert.match(m.evolution.a(CLIENTE), /No pude escuchar tu audio/);
+});
+
+// ------------------------------------------------------------------ tiempo de respuesta (métricas)
+test("tiempo de respuesta: se anota una vez por lote, desde el primer mensaje hasta la primera respuesta", async () => {
+  const m = montar();
+  m.modelo.completar = async () => {
+    m.avanzar(7000); // la IA tarda 7 s
+    return { contenido: "¡Hola! Sí tenemos pan canilla 😊", llamadas: [] };
+  };
+  await llega(m, evento("hola", { id: "T1" }), evento("¿tienen pan?", { id: "T2" }));
+  assert.deepEqual(m.supabase.de("registrarRespuesta"), [{ instancia: "menu-nueva-victoria", segundos: 7 }]);
+  assert.equal(m.deps.respuestas?.size, 0, "no quedan lotes abiertos");
+});
+
+test("tiempo de respuesta: si el asistente no responde (apagado), no se anota", async () => {
+  const m = montar({ cfg: { agente_activo: false } });
+  await llega(m, evento("hola"));
+  assert.equal(m.supabase.de("registrarRespuesta").length, 0);
+});
+
+test("tiempo de respuesta: si la base falla al anotarlo, la conversación sigue igual", async () => {
+  const m = montar();
+  m.supabase.respuestaFalla = true;
+  await llega(m, evento("hola"));
+  assert.match(m.evolution.a(CLIENTE), /Hola/);
+  await new Promise((r) => setTimeout(r, 10));
+  assert.ok(m.logs.includes("no se pudo anotar el tiempo de respuesta"));
+});
+
+test("tiempo de respuesta: los avisos de estado (fuera de un lote) no cuentan", async () => {
+  const m = montar();
+  await llega(m, evento("hola"));
+  const antes = m.supabase.de("registrarRespuesta").length;
+  const { enviar } = await import("../src/envio.ts");
+  await enviar(m.deps, "menu-nueva-victoria", `${CLIENTE}@s.whatsapp.net`, "Tu pedido está listo", 1);
+  assert.equal(m.supabase.de("registrarRespuesta").length, antes);
+  assert.equal(m.deps.respuestas?.size, 0);
 });

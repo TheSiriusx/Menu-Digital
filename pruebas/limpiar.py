@@ -3,12 +3,12 @@ Uso: python3 pruebas/limpiar.py   (tras cualquier batería de pruebas de navegad
 import json, os, sys, urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from db import sql, _entorno, REF
-from foto import ARCHIVO as FOTO, iguales, leer, restaurar
+from foto import ARCHIVO as FOTO, SLUG, iguales, leer, restaurar
 
 S = os.path.dirname(os.path.abspath(__file__))
 SOLO_STORAGE = "--storage" in sys.argv   # solo vacía Storage (entre baterías)
 SIN_USUARIOS = "--datos" in sys.argv    # restaura los datos pero conserva los usuarios temporales
-NV = sql("select id from public.negocios where slug='nueva-victoria'")[0]["id"]
+NV = sql(f"select id from public.negocios where slug='{SLUG}'")[0]["id"]
 
 if not SOLO_STORAGE:
     # Locales de prueba (creados por las pruebas del super admin).
@@ -35,7 +35,7 @@ if restos:
     pedir(f"{e['NEXT_PUBLIC_SUPABASE_URL']}/storage/v1/object/menu-media", "DELETE", {"Authorization": "Bearer " + srv, "apikey": srv}, {"prefixes": restos})
 
 if leer() and not SOLO_STORAGE:
-    print("datos reales de Nueva Victoria restaurados:", iguales(leer()))
+    print(f"datos reales de {SLUG} restaurados:", iguales(leer()))
 if not SOLO_STORAGE and not SIN_USUARIOS:
     for f in ("e2e4.env", "e2e.env"):
         if os.path.exists(f"{S}/{f}"): os.remove(f"{S}/{f}")

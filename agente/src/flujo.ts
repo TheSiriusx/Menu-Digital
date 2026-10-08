@@ -15,14 +15,14 @@ import { estaAbierto, fechaLegible, hora12, momento, proximaApertura, textoHorar
 import { conversar, type MensajeIA, type Modelo } from "./ia.ts";
 import type { Menus } from "./menu.ts";
 import { normalizar } from "./normalizar.ts";
-import { leerPedidoDelMenu, registrarPedido } from "./pedidos.ts";
+import { leerCodigoCorto, leerPedidoDelMenu, registrarPedido } from "./pedidos.ts";
 import { comandoDueno, esConfirmacion, esNegacion, motivoHumano } from "./reglas.ts";
-import type { Contacto, Contexto, Entrante, ProductoMenu } from "./tipos.ts";
+import type { Contacto, Contexto, Entrante, ItemPedido, PedidoWeb, ProductoMenu } from "./tipos.ts";
 import { codigoPedido, formatUsd, limpio, precio } from "./texto.ts";
 
 export type ServicioSupabase = Pick<
   Supabase,
-  "contexto" | "menu" | "crearPedido" | "pedidosCliente" | "cancelarPedido" | "pedidosHoy" | "encendido" | "avisosTomar" | "avisoResultado"
+  "contexto" | "menu" | "crearPedido" | "pedidoWeb" | "registrarRespuesta" | "pedidosCliente" | "cancelarPedido" | "pedidosHoy" | "encendido" | "avisosTomar" | "avisoResultado"
 >;
 export type ServicioEvolution = Pick<Evolution, "enviarTexto" | "escribiendo" | "enviarImagen" | "descargarMedia">;
 
@@ -38,6 +38,8 @@ export type Deps = {
   dormir: (ms: number) => Promise<void>;
   log: (mensaje: string, extra?: Record<string, unknown>) => void;
   menuUrlBase: string | null;
+  // Tiempo de respuesta: contactos con un lote en curso → cuándo salió la primera respuesta (NaN = todavía no).
+  respuestas?: Map<number, number>;
 };
 
 const PAUSA_MANUAL_H = 2;      // el dueño le escribió a mano a un cliente
@@ -79,6 +81,7 @@ export function crearCola(deps: Deps, esperaMs: number) {
 export async function recibir(deps: Deps, cola: Cola<Entrante>, cuerpo: unknown): Promise<void> {
   const e = normalizar(cuerpo);
   if (!e || e.esGrupo) return;
+  e.recibido = deps.ahora().getTime();
   if (deps.almacen.yaProcesado(e.messageId)) return;
   deps.almacen.recordarNumeroPropio(e.instancia, e.numeroPropio);
   const ctx = await deps.contextos.de(e.instancia);
@@ -137,12 +140,54 @@ export async function comandoDelDueno(deps: Deps, ctx: Contexto, texto: string, 
   deps.almacen.marcarEnviado(id);
 }
 
+// ---------------------------------------------------------------- pedido del menú (código corto o bloque)
+async function registrarDelMenu(
+  deps: Deps,
+  ctx: Contexto,
+  contacto: Contacto,
+  menuUrl: string | null,
+  p: { items: ItemPedido[]; entrega: "retiro" | "domicilio"; slug: string; origen: string; nombre: string; direccion: string; notas: string },
+): Promise<void> {
+  const delicado = motivoHumano(p.notas);
+  const r = await registrarPedido(deps.supabase, ctx, contacto, {
+    items: p.items, entrega: p.entrega, direccion: p.direccion || null, notas: p.notas || null,
+    nombre: p.nombre || contacto.nombre, origen: p.origen, slug: p.slug,
+    alerta: delicado === "alergia" ? "alergias o ingredientes" : delicado ? "un tema delicado" : null,
+  }, deps.ahora(), menuUrl);
+  if (r.creado) deps.menus.invalidar(ctx.instancia);
+  deps.almacen.borrarBorrador(contacto.id);
+  await enviar(deps, ctx.instancia, contacto.jid, r.respuesta, contacto.id);
+  if (r.avisoDueno) await avisarDueno(deps, ctx, r.avisoDueno);
+}
+
 // ---------------------------------------------------------------- lote de mensajes de un cliente
 export async function procesarLote(deps: Deps, entrantes: Entrante[]): Promise<void> {
   const ultimo = entrantes[entrantes.length - 1];
   const ctx = await deps.contextos.de(ultimo.instancia);
   if (!ctx) return;
   const contacto = deps.almacen.contacto(ultimo.instancia, ultimo.telefono, ultimo.lid, ultimo.nombrePush, ultimo.jid);
+  deps.respuestas?.set(contacto.id, Number.NaN);
+  try {
+    await atenderLote(deps, entrantes, ctx, contacto);
+  } finally {
+    anotarRespuesta(deps, ctx, contacto.id, entrantes);
+  }
+}
+
+// Tiempo de respuesta (métricas del super admin): desde que llegó el primer mensaje del lote hasta que salió la
+// primera respuesta del asistente a ese cliente. Si no respondió (pausa, apagado, comando), no se anota. Si la
+// base no responde, la conversación sigue igual.
+function anotarRespuesta(deps: Deps, ctx: Contexto, contactoId: number, entrantes: Entrante[]) {
+  const primera = deps.respuestas?.get(contactoId);
+  deps.respuestas?.delete(contactoId);
+  const llegadas = entrantes.map((e) => e.recibido).filter((t): t is number => typeof t === "number");
+  if (primera === undefined || Number.isNaN(primera) || llegadas.length === 0) return;
+  const segundos = Math.max(0, Math.round((primera - Math.min(...llegadas)) / 1000));
+  deps.supabase.registrarRespuesta(ctx.instancia, segundos).catch((e) => deps.log("no se pudo anotar el tiempo de respuesta", { error: String(e) }));
+}
+
+async function atenderLote(deps: Deps, entrantes: Entrante[], ctx: Contexto, contacto: Contacto): Promise<void> {
+  const ultimo = entrantes[entrantes.length - 1];
   const destino = contacto.jid;
 
   // 1) Todo lo que mandó queda guardado (aunque el asistente esté apagado: sirve de contexto después).
@@ -189,24 +234,45 @@ export async function procesarLote(deps: Deps, entrantes: Entrante[]): Promise<v
   const texto = textos.join("\n").trim();
   const menuUrl = deps.menuUrlBase ? `${deps.menuUrlBase.replace(/\/+$/, "")}/${ctx.negocio.slug}` : null;
 
-  // 3) Pedido del menú web: se registra sin IA.
+  // 3) Pedido del menú web: se registra sin IA. Lo normal es el código corto (el carrito quedó guardado en la
+  //    base); el bloque con el pedido completo es el respaldo cuando el menú no pudo guardarlo.
+  const armar = menuUrl ? ` Puedes armarlo de nuevo en el menú: ${menuUrl}` : "";
+  const varios = "Recibí más de un pedido a la vez 😅. Envíalos de uno en uno, por favor.";
   if (texto.includes("[[PEDIDO")) {
     const leido = leerPedidoDelMenu(texto);
     if (!leido.ok) {
-      const armar = menuUrl ? ` Puedes armarlo de nuevo en el menú: ${menuUrl}` : "";
-      await enviar(deps, ctx.instancia, destino, leido.motivo === "varios" ? "Recibí más de un pedido a la vez 😅. Envíalos de uno en uno, por favor." : `No pude leer tu pedido 😕.${armar}`, contacto.id);
+      await enviar(deps, ctx.instancia, destino, leido.motivo === "varios" ? varios : `No pude leer tu pedido 😕.${armar}`, contacto.id);
       return;
     }
-    const delicado = motivoHumano(leido.notas);
-    const r = await registrarPedido(deps.supabase, ctx, contacto, {
-      items: leido.items, entrega: leido.entrega, direccion: leido.direccion || null, notas: leido.notas || null,
-      nombre: leido.nombre || contacto.nombre, origen: origenPedido ?? ultimo.messageId, slug: leido.slug,
-      alerta: delicado === "alergia" ? "alergias o ingredientes" : delicado ? "un tema delicado" : null,
-    }, deps.ahora(), menuUrl);
-    if (r.creado) deps.menus.invalidar(ctx.instancia);
-    deps.almacen.borrarBorrador(contacto.id);
-    await enviar(deps, ctx.instancia, destino, r.respuesta, contacto.id);
-    if (r.avisoDueno) await avisarDueno(deps, ctx, r.avisoDueno);
+    await registrarDelMenu(deps, ctx, contacto, menuUrl, { ...leido, origen: origenPedido ?? ultimo.messageId });
+    return;
+  }
+  const corto = leerCodigoCorto(texto);
+  if (corto.ok || corto.motivo !== "sin_codigo") {
+    if (!corto.ok) {
+      await enviar(deps, ctx.instancia, destino, varios, contacto.id);
+      return;
+    }
+    let web: PedidoWeb | null;
+    try {
+      web = await deps.supabase.pedidoWeb(ctx.instancia, corto.codigo);
+    } catch {
+      web = null;
+    }
+    if (!web?.ok) {
+      const respuesta = !web
+        ? "Tuve un problema para leer tu pedido 🙏. Una persona del equipo te atiende enseguida."
+        : web.error === "vencido"
+          ? `Ese pedido ya venció: los códigos duran 24 horas 😕.${armar}`
+          : `No encontré el pedido P-${corto.codigo} 😕.${armar}`;
+      await enviar(deps, ctx.instancia, destino, respuesta, contacto.id);
+      if (!web) {
+        await avisarDueno(deps, ctx, `⚠️ Llegó el pedido P-${corto.codigo} de ${contacto.nombre ?? "un cliente"} (${contacto.telefono ?? "sin número"}) y no se pudo leer (el sistema no respondió). Atiéndelo a mano.`);
+      }
+      return;
+    }
+    // Origen «web-CÓDIGO»: si el cliente reenvía el mismo código, crear_pedido responde «ya lo tenía».
+    await registrarDelMenu(deps, ctx, contacto, menuUrl, { ...corto, items: web.items, entrega: web.entrega, slug: web.slug, origen: `web-${corto.codigo}` });
     return;
   }
 
@@ -313,7 +379,7 @@ export function armarPrompt(ctx: Contexto, contacto: Contacto, menu: ProductoMen
     : "(El menú no está disponible ahora mismo: no des precios; ofrece pasar a una persona.)";
 
   return [
-    `Eres la asistente virtual de ${ctx.negocio.nombre}, una panadería en Venezuela. Escribes SIEMPRE en español y como por WhatsApp: cálida, breve (1 a 3 frases), tuteas al cliente y usas pocos emojis. Responde solo con el mensaje para el cliente, sin explicar lo que piensas. Si te preguntan si eres un robot, di con honestidad que eres la asistente virtual de la panadería.`,
+    `Eres la asistente virtual de ${ctx.negocio.nombre}, un local de comida en Venezuela. Escribes SIEMPRE en español y como por WhatsApp: cálida, breve (1 a 3 frases), tuteas al cliente y usas pocos emojis. Responde solo con el mensaje para el cliente, sin explicar lo que piensas. Si te preguntan si eres un robot, di con honestidad que eres la asistente virtual de la panadería.`,
     `Ahora: ${fechaLegible(ahora)} (hora de Venezuela). El local está ${abierto ? "ABIERTO" : `CERRADO${prox ? ` (abre ${prox.cuando} a las ${prox.hora})` : ""}`}. Horario: ${textoHorario(c.horario)}.`,
     `${abierto || c.acepta_fuera_horario ? "Se aceptan pedidos ahora (si está cerrado, se preparan al abrir)." : "Con el local cerrado NO se toman pedidos: dile cuándo abre."}`,
     `Entregas: ${entregas}${c.delivery_texto ? ` ${limpio(c.delivery_texto, 200)}` : ""}`,

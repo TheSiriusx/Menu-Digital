@@ -56,7 +56,7 @@ await A.clic("Verificar");
 await A.esperarRuta(() => location.pathname === "/superadmin");
 await A.quieta();
 ok(A.ruta() === "/superadmin", `código correcto -> /superadmin (${A.ruta()})`);
-ok((await A.texto()).includes("Panadería Nueva Victoria"), "y ve la lista de locales");
+ok(/\d+ registrados?/.test(await A.texto()), "y ve la lista de locales");
 await A.ir("/login/verificar");
 ok(A.ruta() === "/superadmin", "con el segundo factor ya verificado, /login/verificar no vuelve a pedirlo");
 await A.ir("/superadmin/mfa");

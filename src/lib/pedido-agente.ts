@@ -2,9 +2,11 @@
 // poder usar exactamente este mismo código en el nodo "Code" de n8n (docs/n8n/parsear-pedido.js se
 // genera desde aquí con `node scripts/generar-parser-n8n.mjs`).
 //
-// El mensaje sigue siendo legible para el cliente. Al final lleva UNA línea estructurada:
+// El mensaje sigue siendo legible para el cliente. Al final lleva UNA de estas dos líneas:
 //
+//   Código de tu pedido: *P-4F7K2Q*        ← lo normal: el carrito quedó guardado en la base (0013_pedido_web.sql)
 //   [[PEDIDO v1|negocio=nueva-victoria|items=a1b2c3d4x2,e5f6a7b8x1|total=19.00|tasa=52.35|entrega=retiro]]
+//                                          ← respaldo, si no se pudo guardar: el pedido completo en el mensaje
 //
 // y encima líneas con prefijos fijos para el texto libre ("Nombre: ", "Entrega a domicilio: ", "Notas: ").
 //
@@ -106,13 +108,6 @@ export function parsearPedido(texto: string): ResultadoLectura {
   if (!/^\d{1,7}(\.\d{1,4})?$/.test(campos.tasa)) return fallo("tasa_invalida");
   if (campos.entrega !== "retiro" && campos.entrega !== "domicilio") return fallo("entrega_invalida");
 
-  // Texto libre: primera línea con cada prefijo, siempre por encima del bloque.
-  const previas = lineas.slice(0, indices[0]);
-  const buscar = (prefijo: string, max: number) => {
-    const l = previas.find((x) => x.startsWith(prefijo));
-    return l ? limpiar(l.slice(prefijo.length), max) : "";
-  };
-
   return {
     ok: true,
     version: VERSION_FORMATO,
@@ -121,8 +116,37 @@ export function parsearPedido(texto: string): ResultadoLectura {
     totalDeclarado: Number(campos.total),
     tasaDeclarada: Number(campos.tasa),
     entrega: campos.entrega,
-    nombre: buscar("Nombre: ", 60),
-    direccion: buscar("Entrega a domicilio: ", 200),
-    notas: buscar("Notas: ", 300),
+    ...textoLibre(lineas.slice(0, indices[0])),
   };
+}
+
+// Texto libre: primera línea con cada prefijo, siempre por encima del bloque o del código.
+function textoLibre(previas: string[]) {
+  const buscar = (prefijo: string, max: number) => {
+    const l = previas.find((x) => x.startsWith(prefijo));
+    return l ? limpiar(l.slice(prefijo.length), max) : "";
+  };
+  return { nombre: buscar("Nombre: ", 60), direccion: buscar("Entrega a domicilio: ", 200), notas: buscar("Notas: ", 300) };
+}
+
+// ---------------------------------------------------------------- código corto (0013)
+// 6 caracteres sin 0/O ni 1/I/L. El pedido (productos, cantidades, entrega) está en la base: el código solo lo
+// señala, y el agente lo busca únicamente entre los pedidos del local por el que llegó el mensaje.
+const CODIGO_CORTO = /\bP-([2-9A-HJKMNP-Z]{6})\b/gi;
+
+export function lineaCodigoCorto(codigo: string): string {
+  return `Código de tu pedido: *P-${codigo}*`;
+}
+
+export type CodigoLeido = { ok: true; codigo: string; nombre: string; direccion: string; notas: string };
+
+// Errores: mensaje_invalido, sin_codigo, multiples_codigos.
+export function parsearCodigoCorto(texto: string): CodigoLeido | ErrorLectura {
+  if (typeof texto !== "string" || texto.length === 0 || texto.length > 4000) return fallo("mensaje_invalido");
+  const codigos = new Set([...texto.matchAll(CODIGO_CORTO)].map((m) => m[1].toUpperCase()));
+  if (codigos.size === 0) return fallo("sin_codigo");
+  if (codigos.size > 1) return fallo("multiples_codigos");
+  const lineas = texto.replace(/\r\n?/g, "\n").split("\n").map((l) => l.trim());
+  const donde = lineas.findIndex((l) => new RegExp(CODIGO_CORTO.source, "i").test(l));
+  return { ok: true, codigo: [...codigos][0], ...textoLibre(lineas.slice(0, donde)) };
 }
