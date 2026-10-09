@@ -2,7 +2,7 @@ import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { estadoMfa } from "@/lib/mfa";
-import { leerId } from "@/lib/validacion";
+import { ErrorValidacion, leerId } from "@/lib/validacion";
 import type { Negocio } from "@/types/menu";
 import type { CategoriaPanel, ProductoPanel } from "@/types/panel";
 
@@ -133,4 +133,21 @@ export async function cargarPanel(negocioId: string): Promise<Panel> {
 export async function cargarPanelDueno(): Promise<Panel> {
   const { negocioId } = await requerirDueno();
   return cargarPanel(negocioId);
+}
+
+// Contraseña nueva desde un formulario (campos «clave» y «repetir»). La usan el panel (Mi cuenta) y la
+// recuperación por correo (/login/nueva-clave), para que las reglas y los mensajes sean los mismos.
+export async function guardarClaveNueva(supabase: Awaited<ReturnType<typeof crearClienteServidor>>, datos: FormData) {
+  const clave = String(datos.get("clave") ?? "");
+  const repetir = String(datos.get("repetir") ?? "");
+  if (clave.length < 10) throw new ErrorValidacion("La contraseña debe tener al menos 10 caracteres.");
+  if (clave.length > 72) throw new ErrorValidacion("La contraseña no puede pasar de 72 caracteres.");
+  if (clave !== repetir) throw new ErrorValidacion("Las dos contraseñas no coinciden.");
+
+  const { error } = await supabase.auth.updateUser({ password: clave });
+  if (error) {
+    if (error.code === "same_password") throw new ErrorValidacion("La nueva contraseña debe ser distinta de la actual.");
+    if (error.code === "weak_password") throw new ErrorValidacion("Esa contraseña es demasiado fácil de adivinar. Elige otra.");
+    throw new ErrorValidacion("No se pudo cambiar la contraseña. Inténtalo de nuevo.");
+  }
 }

@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
-import { requerirNegocio, requerirUsuario } from "@/lib/admin";
+import { guardarClaveNueva, requerirNegocio, requerirUsuario } from "@/lib/admin";
 import { DIAS, NOMBRE_DIA, type Horario } from "@/lib/asistente";
 import { esEstado, ETIQUETA_ESTADO } from "@/lib/pedidos-estados";
 import { BUCKET, detectarFormato, MAX_BYTES_IMAGEN, MIME, rutaDesdeUrl, urlPublica } from "@/lib/imagenes";
@@ -184,19 +184,7 @@ export async function cerrarSesion() {
 
 export async function cambiarClave(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
-    const supabase = await requerirUsuario();
-    const clave = String(datos.get("clave") ?? "");
-    const repetir = String(datos.get("repetir") ?? "");
-    if (clave.length < 10) throw new ErrorValidacion("La contraseña debe tener al menos 10 caracteres.");
-    if (clave.length > 72) throw new ErrorValidacion("La contraseña no puede pasar de 72 caracteres.");
-    if (clave !== repetir) throw new ErrorValidacion("Las dos contraseñas no coinciden.");
-
-    const { error } = await supabase.auth.updateUser({ password: clave });
-    if (error) {
-      if (error.code === "same_password") throw new ErrorValidacion("La nueva contraseña debe ser distinta de la actual.");
-      if (error.code === "weak_password") throw new ErrorValidacion("Esa contraseña es demasiado fácil de adivinar. Elige otra.");
-      throw new ErrorValidacion("No se pudo cambiar la contraseña. Inténtalo de nuevo.");
-    }
+    await guardarClaveNueva(await requerirUsuario(), datos);
     return { ok: "Contraseña actualizada." };
   });
 }
