@@ -297,6 +297,7 @@ export function TarjetaLocal({ local: l, hoy, semana }: { local: LocalSa; hoy: M
             <span className="flex items-center gap-2">
               <Icono nombre="ajustes" tamano={18} className="text-(--acento-texto)" />
               Gestión rápida · Estado y dueño
+              {!l.duenos.length && <Pastilla tono="aviso">Sin dueño</Pastilla>}
             </span>
             <Icono nombre="chevron" tamano={16} className="text-muted transition-transform group-open/gestion:rotate-90" />
           </summary>
@@ -338,12 +339,12 @@ export function TarjetaLocal({ local: l, hoy, semana }: { local: LocalSa; hoy: M
               <FormAccion accion={vincularDueno} className="flex flex-wrap items-end gap-2">
                 <CampoNegocio id={l.id} />
                 <label className="min-w-0 flex-1 text-[13px] font-semibold">
-                  Vincular correo del dueño
+                  Correo del dueño
                   <input name="correo" type="email" required aria-label="Correo del dueño" placeholder="dueño@correo.com" className={`${estiloCampo} mt-1.5`} />
                 </label>
-                <Boton variante="suave">Vincular dueño</Boton>
+                <Boton variante="suave">Crear cuenta y vincular</Boton>
               </FormAccion>
-              <p className="mt-1.5 text-xs text-muted">La cuenta debe existir ya en Supabase (Authentication → Users).</p>
+              <p className="mt-1.5 text-xs text-muted">Si el correo no tiene cuenta, se crea con una contraseña temporal; si ya la tiene, solo se vincula.</p>
               {l.duenos.map((correo) => (
                 <form key={correo} action={quitarDueno} className="mt-2 flex items-center justify-between gap-2 text-[13px]">
                   <CampoNegocio id={l.id} />

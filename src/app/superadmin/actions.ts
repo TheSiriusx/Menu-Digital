@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath, updateTag } from "next/cache";
 import { requerirSuperadmin } from "@/lib/admin";
 import { asegurarInstancia, evolutionConfigurado, nombreInstancia } from "@/lib/evolution";
@@ -82,16 +83,28 @@ export async function cambiarEstado(datos: FormData) {
 }
 
 
+// Crea la cuenta del dueño (con una contraseña temporal que se muestra una sola vez) o, si ya existe, solo la
+// vincula. La cuenta la crea la función crear_dueno de la base (0015): la web no tiene la clave de servicio.
 export async function vincularDueno(_previo: Estado, datos: FormData): Promise<Estado> {
   return conValidacion(async () => {
     const { supabase } = await requerirSuperadmin();
     const id = leerId(datos, "negocio");
     const correo = leerCorreo(datos, "correo");
-    const { error } = await supabase.rpc("vincular_dueno", { p_correo: correo, p_negocio: id });
+    const clave = claveTemporal();
+    const { data, error } = await supabase.rpc("crear_dueno", { p_correo: correo, p_clave: clave, p_negocio: id });
     if (error) traducir("No se pudo vincular al dueño", error);
     publicar();
-    return { ok: `${correo} ahora es dueño de este local.` };
+    if (data === "vinculada") return { ok: `${correo} ya tenía cuenta: ahora es dueño de este local (su contraseña no cambia).` };
+    return {
+      ok: `Cuenta creada para ${correo}. Contraseña temporal: ${clave} — cópiala ahora, no se vuelve a mostrar. Pásasela al dueño y que la cambie en su panel (Configuración).`,
+    };
   });
+}
+
+// 14 caracteres al azar, sin los que se confunden al dictarlos (0/O, 1/l/I).
+function claveTemporal(): string {
+  const alfabeto = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  return Array.from(randomBytes(14), (b) => alfabeto[b % alfabeto.length]).join("");
 }
 
 export async function quitarDueno(datos: FormData) {
