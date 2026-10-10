@@ -78,7 +78,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
   return (
     <main>
       <AvisoPausa panel={panel} contexto={contexto} />
-      <Titulo descripcion="Precio, disponibilidad y stock de cada producto. Deja el stock vacío si no llevas control: entonces siempre está disponible.">
+      <Titulo descripcion="Precio, foto, disponibilidad y stock de cada producto. Toca la foto para cambiarla. Deja el stock vacío si no llevas control: entonces siempre está disponible.">
         Editar menú
       </Titulo>
       <Editable panel={panel} contexto={contexto}>

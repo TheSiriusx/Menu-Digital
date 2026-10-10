@@ -53,14 +53,22 @@ export function ProductoFila({
     <li className="px-5 py-3" data-producto={producto.nombre}>
       {/* Línea 1: foto, nombre y orden */}
       <div className="flex items-center gap-3">
-        {producto.foto_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={producto.foto_url} alt="" className="h-11 w-11 shrink-0 rounded-[9px] object-cover" />
-        ) : (
-          <div aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[9px] bg-surface font-titulo font-semibold text-muted">
-            {producto.nombre.charAt(0).toUpperCase()}
-          </div>
-        )}
+        {/* La miniatura es el botón para poner o cambiar la foto */}
+        <SubirImagen
+          accion={subirFotoProducto}
+          campos={{ negocio: negocioId, id: producto.id }}
+          lado={480}
+          texto={`${producto.foto_url ? "Cambiar" : "Agregar"} foto de ${producto.nombre}`}
+        >
+          {producto.foto_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={producto.foto_url} alt="" className="h-11 w-11 rounded-[9px] object-cover" />
+          ) : (
+            <div aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-[9px] bg-surface font-titulo font-semibold text-muted">
+              {producto.nombre.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </SubirImagen>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] font-semibold leading-tight">{producto.nombre}</p>
           <p className="truncate text-xs text-muted">

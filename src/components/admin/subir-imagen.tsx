@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition, type ReactNode } from "react";
 import type { Estado } from "@/lib/validacion";
 
 // Recorte cuadrado centrado + reducción + WebP. Al volver a dibujar la imagen en un canvas
@@ -32,11 +32,15 @@ export function SubirImagen({
   campos,
   lado,
   texto,
+  children,
 }: {
   accion: (datos: FormData) => Promise<Estado>;
   campos: Record<string, string>;
   lado: number;
   texto: string;
+  // Con `children`, eso mismo (p. ej. la miniatura del producto) es lo que se toca para elegir la imagen;
+  // `texto` queda como nombre accesible y el error se muestra flotando debajo, sin mover la fila.
+  children?: ReactNode;
 }) {
   const entrada = useRef<HTMLInputElement>(null);
   const [mensaje, setMensaje] = useState<Estado>({});
@@ -63,6 +67,47 @@ export function SubirImagen({
     });
   }
 
+  const entradaArchivo = (
+    <input
+      ref={entrada}
+      type="file"
+      accept="image/*"
+      disabled={ocupado}
+      aria-label={children ? texto : undefined}
+      className="sr-only"
+      onChange={(e) => alElegir(e.target.files?.[0])}
+    />
+  );
+
+  if (children) {
+    return (
+      <div className="relative shrink-0">
+        <label title={texto} className={`group/foto relative block cursor-pointer rounded-[9px] focus-within:ring-3 focus-within:ring-(--acento)/30 ${ocupado ? "opacity-60" : ""}`}>
+          {children}
+          <span
+            aria-hidden="true"
+            className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-card text-muted shadow-(--sombra-1) group-hover/foto:text-foreground"
+          >
+            {ocupado ? (
+              <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+                <circle cx="12" cy="13" r="3.5" />
+              </svg>
+            )}
+          </span>
+          {entradaArchivo}
+        </label>
+        {mensaje.error && (
+          <p role="alert" className="absolute top-full left-0 z-10 mt-1.5 w-60 rounded-lg border border-line bg-card px-3 py-2 text-xs text-peligro shadow-(--sombra-2)">
+            {mensaje.error}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <label
@@ -71,14 +116,7 @@ export function SubirImagen({
         }`}
       >
         {ocupado ? "Subiendo…" : texto}
-        <input
-          ref={entrada}
-          type="file"
-          accept="image/*"
-          disabled={ocupado}
-          className="sr-only"
-          onChange={(e) => alElegir(e.target.files?.[0])}
-        />
+        {entradaArchivo}
       </label>
       {mensaje.error && (
         <p role="alert" className="mt-2 text-sm text-peligro">
