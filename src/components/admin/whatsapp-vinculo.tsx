@@ -1,15 +1,16 @@
 "use client";
 
+import { botonPrimario } from "@/components/admin/estilos";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { consultarWhatsApp, pedirQR, type EstadoVinculo } from "@/app/admin/whatsapp/actions";
 
 const ESTADOS = {
-  conectado: { texto: "Conectado", clase: "bg-exito-suave text-exito" },
-  conectando: { texto: "Conectando…", clase: "bg-aviso-suave text-aviso" },
-  desconectado: { texto: "Desconectado", clase: "bg-peligro-suave text-peligro" },
-  desconocido: { texto: "Estado desconocido", clase: "bg-surface text-muted" },
-  sin_instancia: { texto: "Sin cuenta de WhatsApp", clase: "bg-surface text-muted" },
-  no_configurado: { texto: "No configurado", clase: "bg-surface text-muted" },
+  conectado: { texto: "Conectado", clase: "bg-brand text-accent" },
+  conectando: { texto: "Conectando…", clase: "bg-accent text-deep" },
+  desconectado: { texto: "Desconectado", clase: "bg-danger/10 text-danger" },
+  desconocido: { texto: "Estado desconocido", clase: "bg-surface-100 text-ink-muted" },
+  sin_instancia: { texto: "Sin cuenta de WhatsApp", clase: "bg-surface-100 text-ink-muted" },
+  no_configurado: { texto: "No configurado", clase: "bg-surface-100 text-ink-muted" },
 } as const;
 
 const CADA_CONSULTA_MS = 6000; // estado, con la pantalla abierta
@@ -105,7 +106,7 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
           <button
             type="button"
             onClick={empezar}
-            className="rounded-[10px] bg-(--acento) px-4 py-2 text-[13px] font-semibold text-(--sobre-acento)"
+            className={botonPrimario}
           >
             {estado === "desconectado" ? "Reescanear WhatsApp" : "Vincular WhatsApp"}
           </button>
@@ -117,7 +118,7 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
               setEscaneando(false);
               setQr(null);
             }}
-            className="rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface"
+            className="rounded-[10px] border border-line bg-surface-200 px-4 py-2 text-[13px] font-semibold hover:bg-surface-100"
           >
             Cancelar
           </button>
@@ -125,24 +126,24 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
       </div>
 
       {estado === "conectado" && (
-        <p role="status" className="mt-3 text-sm text-muted">
+        <p role="status" className="mt-3 text-sm text-ink-muted">
           Tu WhatsApp está vinculado: el asistente ya puede recibir y atender pedidos.
         </p>
       )}
       {estado === "sin_instancia" && (
-        <p className="mt-3 text-sm text-muted">
+        <p className="mt-3 text-sm text-ink-muted">
           Este local todavía no tiene su cuenta de WhatsApp creada. Escríbele a Starck Labs para activarla.
         </p>
       )}
       {vinculo?.ok === false && vinculo.error && (
-        <p role="alert" className="mt-3 text-sm text-peligro">
+        <p role="alert" className="mt-3 text-sm text-danger">
           {vinculo.error}
         </p>
       )}
 
       {escaneando && (
         <div className="mt-4 space-y-3">
-          <ol className="list-decimal space-y-1 pl-5 text-sm text-muted">
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-muted">
             <li>En el teléfono del local abre WhatsApp.</li>
             <li>Ve a <strong>Ajustes → Dispositivos vinculados → Vincular un dispositivo</strong>.</li>
             <li>Escanea este código. Se renueva solo si tarda.</li>
@@ -154,10 +155,10 @@ export function WhatsAppVinculo({ negocioId }: { negocioId: string }) {
               alt="Código QR para vincular WhatsApp"
               width={260}
               height={260}
-              className="h-64 w-64 rounded-xl border border-line bg-white p-2"
+              className="light h-64 w-64 rounded-xl border border-line bg-surface-100 p-2"
             />
           ) : (
-            <p className="text-sm text-muted">{cargando ? "Generando el código…" : "Esperando el código…"}</p>
+            <p className="text-sm text-ink-muted">{cargando ? "Generando el código…" : "Esperando el código…"}</p>
           )}
           {qr?.codigo && (
             <p className="text-sm">

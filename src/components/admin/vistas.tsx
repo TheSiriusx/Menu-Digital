@@ -11,6 +11,7 @@ import {
   renombrarCategoria,
   subirLogo,
 } from "@/app/admin/actions";
+import { EstadoVacio } from "@/components/brand/estado-vacio";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { CampoColor } from "@/components/admin/campo-color";
 import { ProductoFila } from "@/components/admin/producto-fila";
@@ -117,15 +118,15 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
 
             <section aria-labelledby="lista" className="space-y-4">
               <h2 id="lista" className="text-lg font-semibold">Productos</h2>
-              {grupos.length === 0 && <p className="text-muted">Todavía no hay productos.</p>}
+              {grupos.length === 0 && <EstadoVacio forma="sonrisa" texto="Todavía no hay productos." />}
               {grupos.map((g) => (
-                <details key={g.clave} open className="group overflow-hidden rounded-2xl border border-line bg-card">
+                <details key={g.clave} open className="group overflow-hidden rounded-2xl border border-line bg-surface-200">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
                     <h3 className="text-[14.5px] font-semibold">
-                      {g.titulo} <span className="font-medium text-muted">({g.productos.length} {g.productos.length === 1 ? "producto" : "productos"})</span>
-                      {g.oculta && <span className="ml-2 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-muted">Oculta en el menú</span>}
+                      {g.titulo} <span className="font-medium text-ink-muted">({g.productos.length} {g.productos.length === 1 ? "producto" : "productos"})</span>
+                      {g.oculta && <span className="ml-2 rounded-full bg-surface-100 px-2 py-0.5 text-xs font-medium text-ink-muted">Oculta en el menú</span>}
                     </h3>
-                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-muted transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6" /></svg>
+                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-ink-muted transition-transform group-open:rotate-180"><path d="M6 9l6 6 6-6" /></svg>
                   </summary>
                   <ul className="divide-y divide-line border-t border-line">
                     {g.productos.map((p, i) => (
@@ -157,8 +158,8 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
 
             <section aria-labelledby="categorias" className={tarjeta}>
               <h2 id="categorias" className="text-lg font-semibold">Categorías</h2>
-              <p className="text-sm text-muted">Una categoría oculta desaparece del menú con todos sus productos.</p>
-              {categorias.length === 0 && <p className="mt-2 text-muted">Todavía no hay categorías.</p>}
+              <p className="text-sm text-ink-muted">Una categoría oculta desaparece del menú con todos sus productos.</p>
+              {categorias.length === 0 && <p className="mt-2 text-ink-muted">Todavía no hay categorías.</p>}
               <ul className="divide-y divide-line">
                 {categorias.map((c, i) => {
                   const cantidad = productos.filter((p) => p.categoria_id === c.id).length;
@@ -166,7 +167,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
                     <li key={c.id} className="py-3" data-categoria={c.nombre}>
                       <div className="flex items-center justify-between gap-2">
                         <p className="min-w-0 truncate font-medium">
-                          {c.nombre} <span className="text-sm font-normal text-muted">({cantidad})</span>
+                          {c.nombre} <span className="text-sm font-normal text-ink-muted">({cantidad})</span>
                         </p>
                         <div className="flex shrink-0 gap-1">
                           <FlechaCategoria id={c.id} negocioId={negocio.id} direccion="arriba" deshabilitada={i === 0} />
@@ -180,7 +181,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
                         <Interruptor encendido={c.activa} si="Visible" no="Oculta" etiqueta={`${c.nombre}: ${c.activa ? "visible en el menú" : "oculta del menú"}`} />
                       </form>
                       <details className="mt-1">
-                        <summary className="cursor-pointer text-sm text-muted">Renombrar o borrar</summary>
+                        <summary className="cursor-pointer text-sm text-ink-muted">Renombrar o borrar</summary>
                         <FormAccion accion={renombrarCategoria} className="mt-2 flex flex-wrap items-center gap-2">
                           <CampoNegocio id={negocio.id} />
                           <input type="hidden" name="id" value={c.id} />
@@ -188,7 +189,7 @@ export function VistaMenu({ panel, contexto }: { panel: Panel; contexto: Context
                           <Boton>Guardar</Boton>
                         </FormAccion>
                         <details className="mt-3">
-                          <summary className="cursor-pointer text-sm text-peligro">Borrar categoría</summary>
+                          <summary className="cursor-pointer text-sm text-danger">Borrar categoría</summary>
                           <form action={borrarCategoria} className="mt-2">
                             <CampoNegocio id={negocio.id} />
                             <input type="hidden" name="id" value={c.id} />
@@ -245,7 +246,7 @@ export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Pane
             <div className="space-y-6">
               <section aria-labelledby="tasa" className={tarjeta}>
                 <h2 id="tasa" className="text-lg font-semibold">Tasa del día</h2>
-                <p className="text-sm text-muted">Bolívares por cada dólar. Actualízala cuando cambie.</p>
+                <p className="text-sm text-ink-muted">Bolívares por cada dólar. Actualízala cuando cambie.</p>
                 <FormAccion accion={actualizarTasa} className="mt-2 flex flex-wrap items-center gap-2">
                   <CampoNegocio id={negocio.id} />
                   <label className="flex items-center gap-2 text-sm">
@@ -279,7 +280,7 @@ export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Pane
                       placeholder="584121234567"
                       className={estiloCampo}
                     />
-                    <span className="text-xs text-muted">Con código de país. Ej: 584121234567 o 0412-1234567.</span>
+                    <span className="text-xs text-ink-muted">Con código de país. Ej: 584121234567 o 0412-1234567.</span>
                   </label>
                   <label className="block text-sm">
                     Horario
@@ -288,7 +289,7 @@ export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Pane
                   <div className="block text-sm">
                     Color del menú
                     <CampoColor inicial={negocio.color} defecto={ACENTO_POR_DEFECTO} />
-                    <span className="text-xs text-muted">El texto sobre este color se elige solo para que siempre se lea.</span>
+                    <span className="text-xs text-ink-muted">El texto sobre este color se elige solo para que siempre se lea.</span>
                   </div>
                   <Boton>Guardar ajustes</Boton>
                 </FormAccion>
@@ -301,7 +302,7 @@ export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Pane
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={negocio.logo_url} alt="Logo del local" className="h-20 w-20 rounded-full object-cover" />
                   ) : (
-                    <div aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-surface text-2xl font-semibold text-muted">
+                    <div aria-hidden="true" className="flex h-20 w-20 items-center justify-center rounded-full bg-surface-100 text-2xl font-semibold text-ink-muted">
                       {negocio.nombre.charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -332,7 +333,7 @@ export function VistaConfiguracion({ panel, asistente, contexto }: { panel: Pane
           {/* Vincular WhatsApp no depende del estado del local: se puede reescanear aunque esté pausado. */}
           <section aria-labelledby="whatsapp" className={`${tarjeta} print:hidden`}>
             <h2 id="whatsapp" className="text-lg font-semibold">WhatsApp de pedidos</h2>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-sm text-ink-muted">
               El número de WhatsApp que atiende los pedidos de este local. Si se desvincula, puedes volver a escanearlo desde aquí.
             </p>
             <div className="mt-4">

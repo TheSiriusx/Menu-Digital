@@ -23,15 +23,15 @@ export function Boton({
   const enCurso = useContext(EnCurso);
   const pending = enviando || enCurso;
   const estilos = {
-    primario: "bg-(--acento) text-(--sobre-acento)",
-    suave: "border border-line bg-card hover:bg-surface",
-    peligro: "bg-peligro text-white",
+    primario: "rounded-brand-sm bg-brand font-bold text-accent hover:bg-deep",
+    suave: "rounded-[10px] border border-line bg-surface-200 text-ink hover:bg-surface-100",
+    peligro: "rounded-[10px] bg-danger font-bold text-surface-100",
   }[variante];
   return (
     <button
       type="submit"
       disabled={pending}
-      className={`rounded-[10px] text-[13px] font-semibold disabled:opacity-50 ${tamano === "compacto" ? "px-3 py-1.5" : "px-4 py-2.5"} ${estilos} ${className}`}
+      className={`text-[13px] font-semibold disabled:opacity-50 ${tamano === "compacto" ? "px-3 py-1.5" : "min-h-11 px-4 py-2.5"} ${variante === "primario" ? "min-h-11" : ""} ${estilos} ${className}`}
     >
       {pending ? "Guardando…" : children}
     </button>
@@ -64,12 +64,12 @@ export function FormAccion({
     <form action={conservar ? undefined : ejecutar} onSubmit={alEnviar} aria-busy={pendiente || undefined} className={className}>
       <EnCurso.Provider value={pendiente}>{children}</EnCurso.Provider>
       {estado.error && (
-        <p role="alert" className="mt-2 text-sm text-peligro">
+        <p role="alert" className="mt-2 text-sm text-danger">
           {estado.error}
         </p>
       )}
       {estado.ok && (
-        <p role="status" className="mt-2 text-sm text-exito">
+        <p role="status" className="mt-2 text-sm text-brand-text">
           {estado.ok}
         </p>
       )}

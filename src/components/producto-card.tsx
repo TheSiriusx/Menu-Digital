@@ -18,7 +18,7 @@ export function Cantidad({
     <div className="flex shrink-0 items-center gap-2.5">
       <button
         type="button"
-        className={`flex ${tam} items-center justify-center rounded-full border border-line bg-card leading-none text-foreground`}
+        className={`flex ${tam} items-center justify-center rounded-full border border-borde bg-card leading-none text-foreground`}
         aria-label={`Quitar uno de ${nombre}`}
         onClick={() => onCambiar(-1)}
       >
@@ -53,7 +53,7 @@ export function Miniatura({ producto, tam, apagada = false }: { producto: Produc
   ) : (
     <div
       aria-hidden="true"
-      className={`${tam} flex shrink-0 items-center justify-center rounded-xl bg-surface font-titulo text-2xl font-semibold text-muted`}
+      className={`${tam} flex shrink-0 items-center justify-center rounded-xl bg-surface font-display text-2xl font-semibold text-muted`}
     >
       {producto.nombre.charAt(0).toUpperCase()}
     </div>
@@ -74,7 +74,7 @@ export function ProductoCard({
   const agotado = !producto.disponible;
 
   return (
-    <li className={`flex items-center gap-3 rounded-2xl border border-line bg-card p-3 ${agotado ? "opacity-55" : ""}`}>
+    <li className={`flex items-center gap-3 rounded-2xl border border-borde bg-card p-3 ${agotado ? "opacity-55" : ""}`}>
       <Miniatura producto={producto} tam="h-[68px] w-[68px]" apagada={agotado} />
       <div className="min-w-0 flex-1">
         <h3 className="text-[15px] font-semibold leading-snug">{producto.nombre}</h3>

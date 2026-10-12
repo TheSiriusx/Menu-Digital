@@ -42,7 +42,7 @@ export function TabsCategorias({ categorias }: { categorias: { id: string; nombr
           onClick={() => setActiva(c.id)}
           aria-current={activa === c.id ? "true" : undefined}
           className={`shrink-0 rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors ${
-            activa === c.id ? "border-(--acento) bg-(--acento) text-(--sobre-acento)" : "border-line bg-card text-foreground"
+            activa === c.id ? "border-(--acento) bg-(--acento) text-(--sobre-acento)" : "border-borde bg-card text-foreground"
           }`}
         >
           {c.nombre}

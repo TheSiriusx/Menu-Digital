@@ -18,12 +18,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     negocio = (data as Marca | null) ?? null;
   }
 
-  if (!negocioId || !negocio) return <div className="flex flex-1 flex-col bg-panel px-4">{children}</div>;
+  if (!negocioId || !negocio) return <div className="flex flex-1 flex-col bg-surface-100 px-4">{children}</div>;
 
   return (
     <Cascaron
       marca={{ nombre: negocio.nombre, subtitulo: etiquetaTipo(negocio.tipo), logo: negocio.logo_url }}
-      color={negocio.color}
       etiqueta="Panel"
       pestanas={pestanasDe("/admin", negocio.slug)}
       pie={<EstadoMenu activo={negocio.activo} />}

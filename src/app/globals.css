@@ -1,53 +1,122 @@
 @import "tailwindcss";
 
-/* Sistema de diseño «panadería»: paleta cálida clara, Fraunces para títulos y Work Sans para el texto, y un
-   solo color de acento por local (--acento, que elige el dueño). Sobre el acento se escribe con --sobre-acento
-   (blanco o negro, el que más contraste dé) y como texto sobre fondo claro se usa --acento-texto (el acento,
-   oscurecido si hace falta para que se lea). El verde de «disponible» es fijo: es un estado, no la marca. */
+/* Identidad de Pidelo (login, panel del dueño, super admin, portada, errores). Todo el código usa estos nombres:
+   nada de hex sueltos ni de la paleta por defecto de Tailwind en las pantallas de Pidelo.
+   El menú público de cada local NO lleva esta identidad: ver «.tema-menu» al final.
 
-/* Solo modo claro (decisión de diseño): las clases dark: de Tailwind no se activan nunca. */
-@custom-variant dark (&:where(.tema-oscuro, .tema-oscuro *));
+   Tema claro por defecto. El oscuro se activa con prefers-color-scheme o con la clase «dark», y la clase «light»
+   fuerza el claro dentro de un elemento (el menú público, que es del local). La variante dark: de Tailwind sigue
+   la misma regla. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:not(:where(.light, .light *)) {
+      @slot;
+    }
+  }
+  &:where(.dark, .dark *):not(:where(.light, .light *)) {
+    @slot;
+  }
+}
 
-:root {
+:root,
+.light {
   color-scheme: light;
-  --background: #faf7f2;   /* fondo del menú público */
-  --panel: #f5f1ea;        /* fondo del panel */
-  --card: #ffffff;         /* tarjetas */
-  --surface: #f2ece2;      /* rellenos suaves: chips, campos, miniaturas */
-  --foreground: #24201b;
-  --muted: #776e61;        /* un poco más oscuro que #8A8172 para que el texto pequeño se lea (≥ 4,5:1) */
-  --line: #ece4d8;
-  --field: #e0d6c7;
-  --exito: #4c8b58;
-  --exito-suave: #e2eee0;
-  --peligro: #b3432e;
-  --peligro-suave: #fbeae5;
-  --aviso: #8a6a1e;
-  --aviso-suave: #f2e4c6;
-  /* Acento por defecto (Pídelo); cada local lo cambia en su menú y su panel. */
-  --acento: #c96a3b;
-  --sobre-acento: #ffffff;
-  --acento-texto: #b35a2e;
-  --acento-suave: color-mix(in srgb, var(--acento) 12%, transparent);
+  --brand: #2450e8;
+  --surface-100: #fff0e6; /* fondo de página */
+  --surface-200: #ffe4d1; /* paneles y tarjetas */
+  --deep: #0b1536;
+  --ink: #0b1536; /* texto */
+  --accent: #ffd8bd;
+  /* Derivados (no están en el manual): */
+  --ink-muted: color-mix(in srgb, var(--ink) 72%, var(--surface-100)); /* textos secundarios: 6,9:1 y 6,3:1 */
+  --brand-text: var(--brand); /* brand usado como texto o anillo de foco: 5,6:1 sobre surface-100 */
+  --line: color-mix(in srgb, var(--ink) 14%, transparent); /* bordes finos (en lugar de sombras) */
+  /* No es de marca: solo para errores y validaciones (5,9:1 sobre surface-100). */
+  --danger: #b42318;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
+    --brand: #2450e8;
+    --surface-100: #070e23;
+    --surface-200: #1f2846;
+    --deep: #323a56;
+    --ink: #fff0e6;
+    --accent: #ffd8bd;
+    --ink-muted: color-mix(in srgb, var(--ink) 72%, var(--surface-100));
+    /* brand como texto no llega a 4,5:1 sobre los fondos oscuros (3,1:1): ahí se usa accent. */
+    --brand-text: var(--accent);
+    --line: color-mix(in srgb, var(--ink) 16%, transparent);
+    --danger: #f97066; /* no es de marca: 6,9:1 sobre surface-100 oscuro */
+  }
+}
+
+.dark {
+  color-scheme: dark;
+  --brand: #2450e8;
+  --surface-100: #070e23;
+  --surface-200: #1f2846;
+  --deep: #323a56;
+  --ink: #fff0e6;
+  --accent: #ffd8bd;
+  --ink-muted: color-mix(in srgb, var(--ink) 72%, var(--surface-100));
+  --brand-text: var(--accent);
+  --line: color-mix(in srgb, var(--ink) 16%, transparent);
+  --danger: #f97066;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-panel: var(--panel);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-surface-100: var(--surface-100);
+  --color-surface-200: var(--surface-200);
+  --color-deep: var(--deep);
+  --color-ink: var(--ink);
+  --color-accent: var(--accent);
+  --color-ink-muted: var(--ink-muted);
+  --color-brand-text: var(--brand-text);
   --color-line: var(--line);
-  --color-field: var(--field);
+  --color-danger: var(--danger);
+
+  /* Solo dentro del menú público (.tema-menu): la paleta cálida del menú de cada local. */
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-borde: var(--borde);
   --color-exito: var(--exito);
   --color-exito-suave: var(--exito-suave);
   --color-peligro: var(--peligro);
   --color-peligro-suave: var(--peligro-suave);
-  --color-aviso: var(--aviso);
-  --color-aviso-suave: var(--aviso-suave);
-  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-titulo: var(--font-fraunces), Georgia, "Times New Roman", serif;
+
+  --font-display: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Escala tipográfica de Pidelo. Los titulares van además con font-display (Fredoka 600). */
+@theme {
+  --text-display-xl: clamp(2.5rem, 1.6rem + 3.6vw, 4rem);
+  --text-display-xl--line-height: 0.94;
+  --text-display: clamp(1.875rem, 1.4rem + 1.9vw, 2.5rem);
+  --text-display--line-height: 1.1;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.875rem;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.125rem;
+}
+
+/* Forma de marca: la P es un globo de conversación, con la esquina inferior izquierda recta. Se repite en
+   tarjetas, burbujas, chips y botones principales (los campos y las tablas mantienen su redondeo normal). */
+@utility rounded-brand {
+  border-radius: 1.75rem 1.75rem 1.75rem 0;
+}
+@utility rounded-brand-sm {
+  border-radius: 0.75rem 0.75rem 0.75rem 0;
 }
 
 html {
@@ -62,60 +131,67 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+  background: var(--surface-100);
+  color: var(--ink);
+  font-family: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-
-/* Super admin: estilo «Warm Culinary Modernism» (diseño de Stitch). Redefine los mismos tokens solo dentro de
-   .tema-superadmin, así los componentes compartidos (botones, campos, tarjetas) toman estos colores sin cambiar
-   el menú público ni el panel del dueño. Fuentes: Plus Jakarta Sans (títulos) e Inter (texto). */
-.tema-superadmin {
-  --background: #fbf9f5;
-  --panel: #fbf9f5;
-  --card: #ffffff;
-  --surface: #f5f1eb;
-  --foreground: #2d2622;
-  --muted: #6b635b;
-  --line: #efece6;
-  --field: #ddd7ce;
-  --exito: #2e7d5b;
-  --exito-suave: #eaf5ee;
-  --aviso: #b26a00;
-  --aviso-suave: #fef5e7;
-  --peligro: #b3432e;
-  --peligro-suave: #fbeae5;
-  --acento: #c45a38;
-  --sobre-acento: #ffffff;
-  --acento-texto: #9b3e22;
-  --acento-suave: #f8efe9;
-  --sombra-1: 0 1px 3px rgb(132 85 60 / 0.04), 0 4px 12px rgb(132 85 60 / 0.03);
-  --sombra-2: 0 4px 6px -1px rgb(132 85 60 / 0.06), 0 10px 24px -3px rgb(132 85 60 / 0.08);
-  /* Con «@theme inline», font-titulo y font-sans usan directamente las variables de next/font del <html>:
-     se redirigen aquí para que dentro del super admin sean Plus Jakarta Sans e Inter. */
-  --font-fraunces: var(--font-jakarta);
-  --font-work-sans: var(--font-inter);
-  font-family: var(--font-inter);
-  font-feature-settings: "tnum";
-}
-@layer base {
-  .tema-superadmin :is(h1, h2, h3) {
-    font-family: var(--font-jakarta);
-    letter-spacing: -0.015em;
-  }
 }
 
 /* En la capa base para que las utilidades (outline-none, font-sans…) puedan pisarlas. */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--acento, var(--foreground));
+    outline: 2px solid var(--brand-text);
     outline-offset: 2px;
   }
 
-  h1 {
-    font-family: var(--font-titulo);
+  h1,
+  h2,
+  h3 {
+    /* Directo de next/font (y no de --font-display) para que dentro de .tema-menu se resuelva a Fraunces. */
+    font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
     font-weight: 600;
   }
+}
+
+/* Menú público de cada local: su paleta cálida, sus fuentes y su color de acento (--acento, que elige el dueño;
+   sin color, el azul de Pidelo). Sobre el acento se escribe con --sobre-acento (deep o surface-100, el que dé
+   ≥ 4,5:1) y como texto sobre fondo claro se usa --acento-texto (el acento, oscurecido si hace falta). El verde de
+   «disponible» es fijo: es un estado, no la marca. Siempre en tema claro (lleva también la clase «light»). */
+/* La página entera (también detrás de la barra de desplazamiento) toma el fondo del menú cuando hay uno. */
+:root:has(.tema-menu) {
+  color-scheme: light;
+}
+body:has(.tema-menu) {
+  background: var(--fondo-menu);
+}
+:root {
+  --fondo-menu: #faf7f2;
+}
+.tema-menu {
+  color-scheme: light;
+  --background: var(--fondo-menu);
+  --card: #ffffff;
+  --surface: #f2ece2;
+  --foreground: #24201b;
+  --muted: #776e61;
+  --borde: #ece4d8;
+  --exito: #4c8b58;
+  --exito-suave: #e2eee0;
+  --peligro: #b3432e;
+  --peligro-suave: #fbeae5;
+  --acento: var(--brand);
+  --sobre-acento: var(--surface-100);
+  --acento-texto: var(--brand);
+  --acento-suave: color-mix(in srgb, var(--acento) 12%, transparent);
+  /* Con «@theme inline», font-display y font-sans usan directamente las variables de next/font: se redirigen
+     aquí para que dentro del menú sean Fraunces y Work Sans. */
+  --font-fredoka: var(--font-fraunces);
+  --font-nunito: var(--font-work-sans);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+}
+.tema-menu :focus-visible {
+  outline-color: var(--acento, var(--foreground));
 }

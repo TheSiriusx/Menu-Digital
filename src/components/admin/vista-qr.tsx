@@ -10,34 +10,34 @@ export async function VistaQR({ nombre, slug }: { nombre: string; slug: string }
     <section id="qr" aria-labelledby="qr-titulo" className="space-y-6 rounded-2xl border border-line p-4 print:border-0 print:p-0">
       <div className="print:hidden">
         <h2 id="qr-titulo" className="text-lg font-semibold">QR del menú</h2>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-ink-muted">
           Imprímelo y pégalo en el local: el cliente lo escanea con la cámara y ve tu menú.
         </p>
       </div>
 
       <section
         aria-label="Tarjeta imprimible"
-        className="mx-auto flex max-w-xs flex-col items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-6 text-center text-neutral-900 print:border-0"
+        className="mx-auto flex max-w-xs flex-col items-center gap-3 rounded-2xl light border border-line bg-surface-100 p-6 text-center text-ink print:border-0"
       >
         <p className="text-xl font-semibold leading-tight">{nombre}</p>
-        <p className="text-sm text-neutral-600">Escanea para ver el menú</p>
+        <p className="text-sm text-ink-muted">Escanea para ver el menú</p>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={qr.svg} alt={`Código QR del menú de ${nombre}`} width={240} height={240} className="h-60 w-60" />
-        <p className="break-all text-xs text-neutral-500">{url}</p>
+        <p className="break-all text-xs text-ink-muted">{url}</p>
       </section>
 
       <div className="flex flex-wrap justify-center gap-2 print:hidden">
         <BotonCopiar texto={url} />
         <BotonImprimir />
-        <a href={qr.svg} download={`qr-${slug}.svg`} className="rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface">
+        <a href={qr.svg} download={`qr-${slug}.svg`} className="rounded-[10px] border border-line bg-surface-200 px-4 py-2 text-[13px] font-semibold hover:bg-surface-100">
           Descargar SVG
         </a>
-        <a href={qr.png} download={`qr-${slug}.png`} className="rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface">
+        <a href={qr.png} download={`qr-${slug}.png`} className="rounded-[10px] border border-line bg-surface-200 px-4 py-2 text-[13px] font-semibold hover:bg-surface-100">
           Descargar PNG
         </a>
       </div>
 
-      <p className="text-center text-xs text-muted print:hidden">
+      <p className="text-center text-xs text-ink-muted print:hidden">
         Este QR apunta a <strong>{url}</strong>. Si algún día el enlace cambia (por ejemplo, al pasar a un dominio
         propio), el papel ya impreso seguirá apuntando al anterior.
       </p>

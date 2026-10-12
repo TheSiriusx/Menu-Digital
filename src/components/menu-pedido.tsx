@@ -25,7 +25,7 @@ type Props = {
 };
 
 const campo =
-  "mt-1.5 w-full rounded-[10px] border border-line bg-background px-3.5 py-2.5 text-base font-normal outline-offset-0 focus-visible:border-(--acento) focus-visible:outline-2";
+  "mt-1.5 w-full rounded-[10px] border border-borde bg-background px-3.5 py-2.5 text-base font-normal outline-offset-0 focus-visible:border-(--acento) focus-visible:outline-2";
 
 export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = false, pie }: Props) {
   const { carrito, cambiar, vaciar } = useCarrito(negocio.slug);
@@ -119,7 +119,7 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
       </main>
 
       {lineas.length > 0 && (
-        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-xl border-t border-line bg-card px-5 pt-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(36_32_27/0.06)]">
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto max-w-xl border-t border-borde bg-card px-5 pt-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(36_32_27/0.06)]">
           <button
             type="button"
             onClick={abrirPedido}
@@ -148,17 +148,17 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
               type="button"
               onClick={() => dialogo.current?.close()}
               aria-label="Volver al menú"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line bg-card"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-borde bg-card"
             >
               <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
             </button>
-            <h2 className="font-titulo text-xl font-semibold">Tu pedido</h2>
+            <h2 className="font-display text-xl font-semibold">Tu pedido</h2>
           </div>
 
           <div className="flex-1 space-y-2.5 overflow-y-auto px-5 pt-2 pb-5">
             <ul className="space-y-2.5">
               {lineas.map((l) => (
-                <li key={l.producto.id} className="flex items-center gap-3 rounded-[14px] border border-line bg-card p-3">
+                <li key={l.producto.id} className="flex items-center gap-3 rounded-[14px] border border-borde bg-card p-3">
                   <Miniatura producto={l.producto} tam="h-[52px] w-[52px]" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[14.5px] font-semibold">{l.producto.nombre}</p>
@@ -174,7 +174,7 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
               ))}
             </ul>
 
-            <div className="rounded-[14px] border border-line bg-card p-4">
+            <div className="rounded-[14px] border border-borde bg-card p-4">
               <div className="flex justify-between py-1 text-[13.5px] text-muted">
                 <span>Subtotal</span>
                 <span className="tabular-nums">{formatUsd(total)}</span>
@@ -185,17 +185,17 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
                   <span className="tabular-nums">{formatBs(tasa)} / $</span>
                 </div>
               )}
-              <div className="my-2.5 h-px bg-line" />
+              <div className="my-2.5 h-px bg-borde" />
               <div className="flex items-baseline justify-between">
                 <span className="text-[15px] font-semibold">Total</span>
                 <span className="text-right">
-                  <span className="block font-titulo text-[22px] font-semibold text-(--acento-texto) tabular-nums">{formatUsd(total)}</span>
+                  <span className="block font-display text-[22px] font-semibold text-(--acento-texto) tabular-nums">{formatUsd(total)}</span>
                   {tasa > 0 && <span className="block text-xs text-muted tabular-nums">{formatBs(usdToBs(total, tasa))}</span>}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[14px] border border-line bg-card p-4">
+            <div className="space-y-4 rounded-[14px] border border-borde bg-card p-4">
               <label className="block text-[13px] font-semibold">
                 Tu nombre
                 <input
@@ -220,7 +220,7 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
                     <label
                       key={valor}
                       className={`flex cursor-pointer items-center gap-2 rounded-[10px] border px-3 py-2.5 text-sm ${
-                        datos.entrega === valor ? "border-(--acento) bg-(--acento-suave) font-semibold" : "border-line"
+                        datos.entrega === valor ? "border-(--acento) bg-(--acento-suave) font-semibold" : "border-borde"
                       }`}
                     >
                       <input
@@ -267,7 +267,7 @@ export function MenuPedido({ negocio, categorias, sinCategoria, soloRetiro = fal
             </p>
           </div>
 
-          <div className="border-t border-line bg-card px-5 pt-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <div className="border-t border-borde bg-card px-5 pt-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             {puedePedir ? (
               <button
                 type="submit"

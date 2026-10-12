@@ -16,7 +16,7 @@ function Seccion({ id, titulo, descripcion, children }: { id: string; titulo: st
   return (
     <div className={tarjeta} data-seccion-asistente={id}>
       <h3 className="text-base font-semibold">{titulo}</h3>
-      {descripcion && <p className="mt-0.5 text-sm text-muted">{descripcion}</p>}
+      {descripcion && <p className="mt-0.5 text-sm text-ink-muted">{descripcion}</p>}
       <div className="mt-3">{children}</div>
     </div>
   );
@@ -29,8 +29,8 @@ function Estado({ config, negocioId }: { config: ConfigAsistente; negocioId: str
     <div className="flex flex-wrap items-center gap-3">
       <span
         data-estado-asistente={encendido ? "encendido" : "apagado"}
-        className={`rounded-full px-3 py-1 text-sm font-medium ${
-          encendido ? "bg-exito-suave text-exito" : "bg-surface text-muted"
+        className={`rounded-brand-sm px-3 py-1 text-sm font-medium ${
+          encendido ? "bg-brand text-accent" : "bg-surface-100 text-ink-muted"
         }`}
       >
         {encendido ? "Atendiendo" : enPausa ? `En pausa hasta ${fechaHora(config.pausado_hasta!)}` : "Apagado"}
@@ -50,7 +50,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
     return (
       <section aria-labelledby="asistente" className={tarjeta}>
         <h2 id="asistente" className="text-lg font-semibold">Asistente de WhatsApp</h2>
-        <p className="mt-1 text-sm text-muted">Este local todavía no tiene configuración del asistente.</p>
+        <p className="mt-1 text-sm text-ink-muted">Este local todavía no tiene configuración del asistente.</p>
       </section>
     );
   }
@@ -66,7 +66,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 id="asistente" className="text-lg font-semibold">Asistente de WhatsApp</h2>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-ink-muted">
             Responde a tus clientes, toma pedidos y les avisa cuando cambias el estado de su pedido.
           </p>
         </div>
@@ -76,7 +76,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
         <div className="space-y-4">
           <div className={tarjeta}>
             <Estado config={config} negocioId={id} />
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-xs text-ink-muted">
               Apagado, no le contesta a nadie. También puedes escribir «apagar», «apagar 3h» o «encender» en tu chat contigo mismo en WhatsApp.
             </p>
           </div>
@@ -86,7 +86,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
               <FormAccion conservar accion={actualizarAsistente} className="space-y-2">
                 {oculto("horario")}
                 <div className="space-y-2">
-                  <p className="text-xs text-muted">El segundo horario es opcional (por ejemplo, si cierras a mediodía).</p>
+                  <p className="text-xs text-ink-muted">El segundo horario es opcional (por ejemplo, si cierras a mediodía).</p>
                   {DIAS.map((d) => {
                     const tramos = config.horario[d] ?? [];
                     const t1 = tramos[0];
@@ -95,7 +95,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
                       <div key={d} className="rounded-xl border border-line px-3 py-2 text-sm" data-dia={d}>
                         <div className="flex items-center justify-between gap-2">
                           <span className="font-medium">{NOMBRE_DIA[d]}</span>
-                          <label className="flex items-center gap-1.5 text-muted">
+                          <label className="flex items-center gap-1.5 text-ink-muted">
                             <input type="checkbox" name={`cerrado_${d}`} defaultChecked={tramos.length === 0} /> Cerrado
                           </label>
                         </div>
@@ -106,7 +106,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
                             <input type="time" name={`hasta_${d}`} aria-label={`${NOMBRE_DIA[d]}: cierra`} defaultValue={t1?.hasta ?? "19:00"} className={campoHora} />
                           </span>
                           <span className="flex w-full items-center gap-1.5 sm:w-auto">
-                            <span className="text-muted">y de</span>
+                            <span className="text-ink-muted">y de</span>
                             <input type="time" name={`desde2_${d}`} aria-label={`${NOMBRE_DIA[d]}: abre de nuevo (opcional)`} defaultValue={t2?.desde ?? ""} className={campoHora} />
                             <span aria-hidden="true">a</span>
                             <input type="time" name={`hasta2_${d}`} aria-label={`${NOMBRE_DIA[d]}: cierra de nuevo (opcional)`} defaultValue={t2?.hasta ?? ""} className={campoHora} />
@@ -177,7 +177,7 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
                 <label className="block text-sm">
                   WhatsApp donde te aviso de cada pedido (opcional)
                   <input name="telefono_dueno" inputMode="tel" defaultValue={config.telefono_dueno ?? ""} placeholder="584121234567" className={estiloCampo} />
-                  <span className="text-xs text-muted">Vacío: te aviso en tu chat contigo mismo, en el WhatsApp del local.</span>
+                  <span className="text-xs text-ink-muted">Vacío: te aviso en tu chat contigo mismo, en el WhatsApp del local.</span>
                 </label>
                 <div className="text-sm">
                   Si no atiendes un pedido nuevo, te lo recuerdo a los
@@ -187,12 +187,12 @@ export function VistaAsistente({ panel, config, contexto }: { panel: Panel; conf
                     <input name="recordatorio_2_min" inputMode="numeric" aria-label="Segundo recordatorio (minutos)" defaultValue={config.recordatorio_2_min ?? ""} className={campoCorto} />
                     minutos
                   </span>
-                  <span className="text-xs text-muted">Vacío = sin ese recordatorio.</span>
+                  <span className="text-xs text-ink-muted">Vacío = sin ese recordatorio.</span>
                 </div>
                 <label className="block text-sm">
                   Enlace para dejar una reseña (Google Maps, Instagram…)
                   <input name="resena_url" type="url" defaultValue={config.resena_url ?? ""} placeholder="https://g.page/r/…" className={estiloCampo} />
-                  <span className="text-xs text-muted">Vacío: no se piden reseñas.</span>
+                  <span className="text-xs text-ink-muted">Vacío: no se piden reseñas.</span>
                 </label>
                 <label className="block text-sm">
                   Pedir la reseña después de entregar, a las

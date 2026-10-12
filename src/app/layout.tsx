@@ -5,7 +5,7 @@ import { urlBaseFija } from "@/lib/sitio";
 import { clasesFuentes } from "./fuentes";
 import "./globals.css";
 
-// Metadatos de todo el sitio. El título de cada página va como «{título} | Pídelo»; og:url y la base de las URL
+// Metadatos de todo el sitio. El título de cada página va como «{título} | Pidelo»; og:url y la base de las URL
 // relativas salen de NEXT_PUBLIC_BASE_URL (si no está puesta, se omiten).
 const base = urlBaseFija();
 export const metadata: Metadata = {

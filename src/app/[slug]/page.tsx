@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Logo } from "@/components/brand/Logo";
 import { ContarVisita } from "@/components/contar-visita";
 import { MenuPedido } from "@/components/menu-pedido";
 import { TabsCategorias } from "@/components/tabs-categorias";
@@ -35,13 +36,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// «Hecho con Pídelo», con enlace a la portada (dirección pública configurada).
+// Pie discreto «Hecho con» + imagotipo de Pidelo (≥ 112 px), con enlace a la portada (dirección pública configurada).
+// Es lo único de Pidelo en el menú: el resto lleva el color y el logo del local.
 async function PieMarca() {
   const base = await urlBase();
   return (
-    <footer className="mt-12 text-center text-xs text-muted">
-      <a href={base} className="rounded-sm px-1 py-0.5 hover:text-foreground">
-        Hecho con <span className="font-titulo font-semibold text-foreground">{MARCA}</span>
+    <footer className="mt-12 flex justify-center">
+      <a href={base} aria-label={`Hecho con ${MARCA}`} className="flex flex-col items-center rounded-lg text-xs text-muted hover:text-foreground">
+        <span aria-hidden="true">Hecho con</span>
+        <Logo variant="imagotipo" width={112} alt="" />
       </a>
     </footer>
   );
@@ -55,7 +58,7 @@ function Insignia({ nombre, logo }: { nombre: string; logo: string | null }) {
   ) : (
     <div
       aria-hidden="true"
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-(--acento) font-titulo text-base font-semibold text-(--sobre-acento)"
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-(--acento) font-display text-base font-semibold text-(--sobre-acento)"
     >
       {iniciales(nombre)}
     </div>

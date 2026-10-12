@@ -1,7 +1,10 @@
-// El dueño puede elegir cualquier color de acento. El texto que va encima (botones, chips)
-// se elige solo entre blanco y negro, el que más contraste dé (WCAG), para que siempre se lea.
+import { COLORES } from "@/lib/colores-marca";
 
-export const ACENTO_POR_DEFECTO = "#C96A3B";
+// El dueño puede elegir cualquier color de acento para su menú. El texto que va encima (botones, chips) es deep o
+// surface-100 de Pidelo, el que dé al menos 4,5:1 (WCAG); con los tonos medios en que ninguno llega, negro o blanco.
+
+// Sin color elegido, el menú usa el azul de Pidelo.
+export const ACENTO_POR_DEFECTO = COLORES.brand;
 const COLOR_HEX = /^#[0-9a-fA-F]{6}$/;
 
 export function esColorHex(valor: string | null | undefined): valor is string {
@@ -20,8 +23,11 @@ export function contraste(a: string, b: string): number {
   return (claro + 0.05) / (oscuro + 0.05);
 }
 
-// Negro puro (no gris) para garantizar al menos 4,5:1 con cualquier fondo que no admita el blanco.
-export function colorSobre(hex: string): "#ffffff" | "#000000" {
+// Texto sobre el color del local: deep o surface-100 si alguno llega a 4,5:1 (el de más contraste). Con los tonos
+// medios (p. ej. un verde #4C8B58: 4,4:1 y 3,7:1) ninguno llega, y entonces va negro o blanco puros, que siempre sí.
+export function colorSobre(hex: string): string {
+  const [mejor] = [COLORES.deep, COLORES.surface100].sort((a, b) => contraste(hex, b) - contraste(hex, a));
+  if (contraste(hex, mejor) >= 4.5) return mejor;
   return contraste(hex, "#ffffff") >= contraste(hex, "#000000") ? "#ffffff" : "#000000";
 }
 
