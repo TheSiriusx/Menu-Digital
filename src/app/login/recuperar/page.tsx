@@ -16,7 +16,7 @@ export default async function Recuperar({ searchParams }: { searchParams: Promis
   return (
     <MarcoAcceso titulo="Recupera tu contraseña" descripcion="Escribe el correo con el que entras al panel y te mandamos un enlace para crear una nueva.">
       {error === "enlace" && (
-        <p role="alert" className="mb-4 rounded-[10px] bg-peligro-suave px-3.5 py-3 text-[13px] font-medium text-peligro">
+        <p role="alert" className="mb-4 rounded-[10px] bg-danger/10 px-3.5 py-3 text-[13px] font-medium text-danger">
           El enlace no es válido o ya caducó. Pide uno nuevo y ábrelo en este mismo navegador.
         </p>
       )}
@@ -27,8 +27,8 @@ export default async function Recuperar({ searchParams }: { searchParams: Promis
         </label>
         <Boton className="w-full py-3">Enviar enlace</Boton>
       </FormAccion>
-      <p className="mt-8 text-center text-[13px] text-muted">
-        <Link href="/login" className="font-semibold text-foreground underline underline-offset-2">
+      <p className="mt-8 text-center text-[13px] text-ink-muted">
+        <Link href="/login" className="font-semibold text-ink underline underline-offset-2">
           Volver a iniciar sesión
         </Link>
       </p>

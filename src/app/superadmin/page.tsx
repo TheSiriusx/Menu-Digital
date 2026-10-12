@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EstadoVacio } from "@/components/brand/estado-vacio";
 import { Icono } from "@/components/iconos";
 import { FiltroLocales } from "@/components/superadmin/interactivos";
 import {
@@ -70,9 +71,9 @@ export default async function Locales() {
           ))}
           <TarjetaAgregar />
         </ul>
-        <p data-sin-resultados hidden className="rounded-2xl border border-dashed border-line p-8 text-center text-sm text-muted">
-          Ningún local coincide con la búsqueda.
-        </p>
+        <div data-sin-resultados hidden className="rounded-brand border border-dashed border-line p-4">
+          <EstadoVacio forma="sonrisa" texto="Ningún local coincide con la búsqueda." />
+        </div>
       </FiltroLocales>
     </>
   );

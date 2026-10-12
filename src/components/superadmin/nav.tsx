@@ -28,14 +28,13 @@ export function NavLateral({ locales }: { locales: number }) {
             href={e.href}
             aria-current={activo ? "page" : undefined}
             className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors ${
-              activo ? "bg-(--acento-suave) font-semibold text-(--acento-texto)" : "text-muted hover:bg-surface hover:text-foreground"
+              activo ? "bg-brand font-semibold text-accent" : "text-ink-muted hover:bg-surface-100 hover:text-ink"
             }`}
           >
-            {activo && <span aria-hidden="true" className="absolute top-2 bottom-2 left-0 w-[3px] rounded-full bg-(--acento)" />}
             <Icono nombre={e.icono} />
             <span className="flex-1">{e.texto}</span>
             {e.contador !== undefined && e.contador > 0 && (
-              <span className="rounded-full bg-(--acento) px-2 py-0.5 text-[11px] font-semibold text-(--sobre-acento)">{e.contador}</span>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${activo ? "bg-accent text-deep" : "bg-brand text-accent"}`}>{e.contador}</span>
             )}
           </Link>
         );
@@ -50,7 +49,7 @@ export function NavInferior({ locales }: { locales: number }) {
   return (
     <nav
       aria-label="Super admin (celular)"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-background/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-2px_12px_rgb(78_48_32/0.06)] backdrop-blur-xl lg:hidden print:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface-100/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden print:hidden"
     >
       <div className="mx-auto flex h-16 max-w-xl items-center justify-around px-2">
         {enlaces(locales).map((e) => {
@@ -60,7 +59,7 @@ export function NavInferior({ locales }: { locales: number }) {
               key={e.href}
               href={e.href}
               aria-current={activo ? "page" : undefined}
-              className={`flex min-h-11 min-w-16 flex-col items-center justify-center gap-0.5 text-[11px] ${activo ? "font-semibold text-(--acento-texto)" : "text-muted"}`}
+              className={`flex min-h-11 min-w-16 flex-col items-center justify-center gap-0.5 text-[11px] ${activo ? "font-semibold text-brand-text" : "text-ink-muted"}`}
             >
               <Icono nombre={e.icono} tamano={22} />
               {e.texto}
@@ -91,11 +90,11 @@ export function Migas() {
         const ultima = i === migas.length - 1;
         return (
           <span key={i} className="flex min-w-0 items-center gap-2">
-            {i > 0 && <Icono nombre="chevron" tamano={14} className="text-muted" />}
+            {i > 0 && <Icono nombre="chevron" tamano={14} className="text-ink-muted" />}
             {m.href && !ultima ? (
-              <Link href={m.href} className="truncate text-muted hover:text-foreground">{m.texto}</Link>
+              <Link href={m.href} className="truncate text-ink-muted hover:text-ink">{m.texto}</Link>
             ) : (
-              <span aria-current={ultima ? "page" : undefined} className={`truncate ${ultima ? "font-medium text-foreground" : "text-muted"}`}>{m.texto}</span>
+              <span aria-current={ultima ? "page" : undefined} className={`truncate ${ultima ? "font-medium text-ink" : "text-ink-muted"}`}>{m.texto}</span>
             )}
           </span>
         );

@@ -24,7 +24,7 @@ export default async function Seguridad() {
         <h2 className="text-[16px] font-semibold">Verificación en dos pasos</h2>
         {mfa.tieneFactor ? (
           <p role="status" className={`${tarjetaSa} flex items-center gap-3 p-4 text-sm`}>
-            <span className="rounded-full bg-exito-suave px-2.5 py-1 text-xs font-semibold text-exito">Activada</span>
+            <span className="rounded-brand-sm bg-brand px-2.5 py-1 text-xs font-semibold text-accent">Activada</span>
             Al entrar se te pedirá el código de tu app autenticadora.
           </p>
         ) : (

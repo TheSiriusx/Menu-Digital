@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { elegirClaveNueva } from "@/app/login/nueva-clave/actions";
 import { MarcoAcceso } from "@/app/login/marco";
-import { estiloCampo } from "@/components/admin/estilos";
+import { botonPrimario, estiloCampo } from "@/components/admin/estilos";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import { obtenerSesion } from "@/lib/admin";
 import { estadoMfa } from "@/lib/mfa";
@@ -15,7 +15,7 @@ export default async function NuevaClave() {
   if (!user) {
     return (
       <MarcoAcceso titulo="Enlace no válido" descripcion="Este enlace ya se usó o caducó.">
-        <Link href="/login/recuperar" className="block rounded-[10px] bg-[#c96a3b] p-[13px] text-center text-[14.5px] font-semibold text-white">
+        <Link href="/login/recuperar" className={`${botonPrimario} w-full`}>
           Pedir un enlace nuevo
         </Link>
       </MarcoAcceso>

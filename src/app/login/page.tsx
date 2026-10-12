@@ -12,8 +12,8 @@ export default async function Login() {
   return (
     <MarcoAcceso titulo="Inicia sesión en tu panel" descripcion="Accede con el correo y la contraseña que te configuramos.">
       <FormularioAcceso />
-      <p className="mt-8 text-center text-[13px] text-muted">
-        <Link href="/login/recuperar" className="font-semibold text-foreground underline underline-offset-2">
+      <p className="mt-8 text-center text-[13px] text-ink-muted">
+        <Link href="/login/recuperar" className="font-semibold text-ink underline underline-offset-2">
           ¿Olvidaste tu contraseña?
         </Link>
       </p>

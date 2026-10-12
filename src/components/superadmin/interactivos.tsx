@@ -65,7 +65,7 @@ export function FiltroLocales({ children }: { children: ReactNode }) {
       aria-label={titulo}
       aria-pressed={vista === v}
       onClick={() => setVista(v)}
-      className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${vista === v ? "bg-card text-(--acento-texto) shadow-(--sombra-1)" : "text-muted hover:text-foreground"}`}
+      className={`flex h-8 w-8 items-center justify-center rounded-md transition-colors ${vista === v ? "bg-brand text-accent" : "text-ink-muted hover:text-ink"}`}
     >
       <Icono nombre={icono} tamano={18} />
     </button>
@@ -73,16 +73,16 @@ export function FiltroLocales({ children }: { children: ReactNode }) {
 
   return (
     <div ref={caja}>
-      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-line bg-card p-3 shadow-(--sombra-1) md:flex-row md:items-center">
+      <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-line bg-surface-200 p-3 md:flex-row md:items-center">
         <label className="relative flex-1 md:max-w-md">
           <span className="sr-only">Buscar local</span>
-          <Icono nombre="buscar" tamano={18} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" />
+          <Icono nombre="buscar" tamano={18} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-ink-muted" />
           <input
             type="search"
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Buscar por nombre, enlace o teléfono…"
-            className="w-full rounded-[10px] border border-transparent bg-surface py-2 pr-4 pl-10 text-sm outline-none placeholder:text-muted focus:border-(--acento) focus:bg-card focus:ring-3 focus:ring-(--acento)/15"
+            className="w-full rounded-[10px] border border-transparent bg-surface-100 py-2 pr-4 pl-10 text-sm outline-none placeholder:text-ink-muted focus:border-brand focus:bg-surface-200 focus:ring-3 focus:ring-brand-text/15"
           />
         </label>
         <div className="flex items-center gap-3">
@@ -91,13 +91,13 @@ export function FiltroLocales({ children }: { children: ReactNode }) {
             <select
               value={estado}
               onChange={(e) => setEstado(e.target.value)}
-              className="w-full appearance-none rounded-[10px] border border-transparent bg-surface py-2 pr-9 pl-3 text-[13px] font-semibold outline-none focus:border-(--acento) focus:ring-3 focus:ring-(--acento)/15"
+              className="w-full appearance-none rounded-[10px] border border-transparent bg-surface-100 py-2 pr-9 pl-3 text-[13px] font-semibold outline-none focus:border-brand focus:ring-3 focus:ring-brand-text/15"
             >
               {ESTADOS.map((e) => <option key={e.valor} value={e.valor}>{e.texto}</option>)}
             </select>
-            <Icono nombre="chevron" tamano={16} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rotate-90 text-muted" />
+            <Icono nombre="chevron" tamano={16} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rotate-90 text-ink-muted" />
           </label>
-          <div className="flex items-center gap-1 rounded-lg bg-surface p-1">
+          <div className="flex items-center gap-1 rounded-lg bg-surface-100 p-1">
             {botonVista("tarjetas", "Vista en tarjetas", "cuadricula")}
             {botonVista("lista", "Vista en lista", "lista")}
           </div>

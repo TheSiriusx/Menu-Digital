@@ -1,44 +1,43 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { cerrarSesion } from "@/app/admin/actions";
 import { NavPanel, type PestanaPanel } from "@/components/admin/nav-panel";
-import { variablesAcento } from "@/lib/color";
-import { EMPRESA, MARCA } from "@/lib/marca";
+import { Logo } from "@/components/brand/Logo";
+import { EMPRESA, FIRMA } from "@/lib/marca";
 
-// Armazón del panel (dueño y super admin): barra lateral blanca con la marca, las pestañas y el estado;
-// en el celular, la barra va arriba y las pestañas en fila. El contenido va sobre el fondo cálido del panel.
+// Armazón del panel del dueño, con la identidad de Pidelo (no el color del local): barra lateral surface-200 con el
+// imagotipo, el local, las pestañas y el estado; en el celular, la barra va arriba y las pestañas en fila.
 export function Cascaron({
   marca,
   etiqueta,
   pestanas,
   pie,
-  color,
   children,
 }: {
   marca: { nombre: string; subtitulo: string; logo?: string | null };
   etiqueta: string;
   pestanas: PestanaPanel[];
   pie?: ReactNode;
-  color?: string | null;
   children: ReactNode;
 }) {
   return (
-    <div style={variablesAcento(color ?? null) as CSSProperties} className="flex min-h-dvh flex-1 flex-col bg-panel lg:flex-row">
-      <aside className="shrink-0 border-b border-line bg-card px-4 pt-4 pb-2 print:hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-[236px] lg:flex-col lg:gap-7 lg:border-r lg:border-b-0 lg:px-[18px] lg:py-[26px]">
+    <div className="flex min-h-dvh flex-1 flex-col bg-surface-100 lg:flex-row">
+      <aside className="shrink-0 border-b border-line bg-surface-200 px-4 pt-4 pb-2 print:hidden lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-[236px] lg:flex-col lg:gap-7 lg:border-r lg:border-b-0 lg:px-[18px] lg:py-[26px]">
+        <Logo variant="imagotipo" width={112} className="-ml-1 mb-2 block lg:mb-0" />
         <header className="mb-3 flex items-center gap-2.5 print:hidden lg:mb-0 lg:px-1.5">
           {marca.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={marca.logo} alt="" className="h-9 w-9 shrink-0 rounded-[10px] object-cover" />
           ) : (
-            <div aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-(--acento) font-titulo text-[15px] font-semibold text-(--sobre-acento)">
+            <div aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-brand-sm bg-accent font-display text-[15px] text-deep">
               {iniciales(marca.nombre)}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <p className="line-clamp-2 font-titulo text-[14.5px] font-semibold leading-tight">{marca.nombre}</p>
-            <p className="text-[11.5px] text-muted">{marca.subtitulo}</p>
+            <p className="line-clamp-2 text-[14.5px] font-bold leading-tight">{marca.nombre}</p>
+            <p className="text-[11.5px] text-ink-muted">{marca.subtitulo}</p>
           </div>
           <form action={cerrarSesion}>
-            <button type="submit" className="rounded-[8px] border border-line px-2.5 py-1.5 text-xs font-semibold text-muted hover:bg-surface hover:text-foreground">
+            <button type="submit" className="rounded-[8px] border border-line px-2.5 py-1.5 text-xs font-semibold text-ink-muted hover:bg-surface-100 hover:text-ink">
               Salir
             </button>
           </form>
@@ -48,9 +47,7 @@ export function Cascaron({
       </aside>
       <div className="min-w-0 flex-1 px-4 pt-6 pb-16 lg:px-10 lg:pt-9">
         <div className="mx-auto max-w-[1180px]">{children}</div>
-        <footer className="mx-auto mt-14 max-w-[1180px] text-center text-xs text-muted print:hidden">
-          <span className="font-titulo font-semibold text-foreground">{MARCA}</span> by {EMPRESA}
-        </footer>
+        <footer className="mx-auto mt-14 max-w-[1180px] text-center text-caption text-ink-muted print:hidden">{FIRMA}</footer>
       </div>
     </div>
   );
@@ -65,12 +62,12 @@ export function iniciales(nombre: string): string {
 // Recuadro de estado al pie de la barra lateral.
 export function EstadoMenu({ activo }: { activo: boolean }) {
   return (
-    <div className="rounded-xl bg-panel p-3">
+    <div className="rounded-brand-sm bg-surface-100 p-3">
       <p className="flex items-center gap-[7px] text-[12.5px] font-semibold">
-        <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${activo ? "bg-exito" : "bg-aviso"}`} />
+        <span aria-hidden="true" className={`h-[7px] w-[7px] rounded-full ${activo ? "bg-brand" : "border-2 border-ink-muted"}`} />
         {activo ? "Menú activo" : "Menú pausado"}
       </p>
-      <p className="mt-1 text-[11.5px] text-muted">{activo ? "Tus clientes lo están viendo" : `Contacta a ${EMPRESA}`}</p>
+      <p className="mt-1 text-[11.5px] text-ink-muted">{activo ? "Tus clientes lo están viendo" : `Contacta a ${EMPRESA}`}</p>
     </div>
   );
 }
@@ -79,7 +76,7 @@ export function EstadoMenu({ activo }: { activo: boolean }) {
 export function MarcoPanel({ etiqueta, pestanas, children }: { etiqueta: string; pestanas: PestanaPanel[]; children: ReactNode }) {
   return (
     <>
-      <div className="mb-6 rounded-2xl border border-line bg-card px-4 py-2 print:hidden">
+      <div className="mb-6 rounded-brand border border-line bg-surface-200 px-4 py-2 print:hidden">
         <NavPanel etiqueta={etiqueta} pestanas={pestanas} orientacion="horizontal" />
       </div>
       {children}

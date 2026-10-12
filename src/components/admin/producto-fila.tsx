@@ -26,7 +26,7 @@ function Flecha({ id, negocioId, direccion, deshabilitada }: { id: string; negoc
         type="submit"
         disabled={deshabilitada}
         aria-label={direccion === "arriba" ? "Subir" : "Bajar"}
-        className="h-[26px] w-[26px] rounded-[7px] border border-line bg-card text-xs text-muted disabled:opacity-30"
+        className="h-[26px] w-[26px] rounded-[7px] border border-line bg-surface-200 text-xs text-ink-muted disabled:opacity-30"
       >
         {direccion === "arriba" ? "↑" : "↓"}
       </button>
@@ -64,14 +64,14 @@ export function ProductoFila({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={producto.foto_url} alt="" className="h-11 w-11 rounded-[9px] object-cover" />
           ) : (
-            <div aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-[9px] bg-surface font-titulo font-semibold text-muted">
+            <div aria-hidden="true" className="flex h-11 w-11 items-center justify-center rounded-[9px] bg-surface-100 font-display font-semibold text-ink-muted">
               {producto.nombre.charAt(0).toUpperCase()}
             </div>
           )}
         </SubirImagen>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13.5px] font-semibold leading-tight">{producto.nombre}</p>
-          <p className="truncate text-xs text-muted">
+          <p className="truncate text-xs text-ink-muted">
             {producto.descripcion ?? ""}
             {tasaBs > 0 && `${producto.descripcion ? " · " : ""}${formatBs(usdToBs(producto.precio_usd, tasaBs))}`}
           </p>
@@ -87,7 +87,7 @@ export function ProductoFila({
         <FormAccion accion={actualizarPrecio} className="flex items-center gap-1.5">
           <CampoNegocio id={negocioId} />
           <input type="hidden" name="id" value={producto.id} />
-          <span aria-hidden="true" className="text-sm text-muted">$</span>
+          <span aria-hidden="true" className="text-sm text-ink-muted">$</span>
           <input
             name="precio"
             aria-label={`Precio en dólares de ${producto.nombre}`}
@@ -126,7 +126,7 @@ export function ProductoFila({
 
       {/* Lo demás, plegado */}
       <details className="mt-1.5">
-        <summary className="cursor-pointer text-sm text-muted">Más opciones</summary>
+        <summary className="cursor-pointer text-sm text-ink-muted">Más opciones</summary>
 
         <div className="mt-2 flex flex-wrap items-start gap-2">
           <SubirImagen
@@ -168,7 +168,7 @@ export function ProductoFila({
         </FormAccion>
 
         <details className="mt-3">
-          <summary className="cursor-pointer text-sm text-peligro">Borrar producto</summary>
+          <summary className="cursor-pointer text-sm text-danger">Borrar producto</summary>
           <form action={borrarProducto} className="mt-2">
             <CampoNegocio id={negocioId} />
             <input type="hidden" name="id" value={producto.id} />

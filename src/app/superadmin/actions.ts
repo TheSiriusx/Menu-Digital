@@ -63,7 +63,7 @@ export async function crearLocal(_previo: Estado, datos: FormData): Promise<Esta
     const nombre = leerTexto(datos, "nombre", "El nombre", 80, { requerido: true });
     const slug = leerSlug(datos, "slug", nombre);
     const tipo = leerTipo(datos, "tipo");
-    // Pídelo no tiene planes: la base todavía pide uno y siempre va «basico» (no cambia nada en la app).
+    // Pidelo no tiene planes: la base todavía pide uno y siempre va «basico» (no cambia nada en la app).
     const { data: id, error } = await supabase.rpc("crear_negocio", { p_slug: slug, p_nombre: nombre, p_tipo: tipo, p_plan: "basico" });
     if (error) traducir("No se pudo crear el local", error);
 

@@ -82,11 +82,11 @@ export function SubirImagen({
   if (children) {
     return (
       <div className="relative shrink-0">
-        <label title={texto} className={`group/foto relative block cursor-pointer rounded-[9px] focus-within:ring-3 focus-within:ring-(--acento)/30 ${ocupado ? "opacity-60" : ""}`}>
+        <label title={texto} className={`group/foto relative block cursor-pointer rounded-[9px] focus-within:ring-3 focus-within:ring-brand-text/30 ${ocupado ? "opacity-60" : ""}`}>
           {children}
           <span
             aria-hidden="true"
-            className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-card text-muted shadow-(--sombra-1) group-hover/foto:text-foreground"
+            className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface-200 text-ink-muted group-hover/foto:text-ink"
           >
             {ocupado ? (
               <span className="h-2.5 w-2.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -100,7 +100,7 @@ export function SubirImagen({
           {entradaArchivo}
         </label>
         {mensaje.error && (
-          <p role="alert" className="absolute top-full left-0 z-10 mt-1.5 w-60 rounded-lg border border-line bg-card px-3 py-2 text-xs text-peligro shadow-(--sombra-2)">
+          <p role="alert" className="absolute top-full left-0 z-10 mt-1.5 w-60 rounded-lg border border-line bg-surface-200 px-3 py-2 text-xs text-danger">
             {mensaje.error}
           </p>
         )}
@@ -111,7 +111,7 @@ export function SubirImagen({
   return (
     <div>
       <label
-        className={`inline-block cursor-pointer rounded-[10px] border border-line bg-card px-4 py-2 text-[13px] font-semibold hover:bg-surface ${
+        className={`inline-block cursor-pointer rounded-[10px] border border-line bg-surface-200 px-4 py-2 text-[13px] font-semibold hover:bg-surface-100 ${
           ocupado ? "opacity-50" : ""
         }`}
       >
@@ -119,12 +119,12 @@ export function SubirImagen({
         {entradaArchivo}
       </label>
       {mensaje.error && (
-        <p role="alert" className="mt-2 text-sm text-peligro">
+        <p role="alert" className="mt-2 text-sm text-danger">
           {mensaje.error}
         </p>
       )}
       {mensaje.ok && (
-        <p role="status" className="mt-2 text-sm text-exito">
+        <p role="status" className="mt-2 text-sm text-brand-text">
           {mensaje.ok}
         </p>
       )}

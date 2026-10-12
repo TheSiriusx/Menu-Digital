@@ -22,12 +22,12 @@ export function GraficoVentas({ serie, grano, anioActual }: { serie: VentaPeriod
               <svg key={f.periodo} viewBox="0 0 10 100" preserveAspectRatio="none" className="h-full min-w-0 flex-1" aria-hidden="true">
                 <title>{`${etiquetaPeriodo(f.periodo, grano, anioActual)}: ${formatUsd(f.total_usd)} (${f.pedidos} pedidos)`}</title>
                 <rect x="0" y="99" width="10" height="1" className="fill-line" />
-                {alto > 0 && <rect x="0" y={100 - alto} width="10" height={alto} rx="1" className="fill-(--acento)" />}
+                {alto > 0 && <rect x="0" y={100 - alto} width="10" height={alto} rx="1" className="fill-brand" />}
               </svg>
             );
           })}
         </div>
-        <div className="mt-1.5 flex gap-0.5 text-[11px] text-muted sm:gap-1" aria-hidden="true">
+        <div className="mt-1.5 flex gap-0.5 text-[11px] text-ink-muted sm:gap-1" aria-hidden="true">
           {serie.map((f, i) => (
             <span key={f.periodo} className="min-w-0 flex-1 overflow-visible whitespace-nowrap text-center">
               {i % cadaCuanto === 0 ? etiquetaPeriodo(f.periodo, grano, anioActual) : ""}

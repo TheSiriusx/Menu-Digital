@@ -13,12 +13,12 @@ export function CampoColor({ inicial, defecto }: { inicial: string | null; defec
         aria-label="Elegir color"
         value={color || defecto}
         onChange={(e) => setColor(e.target.value)}
-        className="h-11 w-14 cursor-pointer rounded-xl border border-field bg-surface p-1"
+        className="h-11 w-14 cursor-pointer rounded-xl border border-line bg-surface-100 p-1"
       />
       <input type="hidden" name="color" value={color} />
-      <span className="text-sm tabular-nums text-muted">{color || "Color por defecto"}</span>
+      <span className="text-sm tabular-nums text-ink-muted">{color || "Color por defecto"}</span>
       {color && (
-        <button type="button" onClick={() => setColor("")} className="rounded-full px-3 py-1 text-sm text-muted underline">
+        <button type="button" onClick={() => setColor("")} className="rounded-full px-3 py-1 text-sm text-ink-muted underline">
           Restablecer
         </button>
       )}

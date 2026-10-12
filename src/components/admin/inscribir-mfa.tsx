@@ -2,7 +2,7 @@
 
 import { useActionState, useTransition } from "react";
 import { confirmarInscripcion, iniciarInscripcion } from "@/app/superadmin/mfa/actions";
-import { estiloCampo } from "@/components/admin/estilos";
+import { botonPrimario, estiloCampo } from "@/components/admin/estilos";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import type { EstadoInscripcion } from "@/lib/mfa";
 
@@ -18,12 +18,12 @@ export function InscribirMfa() {
           type="button"
           disabled={ocupado}
           onClick={() => empezar(() => iniciar())}
-          className="rounded-[10px] bg-(--acento) px-5 py-3 text-[13px] font-semibold text-(--sobre-acento) disabled:opacity-50"
+          className={botonPrimario}
         >
           {ocupado ? "Preparando…" : "Activar verificación en dos pasos"}
         </button>
         {inscripcion.error && (
-          <p role="alert" className="mt-2 text-sm text-peligro">
+          <p role="alert" className="mt-2 text-sm text-danger">
             {inscripcion.error}
           </p>
         )}
@@ -33,19 +33,19 @@ export function InscribirMfa() {
 
   return (
     <div className="space-y-5">
-      <ol className="list-decimal space-y-1 pl-5 text-sm text-muted">
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-muted">
         <li>Abre tu app autenticadora (Google Authenticator, Authy, Microsoft Authenticator…).</li>
         <li>Agrega una cuenta nueva y escanea este QR.</li>
         <li>Escribe abajo el código de 6 dígitos que te muestre.</li>
       </ol>
 
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={inscripcion.qr} alt="Código QR para tu app autenticadora" width={200} height={200} className="h-48 w-48 rounded-xl border border-line bg-white p-2" />
+      <img src={inscripcion.qr} alt="Código QR para tu app autenticadora" width={200} height={200} className="light h-48 w-48 rounded-xl border border-line bg-surface-100 p-2" />
 
-      <div className="rounded-xl border border-line bg-surface p-3">
+      <div className="rounded-xl border border-line bg-surface-100 p-3">
         <p className="text-sm font-medium">Código secreto de respaldo</p>
         <p data-secreto className="mt-1 break-all font-mono text-sm tracking-wide">{inscripcion.secreto}</p>
-        <p className="mt-2 text-xs text-muted">
+        <p className="mt-2 text-xs text-ink-muted">
           Guárdalo en tu gestor de contraseñas. Si pierdes el celular, es la única forma de recuperar este acceso.
         </p>
       </div>

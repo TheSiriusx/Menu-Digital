@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { EstadoVacio } from "@/components/brand/estado-vacio";
 import { cambiarEstadoPedido } from "@/app/admin/actions";
 import { CampoNegocio } from "@/components/admin/campo-negocio";
 import { EstadoPedidoBadge } from "@/components/admin/estado-pedido";
-import { estiloCampo } from "@/components/admin/estilos";
+import { botonPrimario, estiloCampo } from "@/components/admin/estilos";
 import { AvisoPausa, Editable, tarjeta, Titulo, type Contexto } from "@/components/admin/panel-base";
 import { Boton, FormAccion } from "@/components/admin/ui";
 import type { Panel } from "@/lib/admin";
@@ -30,7 +31,7 @@ function Detalle({ pedido, negocioId }: { pedido: Pedido; negocioId: string }) {
         {pedido.items.map((i) => (
           <li key={i.id} className="flex justify-between gap-3">
             <span>{i.cantidad} × {i.nombre_producto}</span>
-            <span className="shrink-0 text-muted">{formatUsd(i.cantidad * i.precio_unitario_usd)}</span>
+            <span className="shrink-0 text-ink-muted">{formatUsd(i.cantidad * i.precio_unitario_usd)}</span>
           </li>
         ))}
       </ul>
@@ -38,31 +39,31 @@ function Detalle({ pedido, negocioId }: { pedido: Pedido; negocioId: string }) {
         <span>Total</span>
         <span>
           {formatUsd(pedido.total_usd)}
-          {pedido.tasa_bs > 0 && <span className="font-normal text-muted"> · {formatBs(usdToBs(pedido.total_usd, pedido.tasa_bs))}</span>}
+          {pedido.tasa_bs > 0 && <span className="font-normal text-ink-muted"> · {formatBs(usdToBs(pedido.total_usd, pedido.tasa_bs))}</span>}
         </span>
       </p>
       <dl className="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-[auto_minmax(0,1fr)]">
-        <dt className="text-muted">Teléfono</dt>
+        <dt className="text-ink-muted">Teléfono</dt>
         <dd>
           <a href={`https://wa.me/${pedido.cliente_telefono}`} target="_blank" rel="noopener noreferrer" className="underline">
             {pedido.cliente_telefono}
           </a>
         </dd>
-        <dt className="text-muted">Entrega</dt>
+        <dt className="text-ink-muted">Entrega</dt>
         <dd>{pedido.entrega === "domicilio" ? `A domicilio${pedido.direccion ? `: ${pedido.direccion}` : ""}` : "Retira en el local"}</dd>
         {pedido.metodo_pago && (
           <>
-            <dt className="text-muted">Pago</dt>
+            <dt className="text-ink-muted">Pago</dt>
             <dd>{pedido.metodo_pago}</dd>
           </>
         )}
         {pedido.notas && (
           <>
-            <dt className="text-muted">Notas</dt>
+            <dt className="text-ink-muted">Notas</dt>
             <dd className="break-words">{pedido.notas}</dd>
           </>
         )}
-        <dt className="text-muted">Tasa</dt>
+        <dt className="text-ink-muted">Tasa</dt>
         <dd>{pedido.tasa_bs > 0 ? `Bs ${String(pedido.tasa_bs).replace(".", ",")} por $1 al momento del pedido` : "—"}</dd>
       </dl>
 
@@ -71,7 +72,7 @@ function Detalle({ pedido, negocioId }: { pedido: Pedido; negocioId: string }) {
           {acciones.map((a) =>
             a.peligro ? (
               <details key={a.estado}>
-                <summary className="cursor-pointer rounded-[10px] border border-line bg-card px-3 py-1.5 text-[13px] font-semibold text-peligro">{a.texto}</summary>
+                <summary className="cursor-pointer rounded-[10px] border border-line bg-surface-200 px-3 py-1.5 text-[13px] font-semibold text-danger">{a.texto}</summary>
                 <FormAccion accion={cambiarEstadoPedido} className="mt-2">
                   <CampoNegocio id={negocioId} />
                   <input type="hidden" name="id" value={pedido.id} />
@@ -132,14 +133,16 @@ export function VistaPedidos({
           Hasta
           <input type="date" name="hasta" defaultValue={filtros.hasta ?? ""} className={`${estiloCampo} w-40!`} />
         </label>
-        <button type="submit" className="rounded-[10px] bg-(--acento) px-4 py-2.5 text-[13px] font-semibold text-(--sobre-acento)">Filtrar</button>
-        {hayFiltros && <Link href={`${contexto.base}/pedidos`} className="py-2.5 text-sm text-muted underline">Quitar filtros</Link>}
+        <button type="submit" className={botonPrimario}>Filtrar</button>
+        {hayFiltros && <Link href={`${contexto.base}/pedidos`} className="py-2.5 text-sm text-ink-muted underline">Quitar filtros</Link>}
       </form>
 
-      <p className="mb-3 text-sm text-muted" role="status">
+      <p className="mb-3 text-sm text-ink-muted" role="status">
         {total === 0 ? "No hay pedidos" : `${total} ${total === 1 ? "pedido" : "pedidos"}`}
         {hayFiltros ? " con estos filtros" : ""}.
       </p>
+
+      {total === 0 && !hayFiltros && <EstadoVacio texto="Cuando un cliente te pida por WhatsApp, su pedido aparece aquí." />}
 
       {pedidos.length === 0 && total > 0 && (
         <p className="mb-3 text-sm">
@@ -155,7 +158,7 @@ export function VistaPedidos({
                 <summary className="flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{p.cliente_nombre || p.cliente_telefono}</span>
-                    <span className="block text-xs text-muted">{fechaHora(p.created_at)}</span>
+                    <span className="block text-xs text-ink-muted">{fechaHora(p.created_at)}</span>
                   </span>
                   <span className="font-medium">{formatUsd(p.total_usd)}</span>
                   <EstadoPedidoBadge estado={p.estado} />
@@ -170,11 +173,11 @@ export function VistaPedidos({
       {paginas > 1 && (
         <nav aria-label="Páginas" className="mt-5 flex items-center justify-between text-sm">
           {filtros.pagina > 1 ? (
-            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina - 1)} rel="prev" className="rounded-[10px] border border-line bg-card px-4 py-2 font-semibold hover:bg-surface">← Anterior</Link>
+            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina - 1)} rel="prev" className="rounded-[10px] border border-line bg-surface-200 px-4 py-2 font-semibold hover:bg-surface-100">← Anterior</Link>
           ) : <span />}
-          <span className="text-muted">Página {filtros.pagina} de {paginas}</span>
+          <span className="text-ink-muted">Página {filtros.pagina} de {paginas}</span>
           {filtros.pagina < paginas ? (
-            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina + 1)} rel="next" className="rounded-[10px] border border-line bg-card px-4 py-2 font-semibold hover:bg-surface">Siguiente →</Link>
+            <Link href={enlacePagina(contexto.base, filtros, filtros.pagina + 1)} rel="next" className="rounded-[10px] border border-line bg-surface-200 px-4 py-2 font-semibold hover:bg-surface-100">Siguiente →</Link>
           ) : <span />}
         </nav>
       )}

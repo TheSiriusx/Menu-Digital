@@ -40,7 +40,7 @@ export function NavPanel({ etiqueta, pestanas, orientacion = "lateral" }: { etiq
             rel={p.nuevaPestana ? "noopener noreferrer" : undefined}
             aria-current={activa ? "page" : undefined}
             className={`flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-[10px] px-3 py-2 text-[13.5px] font-semibold transition-colors ${
-              activa ? "bg-(--acento-suave) text-(--acento-texto)" : "text-muted hover:bg-surface hover:text-foreground"
+              activa ? "bg-brand text-accent" : "text-ink-muted hover:bg-surface-100 hover:text-ink"
             }`}
           >
             {p.icono && (
