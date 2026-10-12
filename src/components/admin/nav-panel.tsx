@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
-export type Icono = "dashboard" | "menu" | "pedidos" | "clientes" | "configuracion" | "externo" | "locales" | "cuenta" | "seguridad";
+export type Icono = "dashboard" | "menu" | "pedidos" | "clientes" | "configuracion" | "externo";
 export type PestanaPanel = { href: string; texto: string; icono?: Icono; exacto?: boolean; nuevaPestana?: boolean };
 
 const trazo = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -15,9 +15,6 @@ const ICONOS: Record<Icono, ReactNode> = {
   clientes: <><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c1-4 3.4-6 6.5-6s5.5 2 6.5 6" /><circle cx="18" cy="9" r="2.4" /><path d="M15.8 14.2c2.5.3 4.2 2.1 5 5.8" /></>,
   configuracion: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" /></>,
   externo: <><path d="M14 4h6v6" /><path d="M20 4l-9 9" /><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" /></>,
-  locales: <><path d="M3 10l1.5-5h15L21 10" /><path d="M4 10v10h16V10" /><path d="M9 20v-6h6v6" /></>,
-  cuenta: <><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></>,
-  seguridad: <><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path d="M9 12l2 2 4-4" /></>,
 };
 
 // Pestañas del panel. «lateral»: columna en la barra lateral (en el celular, fila con desplazamiento).

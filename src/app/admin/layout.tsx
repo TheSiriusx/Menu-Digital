@@ -11,10 +11,10 @@ export const metadata: Metadata = { title: "Panel", robots: { index: false, foll
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { supabase, negocioId } = await obtenerSesion();
 
-  type Marca = { slug: string; nombre: string; tipo: string; logo_url: string | null; color: string | null; activo: boolean };
+  type Marca = { slug: string; nombre: string; tipo: string; logo_url: string | null; activo: boolean };
   let negocio: Marca | null = null;
   if (negocioId) {
-    const { data } = await supabase.from("negocios").select("slug, nombre, tipo, logo_url, color, activo").eq("id", negocioId).single();
+    const { data } = await supabase.from("negocios").select("slug, nombre, tipo, logo_url, activo").eq("id", negocioId).single();
     negocio = (data as Marca | null) ?? null;
   }
 

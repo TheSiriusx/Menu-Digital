@@ -20,7 +20,7 @@ export type Resultado = { respuesta: string; avisoDueno: string | null; creado: 
 
 type CrearPedido = { crearPedido(a: Parameters<import("./clientes.ts").Supabase["crearPedido"]>[0]): Promise<ResultadoCrearPedido> };
 
-export function textoEntrega(ctx: Contexto, entrega: "retiro" | "domicilio", direccion: string | null): string {
+export function textoEntrega(entrega: "retiro" | "domicilio", direccion: string | null): string {
   if (entrega === "retiro") return "Lo retiras en el local 🥖.";
   return `Te lo llevamos a: ${limpio(direccion, 200)} 🛵.`;
 }
@@ -139,7 +139,7 @@ export async function registrarPedido(
   const respuesta = [
     `¡Listo${saludo ? `, ${saludo}` : ""}! Recibí tu pedido ${cod} 🎉`,
     [...lineas, `Total: ${precio(r.total_usd, tasa)}`, textoDelivery(ctx, s.entrega)].filter(Boolean).join("\n"),
-    [notaCerrado(ctx, ahora), textoEntrega(ctx, s.entrega, s.direccion)].filter(Boolean).join(" "),
+    [notaCerrado(ctx, ahora), textoEntrega(s.entrega, s.direccion)].filter(Boolean).join(" "),
     textoPago(ctx),
     grande ? "Como es un pedido grande, una persona del equipo lo confirma contigo antes de prepararlo 🙏." : "",
   ].filter(Boolean).join("\n\n");

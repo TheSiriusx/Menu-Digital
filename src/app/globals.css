@@ -86,9 +86,6 @@
   --color-muted: var(--muted);
   --color-borde: var(--borde);
   --color-exito: var(--exito);
-  --color-exito-suave: var(--exito-suave);
-  --color-peligro: var(--peligro);
-  --color-peligro-suave: var(--peligro-suave);
 
   --font-display: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
   --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
@@ -177,9 +174,6 @@ body:has(.tema-menu) {
   --muted: #776e61;
   --borde: #ece4d8;
   --exito: #4c8b58;
-  --exito-suave: #e2eee0;
-  --peligro: #b3432e;
-  --peligro-suave: #fbeae5;
   --acento: var(--brand);
   --sobre-acento: var(--surface-100);
   --acento-texto: var(--brand);
