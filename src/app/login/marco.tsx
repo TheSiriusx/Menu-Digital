@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AvisoInstalar } from "@/components/pwa/aviso-instalar";
 import { Logo } from "@/components/brand/Logo";
 import { ESLOGAN, FIRMA } from "@/lib/marca";
 
@@ -28,6 +29,7 @@ export function MarcoAcceso({ titulo, descripcion, children }: { titulo: string;
           </div>
           {children}
         </div>
+        <AvisoInstalar className="w-full max-w-[420px]" />
         <p className="text-caption text-ink-muted lg:hidden">{FIRMA}</p>
       </main>
     </div>

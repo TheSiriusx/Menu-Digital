@@ -7,7 +7,7 @@ import { botonPrimario } from "@/components/admin/estilos";
 import type { Estado } from "@/lib/validacion";
 
 const campo = (conError: boolean) =>
-  `w-full rounded-[10px] border px-3.5 py-3 text-sm text-ink transition-[border-color,box-shadow] focus:outline-none focus:ring-3 ${
+  `w-full rounded-[10px] border px-3.5 py-3 text-base text-ink transition-[border-color,box-shadow] focus:outline-none focus:ring-3 ${
     conError ? "border-danger bg-danger/10 focus:ring-danger/15" : "border-line bg-surface-100 focus:border-brand-text focus:ring-brand-text/20"
   }`;
 

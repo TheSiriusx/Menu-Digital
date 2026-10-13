@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { connection } from "next/server";
+import { RegistroPWA } from "@/components/pwa/registro-pwa";
+import { COLORES } from "@/lib/colores-marca";
 import { DESCRIPCION, MARCA } from "@/lib/marca";
 import { urlBaseFija } from "@/lib/sitio";
 import { clasesFuentes } from "./fuentes";
@@ -14,6 +16,17 @@ export const metadata: Metadata = {
   description: DESCRIPCION,
   applicationName: MARCA,
   openGraph: { siteName: MARCA, title: MARCA, description: DESCRIPCION, type: "website", locale: "es_VE", ...(base && { url: base }) },
+  // App instalada en el iPhone: se abre a pantalla completa, con su nombre y la barra de estado normal.
+  appleWebApp: { capable: true, title: MARCA, statusBarStyle: "default" },
+};
+
+// viewport-fit=cover: la página llega hasta los bordes del teléfono y body respeta el notch y la barra de inicio
+// con los márgenes seguros (globals.css).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: COLORES.brand,
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -25,7 +38,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${clasesFuentes} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <RegistroPWA />
+      </body>
     </html>
   );
 }

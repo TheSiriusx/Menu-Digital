@@ -133,7 +133,11 @@ body {
   font-family: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Márgenes seguros del notch, las esquinas y la barra de inicio (con viewport-fit=cover; fuera del iPhone valen 0). */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
 }
+
 
 /* En la capa base para que las utilidades (outline-none, font-sans…) puedan pisarlas. */
 @layer base {

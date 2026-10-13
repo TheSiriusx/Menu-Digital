@@ -82,7 +82,7 @@ export function FiltroLocales({ children }: { children: ReactNode }) {
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Buscar por nombre, enlace o teléfono…"
-            className="w-full rounded-[10px] border border-transparent bg-surface-100 py-2 pr-4 pl-10 text-sm outline-none placeholder:text-ink-muted focus:border-brand focus:bg-surface-200 focus:ring-3 focus:ring-brand-text/15"
+            className="w-full rounded-[10px] border border-transparent bg-surface-100 py-2 pr-4 pl-10 text-base outline-none placeholder:text-ink-muted focus:border-brand focus:bg-surface-200 focus:ring-3 focus:ring-brand-text/15"
           />
         </label>
         <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export function FiltroLocales({ children }: { children: ReactNode }) {
             <select
               value={estado}
               onChange={(e) => setEstado(e.target.value)}
-              className="w-full appearance-none rounded-[10px] border border-transparent bg-surface-100 py-2 pr-9 pl-3 text-[13px] font-semibold outline-none focus:border-brand focus:ring-3 focus:ring-brand-text/15"
+              className="w-full appearance-none rounded-[10px] border border-transparent bg-surface-100 py-2 pr-9 pl-3 text-base font-semibold outline-none focus:border-brand focus:ring-3 focus:ring-brand-text/15"
             >
               {ESTADOS.map((e) => <option key={e.valor} value={e.valor}>{e.texto}</option>)}
             </select>

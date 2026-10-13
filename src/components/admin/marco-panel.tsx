@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AvisoInstalar } from "@/components/pwa/aviso-instalar";
 import { cerrarSesion } from "@/app/admin/actions";
 import { NavPanel, type PestanaPanel } from "@/components/admin/nav-panel";
 import { Logo } from "@/components/brand/Logo";
@@ -46,7 +47,10 @@ export function Cascaron({
         {pie && <div className="mt-auto hidden lg:block">{pie}</div>}
       </aside>
       <div className="min-w-0 flex-1 px-4 pt-6 pb-16 lg:px-10 lg:pt-9">
-        <div className="mx-auto max-w-[1180px]">{children}</div>
+        <div className="mx-auto max-w-[1180px]">
+          <AvisoInstalar className="mb-6 print:hidden" />
+          {children}
+        </div>
         <footer className="mx-auto mt-14 max-w-[1180px] text-center text-caption text-ink-muted print:hidden">{FIRMA}</footer>
       </div>
     </div>

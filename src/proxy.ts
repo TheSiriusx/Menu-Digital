@@ -83,7 +83,8 @@ export const config = {
   // Todas las páginas, menos archivos estáticos y las precargas de navegación de Next.
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+      // Fuera también el service worker y el manifest de la PWA: el navegador los pide sin cookies.
+      source: "/((?!_next/static|_next/image|favicon.ico|robots.txt|sw.js|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

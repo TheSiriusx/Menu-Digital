@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AvisoInstalar } from "@/components/pwa/aviso-instalar";
 import { cerrarSesion } from "@/app/admin/actions";
 import { Icono } from "@/components/iconos";
 import { Migas, NavInferior, NavLateral } from "@/components/superadmin/nav";
@@ -47,7 +48,10 @@ export function MarcoSuperadmin({ locales, children }: { locales: number; childr
           </form>
         </header>
         <main className="flex-1 px-4 pt-6 pb-28 lg:px-8 lg:pt-8 lg:pb-16">
-          <div className="mx-auto max-w-[1440px]">{children}</div>
+          <div className="mx-auto max-w-[1440px]">
+            <AvisoInstalar className="mb-6 print:hidden" />
+            {children}
+          </div>
         </main>
       </div>
 
