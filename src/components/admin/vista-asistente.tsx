@@ -9,7 +9,7 @@ import { fechaHora } from "@/lib/fechas";
 
 const campoCorto = `${estiloCampo} w-28! px-2.5! py-1.5!`;
 // Firefox y Chrome muestran la hora con «a. m./p. m.» según el idioma: necesita más ancho que un número.
-const campoHora = `${estiloCampo} min-w-0 flex-1 px-2! py-1.5! text-sm! sm:w-36! sm:flex-none`;
+const campoHora = `${estiloCampo} min-w-0 flex-1 px-2! py-1.5! sm:w-36! sm:flex-none`;
 const coma = (n: number | null) => (n === null ? "" : n.toFixed(2).replace(".", ","));
 
 function Seccion({ id, titulo, descripcion, children }: { id: string; titulo: string; descripcion?: string; children: React.ReactNode }) {

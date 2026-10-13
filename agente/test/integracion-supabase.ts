@@ -1,6 +1,5 @@
 // Prueba contra el Supabase REAL (no corre con `npm test`). Necesita SUPABASE_URL y SUPABASE_SERVICE_KEY y que el local
 // de prueba tenga la instancia INSTANCIA. Solo usa números 999 (no existen). Uso: ver pruebas/agente-supabase.py
-import assert from "node:assert/strict";
 import { Supabase } from "../src/clientes.ts";
 import { registrarPedido } from "../src/pedidos.ts";
 

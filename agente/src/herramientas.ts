@@ -107,7 +107,7 @@ export function crearHerramientas(deps: Deps, ctx: Contexto, contacto: Contacto,
           `Total: ${precio(total, ctx.negocio.tasa_bs)}`,
           textoDelivery(ctx, entrega),
         ].filter(Boolean).join("\n"),
-        [textoEntrega(ctx, entrega, direccion), notas ? `Notas: ${notas}` : ""].filter(Boolean).join("\n"),
+        [textoEntrega(entrega, direccion), notas ? `Notas: ${notas}` : ""].filter(Boolean).join("\n"),
         "¿Lo confirmo? Responde *sí* para registrarlo, o dime qué cambio.",
       ].join("\n\n");
       return "Listo: el sistema le mostró el resumen al cliente y espera su «sí». No repitas el resumen.";

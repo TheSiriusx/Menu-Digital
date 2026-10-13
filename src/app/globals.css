@@ -86,9 +86,6 @@
   --color-muted: var(--muted);
   --color-borde: var(--borde);
   --color-exito: var(--exito);
-  --color-exito-suave: var(--exito-suave);
-  --color-peligro: var(--peligro);
-  --color-peligro-suave: var(--peligro-suave);
 
   --font-display: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
   --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
@@ -136,7 +133,11 @@ body {
   font-family: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* Márgenes seguros del notch, las esquinas y la barra de inicio (con viewport-fit=cover; fuera del iPhone valen 0). */
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px)
+    env(safe-area-inset-left, 0px);
 }
+
 
 /* En la capa base para que las utilidades (outline-none, font-sans…) puedan pisarlas. */
 @layer base {
@@ -177,9 +178,6 @@ body:has(.tema-menu) {
   --muted: #776e61;
   --borde: #ece4d8;
   --exito: #4c8b58;
-  --exito-suave: #e2eee0;
-  --peligro: #b3432e;
-  --peligro-suave: #fbeae5;
   --acento: var(--brand);
   --sobre-acento: var(--surface-100);
   --acento-texto: var(--brand);

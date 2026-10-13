@@ -28,7 +28,6 @@ const RUTAS = {
   reloj: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
   enviar: <><path d="M4 12l16-8-6 16-2.5-6.5z" /><path d="M11.5 13.5L20 4" /></>,
   chevron: <path d="M9 6l6 6-6 6" />,
-  pausa: <><circle cx="12" cy="12" r="9" /><path d="M10 9v6M14 9v6" /></>,
 } satisfies Record<string, ReactNode>;
 
 export type NombreIcono = keyof typeof RUTAS;

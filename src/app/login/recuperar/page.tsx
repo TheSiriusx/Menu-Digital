@@ -3,6 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { pedirEnlace } from "@/app/login/recuperar/actions";
 import { MarcoAcceso } from "@/app/login/marco";
+import { AvisoRecuperarEnNavegador } from "@/components/pwa/aviso-recuperar";
 import { estiloCampo } from "@/components/admin/estilos";
 import { Boton, FormAccion } from "@/components/admin/ui";
 
@@ -20,6 +21,7 @@ export default async function Recuperar({ searchParams }: { searchParams: Promis
           El enlace no es válido o ya caducó. Pide uno nuevo y ábrelo en este mismo navegador.
         </p>
       )}
+      <AvisoRecuperarEnNavegador />
       <FormAccion accion={pedirEnlace} className="space-y-4">
         <label className="block text-sm font-medium">
           Correo
